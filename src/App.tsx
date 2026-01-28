@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import PhasePage from "./pages/PhasePage";
 import Calculators from "./pages/Calculators";
+import ControlCharts from "./pages/ControlCharts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/phase/:phaseId" element={<PhasePage />} />
           <Route path="/calculators" element={<Calculators />} />
+          <Route path="/control-charts" element={<ControlCharts />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
