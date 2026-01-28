@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,15 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from "recharts";
 import { controlChartConstants } from "@/data/dmaic-tools";
-import { BarChart3, TrendingUp, Target, AlertTriangle } from "lucide-react";
-
-interface ChartDataPoint {
-  sample: number;
-  value: number;
-  ucl: number;
-  lcl: number;
-  cl: number;
-}
+import { BarChart3, TrendingUp, Target, AlertTriangle, Download, Info } from "lucide-react";
+import { toPng } from "html-to-image";
+import { checkWesternElectricRules, WEViolation, ChartDataPoint } from "@/lib/western-electric-rules";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export default function ControlCharts() {
   // X̄-R Chart State
@@ -36,6 +32,41 @@ export default function ControlCharts() {
   // c-Chart State
   const [cChartData, setCChartData] = useState("");
   const [cChartResult, setCChartResult] = useState<ChartDataPoint[] | null>(null);
+
+  // np-Chart State
+  const [npChartData, setNpChartData] = useState("");
+  const [npChartSampleSize, setNpChartSampleSize] = useState(100);
+  const [npChartResult, setNpChartResult] = useState<ChartDataPoint[] | null>(null);
+
+  // u-Chart State
+  const [uChartData, setUChartData] = useState("");
+  const [uChartResult, setUChartResult] = useState<ChartDataPoint[] | null>(null);
+
+  // Western Electric violations
+  const [weViolations, setWeViolations] = useState<Record<string, WEViolation[]>>({});
+
+  // Chart refs for export
+  const chartRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Export chart as PNG
+  const exportChart = async (chartId: string, fileName: string) => {
+    const element = chartRefs.current[chartId];
+    if (!element) return;
+
+    try {
+      const dataUrl = await toPng(element, { 
+        backgroundColor: 'white',
+        quality: 1,
+        pixelRatio: 2 
+      });
+      const link = document.createElement('a');
+      link.download = `${fileName}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Export failed:', err);
+    }
+  };
 
   // X̄-R Chart Calculation
   const calculateXbarR = () => {
@@ -78,6 +109,11 @@ export default function ControlCharts() {
     }));
 
     setXbarChartData({ xbar: xbarChartPoints, r: rChartPoints });
+    setWeViolations(prev => ({
+      ...prev,
+      'xbar': checkWesternElectricRules(xbarChartPoints),
+      'r': checkWesternElectricRules(rChartPoints)
+    }));
   };
 
   // I-MR Chart Calculation
@@ -93,7 +129,6 @@ export default function ControlCharts() {
     const xBar = values.reduce((a, b) => a + b, 0) / values.length;
     const mrBar = movingRanges.reduce((a, b) => a + b, 0) / movingRanges.length;
 
-    // Constants for n=2: E2 = 2.66, D4 = 3.267, D3 = 0
     const E2 = 2.66;
     const D4 = 3.267;
     const D3 = 0;
@@ -120,6 +155,11 @@ export default function ControlCharts() {
     }));
 
     setImrChartData({ i: iChartPoints, mr: mrChartPoints });
+    setWeViolations(prev => ({
+      ...prev,
+      'i': checkWesternElectricRules(iChartPoints),
+      'mr': checkWesternElectricRules(mrChartPoints)
+    }));
   };
 
   // p-Chart Calculation
@@ -143,6 +183,7 @@ export default function ControlCharts() {
     }));
 
     setPChartResult(chartPoints);
+    setWeViolations(prev => ({ ...prev, 'p': checkWesternElectricRules(chartPoints) }));
   };
 
   // c-Chart Calculation
@@ -163,23 +204,101 @@ export default function ControlCharts() {
     }));
 
     setCChartResult(chartPoints);
+    setWeViolations(prev => ({ ...prev, 'c': checkWesternElectricRules(chartPoints) }));
   };
 
-  const renderControlChart = (data: ChartDataPoint[], title: string, yLabel: string) => {
+  // np-Chart Calculation
+  const calculateNpChart = () => {
+    const defects = npChartData.split(/[,;\s\n]+/).map(v => parseInt(v.trim())).filter(v => !isNaN(v));
+    if (defects.length < 2) return;
+
+    const n = npChartSampleSize;
+    const npBar = defects.reduce((a, b) => a + b, 0) / defects.length;
+    const pBar = npBar / n;
+
+    const ucl = npBar + 3 * Math.sqrt(npBar * (1 - pBar));
+    const lcl = Math.max(0, npBar - 3 * Math.sqrt(npBar * (1 - pBar)));
+
+    const chartPoints: ChartDataPoint[] = defects.map((val, i) => ({
+      sample: i + 1,
+      value: val,
+      ucl: parseFloat(ucl.toFixed(4)),
+      lcl: parseFloat(lcl.toFixed(4)),
+      cl: parseFloat(npBar.toFixed(4))
+    }));
+
+    setNpChartResult(chartPoints);
+    setWeViolations(prev => ({ ...prev, 'np': checkWesternElectricRules(chartPoints) }));
+  };
+
+  // u-Chart Calculation
+  const calculateUChart = () => {
+    // Format: "defects,units" per line or "defects units"
+    const rows = uChartData.trim().split("\n").filter(r => r.trim());
+    if (rows.length < 2) return;
+
+    const data = rows.map(row => {
+      const parts = row.split(/[,;\s]+/).map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+      return { defects: parts[0] || 0, units: parts[1] || 1 };
+    });
+
+    const totalDefects = data.reduce((a, b) => a + b.defects, 0);
+    const totalUnits = data.reduce((a, b) => a + b.units, 0);
+    const uBar = totalDefects / totalUnits;
+
+    const chartPoints: ChartDataPoint[] = data.map((d, i) => {
+      const u = d.defects / d.units;
+      const ucl = uBar + 3 * Math.sqrt(uBar / d.units);
+      const lcl = Math.max(0, uBar - 3 * Math.sqrt(uBar / d.units));
+      return {
+        sample: i + 1,
+        value: parseFloat(u.toFixed(4)),
+        ucl: parseFloat(ucl.toFixed(4)),
+        lcl: parseFloat(lcl.toFixed(4)),
+        cl: parseFloat(uBar.toFixed(4))
+      };
+    });
+
+    setUChartResult(chartPoints);
+    setWeViolations(prev => ({ ...prev, 'u': checkWesternElectricRules(chartPoints) }));
+  };
+
+  const renderControlChart = (
+    data: ChartDataPoint[], 
+    title: string, 
+    yLabel: string, 
+    chartId: string,
+    violations: WEViolation[] = []
+  ) => {
     const hasOutOfControl = data.some(d => d.value > d.ucl || d.value < d.lcl);
+    const violationPoints = violations.flatMap(v => v.points);
     
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h4 className="font-semibold">{title}</h4>
-          {hasOutOfControl && (
-            <Badge variant="destructive" className="flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3" />
-              Utom kontroll
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {hasOutOfControl && (
+              <Badge variant="destructive" className="flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                Utom kontroll
+              </Badge>
+            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => exportChart(chartId, `${title.replace(/[^a-zA-Z0-9]/g, '_')}`)}
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Exportera
+            </Button>
+          </div>
         </div>
-        <div className="h-64">
+
+        <div 
+          ref={el => { chartRefs.current[chartId] = el; }}
+          className="h-64 bg-background p-2 rounded-lg"
+        >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
@@ -204,12 +323,14 @@ export default function ControlCharts() {
                 dot={(props) => {
                   const { cx, cy, payload } = props;
                   const isOutOfControl = payload.value > payload.ucl || payload.value < payload.lcl;
+                  const isViolation = violationPoints.includes(payload.sample);
+                  const showWarning = isOutOfControl || isViolation;
                   return (
                     <circle 
                       cx={cx} 
                       cy={cy} 
-                      r={isOutOfControl ? 6 : 4} 
-                      fill={isOutOfControl ? 'hsl(var(--destructive))' : 'hsl(var(--accent))'}
+                      r={showWarning ? 6 : 4} 
+                      fill={isOutOfControl ? 'hsl(var(--destructive))' : isViolation ? 'hsl(38, 92%, 50%)' : 'hsl(var(--accent))'}
                       stroke="white"
                       strokeWidth={2}
                     />
@@ -220,6 +341,7 @@ export default function ControlCharts() {
             </LineChart>
           </ResponsiveContainer>
         </div>
+
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div className="text-center p-2 bg-destructive/10 rounded-lg">
             <div className="text-muted-foreground">UCL</div>
@@ -234,6 +356,32 @@ export default function ControlCharts() {
             <div className="font-mono font-semibold">{data[0]?.lcl}</div>
           </div>
         </div>
+
+        {violations.length > 0 && (
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" size="sm" className="w-full">
+                <Info className="h-4 w-4 mr-2" />
+                Visa Western Electric-avvikelser ({violations.length})
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2">
+              <div className="space-y-2">
+                {violations.map((v, i) => (
+              <Alert key={i} variant="default" className="bg-accent/10 border-accent/30">
+                    <AlertTriangle className="h-4 w-4 text-accent" />
+                    <AlertTitle className="text-sm">Regel {v.rule}</AlertTitle>
+                    <AlertDescription className="text-sm">
+                      {v.description}
+                      <br />
+                      <span className="text-muted-foreground">Punkter: {v.points.join(', ')}</span>
+                    </AlertDescription>
+                  </Alert>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
       </div>
     );
   };
@@ -249,7 +397,7 @@ export default function ControlCharts() {
         </div>
 
         <Tabs defaultValue="xbar-r" className="space-y-6">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 h-auto p-2">
+          <TabsList className="grid grid-cols-3 md:grid-cols-6 gap-2 h-auto p-2">
             <TabsTrigger value="xbar-r" className="flex items-center gap-2 py-3">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">X̄-R</span>
@@ -265,10 +413,20 @@ export default function ControlCharts() {
               <span className="hidden sm:inline">p-diagram</span>
               <span className="sm:hidden">p</span>
             </TabsTrigger>
+            <TabsTrigger value="np-chart" className="flex items-center gap-2 py-3">
+              <Target className="h-4 w-4" />
+              <span className="hidden sm:inline">np-diagram</span>
+              <span className="sm:hidden">np</span>
+            </TabsTrigger>
             <TabsTrigger value="c-chart" className="flex items-center gap-2 py-3">
               <AlertTriangle className="h-4 w-4" />
               <span className="hidden sm:inline">c-diagram</span>
               <span className="sm:hidden">c</span>
+            </TabsTrigger>
+            <TabsTrigger value="u-chart" className="flex items-center gap-2 py-3">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="hidden sm:inline">u-diagram</span>
+              <span className="sm:hidden">u</span>
             </TabsTrigger>
           </TabsList>
 
@@ -309,8 +467,8 @@ export default function ControlCharts() {
 
                 {xbarChartData && (
                   <div className="space-y-8 pt-4 border-t">
-                    {renderControlChart(xbarChartData.xbar, "X̄-diagram (Medelvärde)", "X̄")}
-                    {renderControlChart(xbarChartData.r, "R-diagram (Variationsvidd)", "R")}
+                    {renderControlChart(xbarChartData.xbar, "X̄-diagram (Medelvärde)", "X̄", "xbar", weViolations['xbar'])}
+                    {renderControlChart(xbarChartData.r, "R-diagram (Variationsvidd)", "R", "r", weViolations['r'])}
                   </div>
                 )}
               </CardContent>
@@ -342,8 +500,8 @@ export default function ControlCharts() {
 
                 {imrChartData && (
                   <div className="space-y-8 pt-4 border-t">
-                    {renderControlChart(imrChartData.i, "I-diagram (Individuella värden)", "X")}
-                    {renderControlChart(imrChartData.mr, "MR-diagram (Glidande variationsvidd)", "MR")}
+                    {renderControlChart(imrChartData.i, "I-diagram (Individuella värden)", "X", "i", weViolations['i'])}
+                    {renderControlChart(imrChartData.mr, "MR-diagram (Glidande variationsvidd)", "MR", "mr", weViolations['mr'])}
                   </div>
                 )}
               </CardContent>
@@ -386,7 +544,50 @@ export default function ControlCharts() {
 
                 {pChartResult && (
                   <div className="space-y-8 pt-4 border-t">
-                    {renderControlChart(pChartResult, "p-diagram (Andel defekta)", "p")}
+                    {renderControlChart(pChartResult, "p-diagram (Andel defekta)", "p", "p", weViolations['p'])}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* np-Chart */}
+          <TabsContent value="np-chart">
+            <Card>
+              <CardHeader>
+                <CardTitle>np-diagram (Antal defekta)</CardTitle>
+                <CardDescription>
+                  Används för attributdata där man räknar antalet defekta enheter. Stickprovsstorleken är konstant. Skillnad mot p-diagram: visar absoluta tal istället för andelar.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Stickprovsstorlek (n)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={npChartSampleSize}
+                      onChange={(e) => setNpChartSampleSize(parseInt(e.target.value) || 100)}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Antal defekta per stickprov (separerade med komma eller radbrytning)</Label>
+                  <textarea
+                    className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
+                    placeholder="3, 5, 2, 4, 6, 3, 2, 5, 4, 3"
+                    value={npChartData}
+                    onChange={(e) => setNpChartData(e.target.value)}
+                  />
+                </div>
+                <Button onClick={calculateNpChart} className="w-full md:w-auto">
+                  Beräkna styrdiagram
+                </Button>
+
+                {npChartResult && (
+                  <div className="space-y-8 pt-4 border-t">
+                    {renderControlChart(npChartResult, "np-diagram (Antal defekta)", "np", "np", weViolations['np'])}
                   </div>
                 )}
               </CardContent>
@@ -418,13 +619,90 @@ export default function ControlCharts() {
 
                 {cChartResult && (
                   <div className="space-y-8 pt-4 border-t">
-                    {renderControlChart(cChartResult, "c-diagram (Antal fel)", "c")}
+                    {renderControlChart(cChartResult, "c-diagram (Antal fel)", "c", "c", weViolations['c'])}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* u-Chart */}
+          <TabsContent value="u-chart">
+            <Card>
+              <CardHeader>
+                <CardTitle>u-diagram (Fel per enhet)</CardTitle>
+                <CardDescription>
+                  Används för attributdata där man räknar fel per enhet och enhetsstorleken varierar. Varje rad: "antal fel, antal enheter".
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label>Data (en rad per stickprov: "antal fel, antal enheter")</Label>
+                  <textarea
+                    className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
+                    placeholder="12, 10&#10;8, 8&#10;15, 12&#10;10, 10&#10;6, 5"
+                    value={uChartData}
+                    onChange={(e) => setUChartData(e.target.value)}
+                  />
+                </div>
+                <Button onClick={calculateUChart} className="w-full md:w-auto">
+                  Beräkna styrdiagram
+                </Button>
+
+                {uChartResult && (
+                  <div className="space-y-8 pt-4 border-t">
+                    {renderControlChart(uChartResult, "u-diagram (Fel per enhet)", "u", "u", weViolations['u'])}
                   </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Western Electric Rules Info */}
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Western Electric-regler
+            </CardTitle>
+            <CardDescription>
+              Regler för att identifiera specialorsaker till variation i styrdiagram
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4 text-sm">
+              <div className="space-y-2">
+                <div className="p-3 bg-muted rounded-lg">
+                  <strong>Regel 1:</strong> En punkt utanför 3σ (kontrollgräns)
+                </div>
+                <div className="p-3 bg-muted rounded-lg">
+                  <strong>Regel 2:</strong> 9 punkter i rad på samma sida om centerlinjen
+                </div>
+                <div className="p-3 bg-muted rounded-lg">
+                  <strong>Regel 3:</strong> 6 punkter i rad stigande eller fallande
+                </div>
+                <div className="p-3 bg-muted rounded-lg">
+                  <strong>Regel 4:</strong> 14 punkter i rad alternerande upp och ner
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="p-3 bg-muted rounded-lg">
+                  <strong>Regel 5:</strong> 2 av 3 punkter utanför 2σ på samma sida
+                </div>
+                <div className="p-3 bg-muted rounded-lg">
+                  <strong>Regel 6:</strong> 4 av 5 punkter utanför 1σ på samma sida
+                </div>
+                <div className="p-3 bg-muted rounded-lg">
+                  <strong>Regel 7:</strong> 15 punkter i rad inom 1σ (stratifiering)
+                </div>
+                <div className="p-3 bg-muted rounded-lg">
+                  <strong>Regel 8:</strong> 8 punkter i rad utanför 1σ (blandning)
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Info Section */}
         <Card className="mt-8">

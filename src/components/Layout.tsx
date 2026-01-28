@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { phases } from "@/data/dmaic-tools";
 import { cn } from "@/lib/utils";
 import { Activity, Calculator, Home, BarChart3 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface LayoutProps {
   children: ReactNode;
@@ -79,6 +80,7 @@ export function Layout({ children }: LayoutProps) {
                 <BarChart3 className="h-4 w-4 inline-block mr-2" />
                 Styrdiagram
               </Link>
+              <ThemeToggle />
             </nav>
 
             {/* Mobile menu button */}
