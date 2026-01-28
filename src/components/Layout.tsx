@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { phases } from "@/data/dmaic-tools";
 import { cn } from "@/lib/utils";
-import { Activity, Calculator, Home } from "lucide-react";
+import { Activity, Calculator, Home, BarChart3 } from "lucide-react";
 
 interface LayoutProps {
   children: ReactNode;
@@ -66,6 +66,18 @@ export function Layout({ children }: LayoutProps) {
               >
                 <Calculator className="h-4 w-4 inline-block mr-2" />
                 Kalkylatorer
+              </Link>
+              <Link
+                to="/control-charts"
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                  location.pathname === "/control-charts"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <BarChart3 className="h-4 w-4 inline-block mr-2" />
+                Styrdiagram
               </Link>
             </nav>
 
