@@ -1,17 +1,52 @@
 import { Tool } from "@/data/dmaic-tools";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Calculator } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  CpCpkCalculator,
+  DPMOCalculator,
+  FMEACalculator,
+  TTestCalculator,
+  CorrelationCalculator,
+  DOECalculator,
+  ControlLimitsCalculator,
+} from "@/components/calculators";
 
 interface ToolCardProps {
   tool: Tool;
   phaseColor: string;
 }
 
+// Map tool IDs to their calculator components
+const calculatorMap: Record<string, React.ComponentType> = {
+  "capability-cp": CpCpkCalculator,
+  "capability-cpk": CpCpkCalculator,
+  "dpmo": DPMOCalculator,
+  "sigma-level": DPMOCalculator,
+  "fmea": FMEACalculator,
+  "t-test-1sample": TTestCalculator,
+  "correlation": CorrelationCalculator,
+  "regression": CorrelationCalculator,
+  "doe-basics": DOECalculator,
+  "full-factorial": DOECalculator,
+  "fractional-factorial": DOECalculator,
+  "control-chart-basics": ControlLimitsCalculator,
+  "spc-imr": ControlLimitsCalculator,
+  "spc-xbar-r": ControlLimitsCalculator,
+  "spc-xbar-s": ControlLimitsCalculator,
+  "spc-p-chart": ControlLimitsCalculator,
+  "spc-np-chart": ControlLimitsCalculator,
+  "spc-c-chart": ControlLimitsCalculator,
+  "spc-u-chart": ControlLimitsCalculator,
+};
+
 export function ToolCard({ tool, phaseColor }: ToolCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  const CalculatorComponent = calculatorMap[tool.id];
+  const hasCalculator = !!CalculatorComponent;
 
   return (
     <Card 
@@ -24,7 +59,12 @@ export function ToolCard({ tool, phaseColor }: ToolCardProps) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <CardTitle className="text-lg leading-tight">{tool.name}</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-lg leading-tight">{tool.name}</CardTitle>
+              {hasCalculator && (
+                <Calculator className="h-4 w-4 text-primary" />
+              )}
+            </div>
             <CardDescription className="mt-1">{tool.description}</CardDescription>
           </div>
           <div className="flex flex-col items-end gap-2">
@@ -42,6 +82,20 @@ export function ToolCard({ tool, phaseColor }: ToolCardProps) {
 
       {isExpanded && (
         <CardContent className="pt-0 space-y-4 animate-in slide-in-from-top-2 duration-200">
+          {/* Calculator */}
+          {CalculatorComponent && (
+            <div 
+              onClick={(e) => e.stopPropagation()} 
+              className="border border-primary/20 rounded-lg p-4 bg-primary/5"
+            >
+              <h4 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
+                <Calculator className="h-4 w-4" />
+                Interaktiv Kalkylator
+              </h4>
+              <CalculatorComponent />
+            </div>
+          )}
+
           {/* Usage */}
           <div>
             <h4 className="text-sm font-semibold text-foreground mb-1">Användning</h4>
