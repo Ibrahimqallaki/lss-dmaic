@@ -2,8 +2,17 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { phases } from "@/data/dmaic-tools";
 import { cn } from "@/lib/utils";
-import { Activity, Calculator, Home, BarChart3 } from "lucide-react";
+import { Activity, Calculator, Home, BarChart3, FolderOpen, LogIn, LogOut, User } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,6 +20,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
@@ -80,17 +90,80 @@ export function Layout({ children }: LayoutProps) {
                 <BarChart3 className="h-4 w-4 inline-block mr-2" />
                 Styrdiagram
               </Link>
+              <Link
+                to="/projects"
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                  location.pathname.startsWith("/project")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <FolderOpen className="h-4 w-4 inline-block mr-2" />
+                Projekt
+              </Link>
               <ThemeToggle />
+              
+              {/* User Menu */}
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="ml-2">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem disabled>
+                      <span className="text-xs text-muted-foreground">{user.email}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/projects">
+                        <FolderOpen className="h-4 w-4 mr-2" />
+                        Mina projekt
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logga ut
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link to="/auth">
+                  <Button variant="outline" size="sm" className="ml-2 gap-2">
+                    <LogIn className="h-4 w-4" />
+                    Logga in
+                  </Button>
+                </Link>
+              )}
             </nav>
 
             {/* Mobile menu button */}
-            <div className="md:hidden">
-              <Link
-                to="/"
-                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
-              >
-                <Home className="h-5 w-5" />
-              </Link>
+            <div className="md:hidden flex items-center gap-2">
+              <ThemeToggle />
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link to="/projects">Mina projekt</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={signOut}>Logga ut</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link to="/auth">
+                  <Button variant="ghost" size="icon">
+                    <LogIn className="h-5 w-5" />
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -99,6 +172,17 @@ export function Layout({ children }: LayoutProps) {
       {/* Mobile Phase Navigation */}
       <div className="md:hidden sticky top-16 z-40 glass border-b overflow-x-auto">
         <div className="flex items-center gap-1 px-4 py-2">
+          <Link
+            to="/projects"
+            className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+              location.pathname.startsWith("/project")
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground"
+            )}
+          >
+            📁 Projekt
+          </Link>
           {phases.map((phase) => (
             <Link
               key={phase.id}

@@ -14,7 +14,198 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      project_calculations: {
+        Row: {
+          created_at: string
+          id: string
+          inputs: Json
+          notes: string | null
+          phase: number
+          project_id: string
+          results: Json
+          tool_id: string
+          tool_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inputs?: Json
+          notes?: string | null
+          phase: number
+          project_id: string
+          results?: Json
+          tool_id: string
+          tool_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inputs?: Json
+          notes?: string | null
+          phase?: number
+          project_id?: string
+          results?: Json
+          tool_id?: string
+          tool_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_calculations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_control_charts: {
+        Row: {
+          chart_name: string
+          chart_type: string
+          control_limits: Json
+          created_at: string
+          data_points: Json
+          id: string
+          notes: string | null
+          project_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chart_name: string
+          chart_type: string
+          control_limits?: Json
+          created_at?: string
+          data_points?: Json
+          id?: string
+          notes?: string | null
+          project_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chart_name?: string
+          chart_type?: string
+          control_limits?: Json
+          created_at?: string
+          data_points?: Json
+          id?: string
+          notes?: string | null
+          project_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_control_charts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_notes: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          phase: number
+          project_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          phase: number
+          project_id: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          phase?: number
+          project_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_notes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string
+          current_phase: number | null
+          description: string | null
+          id: string
+          name: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_phase?: number | null
+          description?: string | null
+          id?: string
+          name: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_phase?: number | null
+          description?: string | null
+          id?: string
+          name?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
