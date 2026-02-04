@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save, Download } from "lucide-react";
+import { exportProjectToPDF } from "@/lib/pdf-export";
 import { phases } from "@/data/dmaic-tools";
 import { ToolCard } from "@/components/ToolCard";
 import { cn } from "@/lib/utils";
@@ -216,9 +217,20 @@ export default function ProjectDetail() {
                 <p className="text-white/80">{project.description}</p>
               )}
             </div>
-            <Badge variant="outline" className="bg-white/20 text-white border-white/40">
-              {project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad"}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/20 border-white/40 text-white hover:bg-white/30"
+                onClick={() => exportProjectToPDF(project, notes, calculations)}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Exportera PDF
+              </Button>
+              <Badge variant="outline" className="bg-white/20 text-white border-white/40">
+                {project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad"}
+              </Badge>
+            </div>
           </div>
 
           {/* Phase Progress */}
