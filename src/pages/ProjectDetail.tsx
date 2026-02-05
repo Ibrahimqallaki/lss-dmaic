@@ -16,6 +16,7 @@ import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save
 import { exportProjectToPDF } from "@/lib/pdf-export";
 import { phases } from "@/data/dmaic-tools";
 import { ToolCard } from "@/components/ToolCard";
+import { ProjectCollaborators } from "@/components/ProjectCollaborators";
 import { cn } from "@/lib/utils";
 
 interface Project {
@@ -24,6 +25,7 @@ interface Project {
   description: string | null;
   current_phase: number;
   status: string;
+  user_id: string;
 }
 
 interface ProjectNote {
@@ -217,7 +219,12 @@ export default function ProjectDetail() {
                 <p className="text-white/80">{project.description}</p>
               )}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <ProjectCollaborators
+                projectId={project.id}
+                isOwner={project.user_id === user?.id}
+                currentUserId={user?.id || ""}
+              />
               <Button
                 variant="outline"
                 size="sm"
