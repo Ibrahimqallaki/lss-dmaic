@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, FolderOpen, Trash2, Loader2 } from "lucide-react";
+import { Plus, FolderOpen, Trash2, Loader2, Users } from "lucide-react";
 import { phases } from "@/data/dmaic-tools";
 
 interface Project {
@@ -22,6 +22,7 @@ interface Project {
   status: string;
   created_at: string;
   updated_at: string;
+  user_id: string;
 }
 
 export default function Projects() {
@@ -134,7 +135,7 @@ export default function Projects() {
               <div>
                 <h1 className="text-3xl font-bold">Mina Projekt</h1>
                 <p className="text-muted-foreground mt-1">
-                  Hantera dina DMAIC-projekt och analyser
+                  Hantera dina DMAIC-projekt och delade projekt
                 </p>
               </div>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -202,6 +203,12 @@ export default function Projects() {
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-1">
                                 <CardTitle className="text-xl">{project.name}</CardTitle>
+                                {project.user_id !== user?.id && (
+                                  <Badge variant="outline" className="gap-1">
+                                    <Users className="h-3 w-3" />
+                                    Delad
+                                  </Badge>
+                                )}
                                 <Badge variant={project.status === "completed" ? "default" : "secondary"}>
                                   {project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad"}
                                 </Badge>
@@ -210,14 +217,16 @@ export default function Projects() {
                                 <CardDescription>{project.description}</CardDescription>
                               )}
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-muted-foreground hover:text-destructive"
-                              onClick={(e) => deleteProject(project.id, e)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            {project.user_id === user?.id && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-destructive"
+                                onClick={(e) => deleteProject(project.id, e)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </CardHeader>
                         <CardContent className="pt-0">
