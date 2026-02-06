@@ -54,14 +54,24 @@ export function ProjectCollaborators({
 
   const fetchCollaborators = async () => {
     setIsLoading(true);
+    // Use the secure view that hides emails from non-owners
+    // The view returns user_email as NULL for non-owners
     const { data, error } = await supabase
-      .from("project_collaborators")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("created_at", { ascending: true });
+      .rpc("get_project_collaborators_safe" as any, { _project_id: projectId });
 
     if (!error && data) {
-      setCollaborators(data);
+      setCollaborators(data as Collaborator[]);
+    } else {
+      // Fallback to direct query for owners (they need full access for management)
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("project_collaborators")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("created_at", { ascending: true });
+
+      if (!fallbackError && fallbackData) {
+        setCollaborators(fallbackData);
+      }
     }
     setIsLoading(false);
   };
