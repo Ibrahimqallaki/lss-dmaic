@@ -286,6 +286,18 @@ export type Database = {
       }
     }
     Functions: {
+      get_project_collaborators_safe: {
+        Args: { _project_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          invited_by: string
+          project_id: string
+          role: string
+          user_email: string
+          user_id: string
+        }[]
+      }
       has_project_access: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean

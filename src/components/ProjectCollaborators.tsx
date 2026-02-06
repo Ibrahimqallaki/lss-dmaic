@@ -24,7 +24,7 @@ import { Users, UserPlus, Trash2, Loader2, Crown } from "lucide-react";
 interface Collaborator {
   id: string;
   user_id: string;
-  user_email: string;
+  user_email: string | null;
   role: string;
   created_at: string;
 }
@@ -103,9 +103,9 @@ export function ProjectCollaborators({
     // For now, we'll create an invitation record. In a production app, you'd use an edge function
     // to look up the user by email via admin API
 
-    // Check if already invited
+    // Check if already invited (only check if we have emails visible - owners only)
     const existingCollaborator = collaborators.find(
-      (c) => c.user_email.toLowerCase() === email.trim().toLowerCase()
+      (c) => c.user_email && c.user_email.toLowerCase() === email.trim().toLowerCase()
     );
     if (existingCollaborator) {
       toast({ title: "Användaren är redan inbjuden", variant: "destructive" });
@@ -145,8 +145,8 @@ export function ProjectCollaborators({
     }
   };
 
-  const removeCollaborator = async (collaboratorId: string, collaboratorEmail: string) => {
-    if (!confirm(`Ta bort ${collaboratorEmail} från projektet?`)) return;
+  const removeCollaborator = async (collaboratorId: string, collaboratorEmail: string | null) => {
+    if (!confirm(`Ta bort ${collaboratorEmail || 'denna samarbetspartner'} från projektet?`)) return;
 
     const { error } = await supabase
       .from("project_collaborators")
@@ -281,7 +281,9 @@ export function ProjectCollaborators({
                     className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{collab.user_email}</p>
+                      <p className="text-sm font-medium truncate">
+                        {collab.user_email || "Samarbetspartner"}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Tillagd {new Date(collab.created_at).toLocaleDateString("sv-SE")}
                       </p>
