@@ -246,7 +246,44 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      project_collaborators_safe: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          invited_by: string | null
+          project_id: string | null
+          role: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          invited_by?: string | null
+          project_id?: string | null
+          role?: string | null
+          user_email?: never
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          invited_by?: string | null
+          project_id?: string | null
+          role?: string | null
+          user_email?: never
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_collaborators_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_project_access: {
