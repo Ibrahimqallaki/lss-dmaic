@@ -91,19 +91,7 @@ export function ProjectCollaborators({
 
     setIsInviting(true);
 
-    // Check if user exists
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("user_id, display_name")
-      .limit(100);
-
-    // We need to find user by checking auth - but we can't query auth.users directly
-    // Instead, we'll create the invitation with the email and let the user access when they sign up/in
-    
-    // For now, we'll create an invitation record. In a production app, you'd use an edge function
-    // to look up the user by email via admin API
-
-    // Check if already invited (only check if we have emails visible - owners only)
+    // Check if already invited locally (for immediate feedback)
     const existingCollaborator = collaborators.find(
       (c) => c.user_email && c.user_email.toLowerCase() === email.trim().toLowerCase()
     );
@@ -113,35 +101,53 @@ export function ProjectCollaborators({
       return;
     }
 
-    // For this implementation, we'll create a placeholder that will be matched when user logs in
-    // In production, you'd use Supabase Admin API via edge function to look up user by email
-    
-    const { data, error } = await supabase
-      .from("project_collaborators")
-      .insert({
-        project_id: projectId,
-        user_id: crypto.randomUUID(), // Placeholder - would be replaced by actual user lookup
-        user_email: email.trim().toLowerCase(),
-        role: role,
-        invited_by: currentUserId,
-      })
-      .select()
-      .single();
+    try {
+      // Use Edge Function to properly look up user and create collaborator record
+      const { data, error } = await supabase.functions.invoke("invite-collaborator", {
+        body: {
+          email: email.trim().toLowerCase(),
+          project_id: projectId,
+          role: role,
+        },
+      });
 
-    setIsInviting(false);
+      setIsInviting(false);
 
-    if (error) {
-      if (error.code === "23505") {
-        toast({ title: "Användaren är redan inbjuden", variant: "destructive" });
-      } else {
+      if (error) {
+        console.error("Edge function error:", error);
         toast({ title: "Kunde inte bjuda in användare", variant: "destructive" });
+        return;
       }
-    } else {
-      toast({ title: `${email} har bjudits in som ${role === "editor" ? "redigerare" : "läsare"}` });
-      setCollaborators([...collaborators, data]);
-      setEmail("");
-      setRole("editor");
-      setIsDialogOpen(false);
+
+      if (data?.error) {
+        // Handle specific error messages from the edge function
+        if (data.error.includes("not found")) {
+          toast({ 
+            title: "Användaren hittades inte", 
+            description: "Användaren måste registrera sig först innan de kan bjudas in.",
+            variant: "destructive" 
+          });
+        } else if (data.error.includes("already a collaborator")) {
+          toast({ title: "Användaren är redan inbjuden", variant: "destructive" });
+        } else if (data.error.includes("yourself")) {
+          toast({ title: "Du kan inte bjuda in dig själv", variant: "destructive" });
+        } else {
+          toast({ title: data.error, variant: "destructive" });
+        }
+        return;
+      }
+
+      if (data?.success && data?.collaborator) {
+        toast({ title: `${email} har bjudits in som ${role === "editor" ? "redigerare" : "läsare"}` });
+        setCollaborators([...collaborators, data.collaborator]);
+        setEmail("");
+        setRole("editor");
+        setIsDialogOpen(false);
+      }
+    } catch (err) {
+      console.error("Invitation error:", err);
+      setIsInviting(false);
+      toast({ title: "Ett oväntat fel inträffade", variant: "destructive" });
     }
   };
 
