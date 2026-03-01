@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, RotateCcw, ArrowRight } from "lucide-react";
+import { useCalculatorSave } from "@/hooks/useCalculatorSave";
+import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 
 interface SIPOCData {
   suppliers: string[];
@@ -12,14 +14,6 @@ interface SIPOCData {
   customers: string[];
 }
 
-const emptyData: SIPOCData = {
-  suppliers: [""],
-  inputs: [""],
-  process: [""],
-  outputs: [""],
-  customers: [""],
-};
-
 const columns: { key: keyof SIPOCData; label: string; placeholder: string; color: string }[] = [
   { key: "suppliers", label: "Suppliers", placeholder: "Leverantör...", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
   { key: "inputs", label: "Inputs", placeholder: "Insats/material...", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
@@ -28,9 +22,16 @@ const columns: { key: keyof SIPOCData; label: string; placeholder: string; color
   { key: "customers", label: "Customers", placeholder: "Kund/mottagare...", color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
 ];
 
-export function SIPOCDiagram() {
-  const [data, setData] = useState<SIPOCData>({ ...emptyData, suppliers: [""], inputs: [""], process: [""], outputs: [""], customers: [""] });
+interface SIPOCDiagramProps {
+  toolId?: string;
+  toolName?: string;
+  phase?: number;
+}
+
+export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }: SIPOCDiagramProps) {
+  const [data, setData] = useState<SIPOCData>({ suppliers: [""], inputs: [""], process: [""], outputs: [""], customers: [""] });
   const [processName, setProcessName] = useState("");
+  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
 
   const updateItem = (key: keyof SIPOCData, index: number, value: string) => {
     setData((prev) => ({
@@ -56,6 +57,21 @@ export function SIPOCDiagram() {
 
   const filledCounts = columns.map((col) => data[col.key].filter((v) => v.trim()).length);
   const totalFilled = filledCounts.reduce((a, b) => a + b, 0);
+  const hasResult = totalFilled >= 3;
+
+  const handleSave = () => {
+    const filledData: Record<string, string[]> = {};
+    for (const col of columns) {
+      filledData[col.key] = data[col.key].filter(v => v.trim());
+    }
+    saveCalculation({
+      toolId,
+      toolName,
+      phase,
+      inputs: { processName, data: filledData },
+      results: { totalItems: totalFilled, filledColumns: columns.filter(c => data[c.key].some(v => v.trim())).length },
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -115,6 +131,16 @@ export function SIPOCDiagram() {
           </div>
         </div>
       )}
+
+      {/* Save button */}
+      <CalculatorSaveButton
+        canSave={canSave}
+        isSaving={isSaving}
+        hasResult={hasResult}
+        notes={notes}
+        onNotesChange={setNotes}
+        onSave={handleSave}
+      />
 
       <div className="flex justify-end">
         <Button size="sm" variant="ghost" onClick={reset}>
