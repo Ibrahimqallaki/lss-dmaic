@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, RotateCcw, ArrowDown } from "lucide-react";
+import { useCalculatorSave } from "@/hooks/useCalculatorSave";
+import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 
 interface WhyChain {
   id: string;
@@ -13,11 +15,18 @@ interface WhyChain {
   countermeasure: string;
 }
 
-export function FiveWhysAnalysis() {
+interface FiveWhysAnalysisProps {
+  toolId?: string;
+  toolName?: string;
+  phase?: number;
+}
+
+export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", phase = 2 }: FiveWhysAnalysisProps) {
   const [chains, setChains] = useState<WhyChain[]>([
     { id: crypto.randomUUID(), problem: "", whys: [""], rootCause: "", countermeasure: "" },
   ]);
   const [activeChain, setActiveChain] = useState(0);
+  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
 
   const chain = chains[activeChain];
 
@@ -58,6 +67,17 @@ export function FiveWhysAnalysis() {
   };
 
   const filledWhys = chain.whys.filter((w) => w.trim()).length;
+  const hasResult = !!chain.rootCause.trim();
+
+  const handleSave = () => {
+    saveCalculation({
+      toolId,
+      toolName,
+      phase,
+      inputs: { chains: chains.map(c => ({ problem: c.problem, whys: c.whys })) },
+      results: { chains: chains.map(c => ({ rootCause: c.rootCause, countermeasure: c.countermeasure, whyCount: c.whys.filter(w => w.trim()).length })) },
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -163,6 +183,16 @@ export function FiveWhysAnalysis() {
           <p><span className="text-muted-foreground">Åtgärd:</span> {chain.countermeasure}</p>
         </div>
       )}
+
+      {/* Save button */}
+      <CalculatorSaveButton
+        canSave={canSave}
+        isSaving={isSaving}
+        hasResult={hasResult}
+        notes={notes}
+        onNotesChange={setNotes}
+        onSave={handleSave}
+      />
 
       {/* Actions */}
       <div className="flex gap-2 justify-end">

@@ -112,6 +112,7 @@ export default function PhasePage() {
                           key={tool.id}
                           tool={tool}
                           phaseColor={phase.color}
+                          phaseId={phase.id}
                         />
                       ))}
                   </div>

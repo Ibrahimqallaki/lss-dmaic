@@ -3,17 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, RotateCcw } from "lucide-react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Line,
-  ComposedChart,
-  ReferenceLine,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ComposedChart, ReferenceLine, Bar,
 } from "recharts";
+import { useCalculatorSave } from "@/hooks/useCalculatorSave";
+import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 
 interface ParetoItem {
   id: string;
@@ -21,12 +14,19 @@ interface ParetoItem {
   count: number;
 }
 
-export function ParetoAnalysis() {
+interface ParetoAnalysisProps {
+  toolId?: string;
+  toolName?: string;
+  phase?: number;
+}
+
+export function ParetoAnalysis({ toolId = "pareto", toolName = "Paretoanalys", phase = 2 }: ParetoAnalysisProps) {
   const [items, setItems] = useState<ParetoItem[]>([
     { id: crypto.randomUUID(), category: "", count: 0 },
     { id: crypto.randomUUID(), category: "", count: 0 },
     { id: crypto.randomUUID(), category: "", count: 0 },
   ]);
+  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
 
   const addItem = () => {
     setItems((prev) => [...prev, { id: crypto.randomUUID(), category: "", count: 0 }]);
@@ -73,6 +73,18 @@ export function ParetoAnalysis() {
       { id: crypto.randomUUID(), category: "", count: 0 },
       { id: crypto.randomUUID(), category: "", count: 0 },
     ]);
+  };
+
+  const hasResult = chartData.length > 0;
+
+  const handleSave = () => {
+    saveCalculation({
+      toolId,
+      toolName,
+      phase,
+      inputs: { items: items.filter(i => i.category.trim() && i.count > 0).map(i => ({ category: i.category, count: i.count })) },
+      results: { chartData, vitalFew: vitalFew.map(v => v.category), totalCategories: chartData.length },
+    });
   };
 
   return (
@@ -153,6 +165,16 @@ export function ParetoAnalysis() {
           )}
         </div>
       )}
+
+      {/* Save button */}
+      <CalculatorSaveButton
+        canSave={canSave}
+        isSaving={isSaving}
+        hasResult={hasResult}
+        notes={notes}
+        onNotesChange={setNotes}
+        onSave={handleSave}
+      />
 
       <div className="flex justify-end">
         <Button size="sm" variant="ghost" onClick={reset}>

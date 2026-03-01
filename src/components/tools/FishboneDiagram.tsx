@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, RotateCcw } from "lucide-react";
+import { useCalculatorSave } from "@/hooks/useCalculatorSave";
+import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 
 const DEFAULT_CATEGORIES = [
   { key: "manniska", label: "Människa", emoji: "👤" },
@@ -15,11 +17,18 @@ const DEFAULT_CATEGORIES = [
 
 type CausesMap = Record<string, string[]>;
 
-export function FishboneDiagram() {
+interface FishboneDiagramProps {
+  toolId?: string;
+  toolName?: string;
+  phase?: number;
+}
+
+export function FishboneDiagram({ toolId = "fishbone", toolName = "Fiskbensdiagram", phase = 2 }: FishboneDiagramProps) {
   const [effect, setEffect] = useState("");
   const [causes, setCauses] = useState<CausesMap>(
     Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.key, [""]]))
   );
+  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
 
   const updateCause = (category: string, index: number, value: string) => {
     setCauses((prev) => ({
@@ -50,8 +59,22 @@ export function FishboneDiagram() {
     .flat()
     .filter((c) => c.trim()).length;
 
-  const topCategories = DEFAULT_CATEGORIES.slice(0, 3);
-  const bottomCategories = DEFAULT_CATEGORIES.slice(3);
+  const hasResult = totalCauses > 0 && !!effect.trim();
+
+  const handleSave = () => {
+    const filledCauses: Record<string, string[]> = {};
+    for (const cat of DEFAULT_CATEGORIES) {
+      const filled = causes[cat.key].filter(c => c.trim());
+      if (filled.length > 0) filledCauses[cat.label] = filled;
+    }
+    saveCalculation({
+      toolId,
+      toolName,
+      phase,
+      inputs: { effect, causes: filledCauses },
+      results: { totalCauses, categoriesUsed: Object.keys(filledCauses).length },
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -164,6 +187,16 @@ export function FishboneDiagram() {
           ))}
         </div>
       )}
+
+      {/* Save button */}
+      <CalculatorSaveButton
+        canSave={canSave}
+        isSaving={isSaving}
+        hasResult={hasResult}
+        notes={notes}
+        onNotesChange={setNotes}
+        onSave={handleSave}
+      />
 
       <div className="flex justify-end">
         <Button size="sm" variant="ghost" onClick={reset}>

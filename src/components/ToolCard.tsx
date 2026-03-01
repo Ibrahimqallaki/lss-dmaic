@@ -23,10 +23,11 @@ import {
 interface ToolCardProps {
   tool: Tool;
   phaseColor: string;
+  phaseId?: number;
 }
 
 // Map tool IDs to their calculator components
-const calculatorMap: Record<string, React.ComponentType> = {
+const calculatorMap: Record<string, React.ComponentType<{ toolId?: string; toolName?: string; phase?: number }>> = {
   "capability-cp": CpCpkCalculator,
   "capability-cpk": CpCpkCalculator,
   "dpmo": DPMOCalculator,
@@ -53,7 +54,7 @@ const calculatorMap: Record<string, React.ComponentType> = {
   "fishbone": FishboneDiagram,
 };
 
-export function ToolCard({ tool, phaseColor }: ToolCardProps) {
+export function ToolCard({ tool, phaseColor, phaseId }: ToolCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   
   const CalculatorComponent = calculatorMap[tool.id];
@@ -103,7 +104,7 @@ export function ToolCard({ tool, phaseColor }: ToolCardProps) {
                 <Calculator className="h-4 w-4" />
                 Interaktiv Kalkylator
               </h4>
-              <CalculatorComponent />
+              <CalculatorComponent toolId={tool.id} toolName={tool.name} phase={phaseId} />
             </div>
           )}
 
