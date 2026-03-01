@@ -13,6 +13,12 @@ import {
   DOECalculator,
   ControlLimitsCalculator,
 } from "@/components/calculators";
+import {
+  FiveWhysAnalysis,
+  SIPOCDiagram,
+  ParetoAnalysis,
+  FishboneDiagram,
+} from "@/components/tools";
 
 interface ToolCardProps {
   tool: Tool;
@@ -40,6 +46,11 @@ const calculatorMap: Record<string, React.ComponentType> = {
   "spc-np-chart": ControlLimitsCalculator,
   "spc-c-chart": ControlLimitsCalculator,
   "spc-u-chart": ControlLimitsCalculator,
+  // Process tools
+  "5-whys": FiveWhysAnalysis,
+  "sipoc": SIPOCDiagram,
+  "pareto": ParetoAnalysis,
+  "fishbone": FishboneDiagram,
 };
 
 export function ToolCard({ tool, phaseColor }: ToolCardProps) {
