@@ -442,6 +442,7 @@ export default function ProjectDetail() {
                       key={tool.id}
                       tool={tool}
                       phaseColor={currentPhaseData.color}
+                      phaseId={activePhase}
                     />
                   ))}
                 </div>
