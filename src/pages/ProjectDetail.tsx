@@ -286,10 +286,14 @@ export default function ProjectDetail() {
             </div>
 
             <Tabs defaultValue="notes" className="space-y-6">
-              <TabsList>
+              <TabsList className="flex flex-wrap h-auto gap-1">
                 <TabsTrigger value="notes" className="gap-2">
                   <FileText className="h-4 w-4" />
                   Anteckningar ({phaseNotes.length})
+                </TabsTrigger>
+                <TabsTrigger value="tollgate" className="gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Tollgate
                 </TabsTrigger>
                 <TabsTrigger value="calculations" className="gap-2">
                   <Calculator className="h-4 w-4" />
@@ -299,6 +303,26 @@ export default function ProjectDetail() {
                   <BarChart3 className="h-4 w-4" />
                   Verktyg
                 </TabsTrigger>
+                {activePhase === 5 && (
+                  <TabsTrigger value="control-plan" className="gap-2">
+                    <Shield className="h-4 w-4" />
+                    Kontrollplan
+                  </TabsTrigger>
+                )}
+                <TabsTrigger value="raci" className="gap-2">
+                  <Users className="h-4 w-4" />
+                  RACI
+                </TabsTrigger>
+                <TabsTrigger value="sigma" className="gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Sigma
+                </TabsTrigger>
+                {activePhase === 3 && (
+                  <TabsTrigger value="ai-analysis" className="gap-2">
+                    <Brain className="h-4 w-4" />
+                    AI-analys
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="notes" className="space-y-4">
