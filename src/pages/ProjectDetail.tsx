@@ -17,6 +17,11 @@ import { exportProjectToPDF } from "@/lib/pdf-export";
 import { phases } from "@/data/dmaic-tools";
 import { ToolCard } from "@/components/ToolCard";
 import { ProjectCollaborators } from "@/components/ProjectCollaborators";
+import { TollgateChecklist } from "@/components/project/TollgateChecklist";
+import { ControlPlanEditor } from "@/components/project/ControlPlanEditor";
+import { RACIMatrix } from "@/components/project/RACIMatrix";
+import { SigmaTracker } from "@/components/project/SigmaTracker";
+import { AIRootCauseAnalysis } from "@/components/tools/AIRootCauseAnalysis";
 import { cn } from "@/lib/utils";
 
 interface Project {
