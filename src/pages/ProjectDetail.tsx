@@ -476,6 +476,39 @@ export default function ProjectDetail() {
                   ))}
                 </div>
               </TabsContent>
+
+              {/* Tollgate */}
+              <TabsContent value="tollgate" className="space-y-4">
+                <TollgateChecklist
+                  projectId={project.id}
+                  phase={activePhase}
+                  isEditor={project.user_id === user?.id}
+                />
+              </TabsContent>
+
+              {/* Control Plan */}
+              {activePhase === 5 && (
+                <TabsContent value="control-plan" className="space-y-4">
+                  <ControlPlanEditor projectId={project.id} />
+                </TabsContent>
+              )}
+
+              {/* RACI */}
+              <TabsContent value="raci" className="space-y-4">
+                <RACIMatrix projectId={project.id} />
+              </TabsContent>
+
+              {/* Sigma Tracker */}
+              <TabsContent value="sigma" className="space-y-4">
+                <SigmaTracker projectId={project.id} />
+              </TabsContent>
+
+              {/* AI Analysis */}
+              {activePhase === 3 && (
+                <TabsContent value="ai-analysis" className="space-y-4">
+                  <AIRootCauseAnalysis />
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         </div>
