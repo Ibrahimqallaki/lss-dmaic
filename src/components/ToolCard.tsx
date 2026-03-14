@@ -12,6 +12,11 @@ import {
   CorrelationCalculator,
   DOECalculator,
   ControlLimitsCalculator,
+  GageRRCalculator,
+  TwoSampleTTestCalculator,
+  ANOVACalculator,
+  ChiSquareCalculator,
+  NormalityTestCalculator,
 } from "@/components/calculators";
 import {
   FiveWhysAnalysis,
@@ -34,6 +39,10 @@ const calculatorMap: Record<string, React.ComponentType<{ toolId?: string; toolN
   "sigma-level": DPMOCalculator,
   "fmea": FMEACalculator,
   "t-test-1sample": TTestCalculator,
+  "t-test-2sample": TwoSampleTTestCalculator,
+  "anova": ANOVACalculator,
+  "chi-square": ChiSquareCalculator,
+  "normality-test": NormalityTestCalculator,
   "correlation": CorrelationCalculator,
   "regression": CorrelationCalculator,
   "doe-basics": DOECalculator,
@@ -47,6 +56,8 @@ const calculatorMap: Record<string, React.ComponentType<{ toolId?: string; toolN
   "spc-np-chart": ControlLimitsCalculator,
   "spc-c-chart": ControlLimitsCalculator,
   "spc-u-chart": ControlLimitsCalculator,
+  "gage-rr": GageRRCalculator,
+  "msa": GageRRCalculator,
   // Process tools
   "5-whys": FiveWhysAnalysis,
   "sipoc": SIPOCDiagram,

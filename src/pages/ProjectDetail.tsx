@@ -12,11 +12,16 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save, Download } from "lucide-react";
-import { exportProjectToPDF } from "@/lib/pdf-export";
+import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save, Download, CheckCircle2, Shield, Users, TrendingUp, Brain } from "lucide-react";
+import { exportProjectToPDF, exportA3Report } from "@/lib/pdf-export";
 import { phases } from "@/data/dmaic-tools";
 import { ToolCard } from "@/components/ToolCard";
 import { ProjectCollaborators } from "@/components/ProjectCollaborators";
+import { TollgateChecklist } from "@/components/project/TollgateChecklist";
+import { ControlPlanEditor } from "@/components/project/ControlPlanEditor";
+import { RACIMatrix } from "@/components/project/RACIMatrix";
+import { SigmaTracker } from "@/components/project/SigmaTracker";
+import { AIRootCauseAnalysis } from "@/components/tools/AIRootCauseAnalysis";
 import { cn } from "@/lib/utils";
 
 interface Project {
@@ -232,7 +237,16 @@ export default function ProjectDetail() {
                 onClick={() => exportProjectToPDF(project, notes, calculations)}
               >
                 <Download className="h-4 w-4 mr-2" />
-                Exportera PDF
+                PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/20 border-white/40 text-white hover:bg-white/30"
+                onClick={() => exportA3Report(project, notes, calculations)}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                A3 Rapport
               </Button>
               <Badge variant="outline" className="bg-white/20 text-white border-white/40">
                 {project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad"}
@@ -281,10 +295,14 @@ export default function ProjectDetail() {
             </div>
 
             <Tabs defaultValue="notes" className="space-y-6">
-              <TabsList>
+              <TabsList className="flex flex-wrap h-auto gap-1">
                 <TabsTrigger value="notes" className="gap-2">
                   <FileText className="h-4 w-4" />
                   Anteckningar ({phaseNotes.length})
+                </TabsTrigger>
+                <TabsTrigger value="tollgate" className="gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Tollgate
                 </TabsTrigger>
                 <TabsTrigger value="calculations" className="gap-2">
                   <Calculator className="h-4 w-4" />
@@ -294,6 +312,26 @@ export default function ProjectDetail() {
                   <BarChart3 className="h-4 w-4" />
                   Verktyg
                 </TabsTrigger>
+                {activePhase === 5 && (
+                  <TabsTrigger value="control-plan" className="gap-2">
+                    <Shield className="h-4 w-4" />
+                    Kontrollplan
+                  </TabsTrigger>
+                )}
+                <TabsTrigger value="raci" className="gap-2">
+                  <Users className="h-4 w-4" />
+                  RACI
+                </TabsTrigger>
+                <TabsTrigger value="sigma" className="gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Sigma
+                </TabsTrigger>
+                {activePhase === 3 && (
+                  <TabsTrigger value="ai-analysis" className="gap-2">
+                    <Brain className="h-4 w-4" />
+                    AI-analys
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="notes" className="space-y-4">
@@ -447,6 +485,39 @@ export default function ProjectDetail() {
                   ))}
                 </div>
               </TabsContent>
+
+              {/* Tollgate */}
+              <TabsContent value="tollgate" className="space-y-4">
+                <TollgateChecklist
+                  projectId={project.id}
+                  phase={activePhase}
+                  isEditor={project.user_id === user?.id}
+                />
+              </TabsContent>
+
+              {/* Control Plan */}
+              {activePhase === 5 && (
+                <TabsContent value="control-plan" className="space-y-4">
+                  <ControlPlanEditor projectId={project.id} />
+                </TabsContent>
+              )}
+
+              {/* RACI */}
+              <TabsContent value="raci" className="space-y-4">
+                <RACIMatrix projectId={project.id} />
+              </TabsContent>
+
+              {/* Sigma Tracker */}
+              <TabsContent value="sigma" className="space-y-4">
+                <SigmaTracker projectId={project.id} />
+              </TabsContent>
+
+              {/* AI Analysis */}
+              {activePhase === 3 && (
+                <TabsContent value="ai-analysis" className="space-y-4">
+                  <AIRootCauseAnalysis />
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         </div>

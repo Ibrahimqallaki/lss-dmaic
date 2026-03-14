@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      control_plans: {
+        Row: {
+          characteristic: string
+          created_at: string
+          frequency: string | null
+          id: string
+          measurement_method: string | null
+          process_step: string
+          project_id: string
+          reaction_plan: string | null
+          responsible: string | null
+          sample_size: string | null
+          sort_order: number
+          specification: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          characteristic: string
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          measurement_method?: string | null
+          process_step: string
+          project_id: string
+          reaction_plan?: string | null
+          responsible?: string | null
+          sample_size?: string | null
+          sort_order?: number
+          specification?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          characteristic?: string
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          measurement_method?: string | null
+          process_step?: string
+          project_id?: string
+          reaction_plan?: string | null
+          responsible?: string | null
+          sample_size?: string | null
+          sort_order?: number
+          specification?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "control_plans_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -243,6 +302,150 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      raci_matrix: {
+        Row: {
+          accountable: string | null
+          activity: string
+          consulted: string | null
+          created_at: string
+          id: string
+          informed: string | null
+          phase: number | null
+          project_id: string
+          responsible: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accountable?: string | null
+          activity: string
+          consulted?: string | null
+          created_at?: string
+          id?: string
+          informed?: string | null
+          phase?: number | null
+          project_id: string
+          responsible?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accountable?: string | null
+          activity?: string
+          consulted?: string | null
+          created_at?: string
+          id?: string
+          informed?: string | null
+          phase?: number | null
+          project_id?: string
+          responsible?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raci_matrix_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sigma_tracking: {
+        Row: {
+          created_at: string
+          dpmo: number | null
+          id: string
+          measurement_date: string
+          notes: string | null
+          phase: number
+          project_id: string
+          sigma_level: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dpmo?: number | null
+          id?: string
+          measurement_date?: string
+          notes?: string | null
+          phase: number
+          project_id: string
+          sigma_level: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dpmo?: number | null
+          id?: string
+          measurement_date?: string
+          notes?: string | null
+          phase?: number
+          project_id?: string
+          sigma_level?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sigma_tracking_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tollgate_items: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_completed: boolean
+          phase: number
+          project_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          phase: number
+          project_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          phase?: number
+          project_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tollgate_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
