@@ -237,7 +237,16 @@ export default function ProjectDetail() {
                 onClick={() => exportProjectToPDF(project, notes, calculations)}
               >
                 <Download className="h-4 w-4 mr-2" />
-                Exportera PDF
+                PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/20 border-white/40 text-white hover:bg-white/30"
+                onClick={() => exportA3Report(project, notes, calculations)}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                A3 Rapport
               </Button>
               <Badge variant="outline" className="bg-white/20 text-white border-white/40">
                 {project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad"}
