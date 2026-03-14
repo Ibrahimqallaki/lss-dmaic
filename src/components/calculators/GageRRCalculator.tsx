@@ -181,7 +181,7 @@ export function GageRRCalculator() {
       toolName: "Gage R&R",
       phase: 2,
       inputs: { operators: parseInt(operators), parts: parseInt(parts), trials: parseInt(trials) },
-      results: result,
+      results: { ...result } as Record<string, unknown>,
     });
   };
 
