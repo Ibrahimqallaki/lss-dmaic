@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save, Download, CheckCircle2, Shield, Users, TrendingUp, Brain } from "lucide-react";
-import { exportProjectToPDF } from "@/lib/pdf-export";
+import { exportProjectToPDF, exportA3Report } from "@/lib/pdf-export";
 import { phases } from "@/data/dmaic-tools";
 import { ToolCard } from "@/components/ToolCard";
 import { ProjectCollaborators } from "@/components/ProjectCollaborators";
