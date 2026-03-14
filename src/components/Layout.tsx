@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { phases } from "@/data/dmaic-tools";
 import { cn } from "@/lib/utils";
-import { Activity, Calculator, Home, BarChart3, FolderOpen, LogIn, LogOut, User } from "lucide-react";
+import { Activity, Calculator, Home, BarChart3, FolderOpen, LogIn, LogOut, User, LayoutDashboard } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
