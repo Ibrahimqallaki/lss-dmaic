@@ -90,6 +90,20 @@ export function Layout({ children }: LayoutProps) {
                 <BarChart3 className="h-4 w-4 inline-block mr-2" />
                 Styrdiagram
               </Link>
+              {user && (
+                <Link
+                  to="/dashboard"
+                  className={cn(
+                    "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                    location.pathname === "/dashboard"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  <LayoutDashboard className="h-4 w-4 inline-block mr-2" />
+                  Dashboard
+                </Link>
+              )}
               <Link
                 to="/projects"
                 className={cn(
