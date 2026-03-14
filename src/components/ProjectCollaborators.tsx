@@ -62,16 +62,8 @@ export function ProjectCollaborators({
     if (!error && data) {
       setCollaborators(data as Collaborator[]);
     } else {
-      // Fallback to direct query for owners (they need full access for management)
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from("project_collaborators")
-        .select("*")
-        .eq("project_id", projectId)
-        .order("created_at", { ascending: true });
-
-      if (!fallbackError && fallbackData) {
-        setCollaborators(fallbackData);
-      }
+      console.error("Failed to fetch collaborators:", error);
+      setCollaborators([]);
     }
     setIsLoading(false);
   };
