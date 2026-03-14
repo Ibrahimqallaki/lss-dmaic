@@ -7,3 +7,8 @@ export { DOECalculator } from "./DOECalculator";
 export { ControlLimitsCalculator } from "./ControlLimitsCalculator";
 export { CalculatorSaveButton } from "./CalculatorSaveButton";
 export { DataInput } from "./DataInput";
+export { GageRRCalculator } from "./GageRRCalculator";
+export { TwoSampleTTestCalculator } from "./TwoSampleTTestCalculator";
+export { ANOVACalculator } from "./ANOVACalculator";
+export { ChiSquareCalculator } from "./ChiSquareCalculator";
+export { NormalityTestCalculator } from "./NormalityTestCalculator";
