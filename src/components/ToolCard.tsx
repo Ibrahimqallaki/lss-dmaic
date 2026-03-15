@@ -119,6 +119,8 @@ const calculatorMap: Record<string, React.ComponentType<{ toolId?: string; toolN
   "lessons-learned": LessonsLearnedTool,
   "benefit-validation": BenefitValidationTool,
   "control-plan": SOPTool, // Control plan has dedicated editor in project tabs
+  "hypothesis-testing": TTestCalculator,
+  "audit-plan": HandoverChecklistTool,
 };
 
 export function ToolCard({ tool, phaseColor, phaseId }: ToolCardProps) {
