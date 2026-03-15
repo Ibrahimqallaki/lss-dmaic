@@ -23,6 +23,30 @@ import {
   SIPOCDiagram,
   ParetoAnalysis,
   FishboneDiagram,
+  ProjectCharterTool,
+  VOCTool,
+  CTQTreeTool,
+  StakeholderAnalysisTool,
+  KanoModelTool,
+  ProblemStatementTool,
+  ProcessMappingTool,
+  DataCollectionPlanTool,
+  MultiVariAnalysis,
+  PughMatrixTool,
+  PilotStudyTool,
+  ImplementationPlanTool,
+  FiveSAuditTool,
+  KaizenEventTool,
+  PokaYokeTool,
+  ResponseSurfaceTool,
+  CUSUMChart,
+  EWMAChart,
+  SOPTool,
+  TrainingPlanTool,
+  ResponsePlanTool,
+  HandoverChecklistTool,
+  LessonsLearnedTool,
+  BenefitValidationTool,
 } from "@/components/tools";
 
 interface ToolCardProps {
@@ -33,6 +57,7 @@ interface ToolCardProps {
 
 // Map tool IDs to their calculator components
 const calculatorMap: Record<string, React.ComponentType<{ toolId?: string; toolName?: string; phase?: number }>> = {
+  // Calculators
   "capability-cp": CpCpkCalculator,
   "capability-cpk": CpCpkCalculator,
   "dpmo": DPMOCalculator,
@@ -63,6 +88,37 @@ const calculatorMap: Record<string, React.ComponentType<{ toolId?: string; toolN
   "sipoc": SIPOCDiagram,
   "pareto": ParetoAnalysis,
   "fishbone": FishboneDiagram,
+  // Define phase
+  "project-charter": ProjectCharterTool,
+  "voc": VOCTool,
+  "ctq": CTQTreeTool,
+  "stakeholder-analysis": StakeholderAnalysisTool,
+  "kano-model": KanoModelTool,
+  "problem-statement": ProblemStatementTool,
+  // Measure phase
+  "process-mapping": ProcessMappingTool,
+  "data-collection-plan": DataCollectionPlanTool,
+  // Analyze phase
+  "multi-vari": MultiVariAnalysis,
+  // Improve phase
+  "pugh-matrix": PughMatrixTool,
+  "solution-selection": PughMatrixTool,
+  "pilot-study": PilotStudyTool,
+  "implementation-plan": ImplementationPlanTool,
+  "5s": FiveSAuditTool,
+  "kaizen": KaizenEventTool,
+  "mistake-proofing": PokaYokeTool,
+  "response-surface": ResponseSurfaceTool,
+  // Control phase
+  "cusum": CUSUMChart,
+  "ewma": EWMAChart,
+  "sop": SOPTool,
+  "training-plan": TrainingPlanTool,
+  "response-plan": ResponsePlanTool,
+  "handover-checklist": HandoverChecklistTool,
+  "lessons-learned": LessonsLearnedTool,
+  "benefit-validation": BenefitValidationTool,
+  "control-plan": SOPTool, // Control plan has dedicated editor in project tabs
 };
 
 export function ToolCard({ tool, phaseColor, phaseId }: ToolCardProps) {
@@ -113,7 +169,7 @@ export function ToolCard({ tool, phaseColor, phaseId }: ToolCardProps) {
             >
               <h4 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
                 <Calculator className="h-4 w-4" />
-                Interaktiv Kalkylator
+                Interaktivt Verktyg
               </h4>
               <CalculatorComponent toolId={tool.id} toolName={tool.name} phase={phaseId} />
             </div>

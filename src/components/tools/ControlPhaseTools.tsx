@@ -23,7 +23,7 @@ export function SOPTool({ toolId = "sop", toolName = "SOP", phase = 5 }: Props) 
     setForm({ step: "", detail: "", caution: "" });
   };
 
-  const hasResult = meta.title.trim() || steps.length > 0;
+  const hasResult = !!(meta.title.trim() || steps.length > 0);
 
   return (
     <div className="space-y-3">
