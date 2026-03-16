@@ -33,7 +33,7 @@ export function ProjectCharterTool({ toolId = "project-charter", toolName = "Pro
         <Label className="text-xs font-medium">Affärsnytta (Business Case)</Label>
         <Textarea value={data.businessCase} onChange={e => update("businessCase", e.target.value)} placeholder="Varför är detta viktigt? Kostnader, kundpåverkan..." className="text-sm h-16 resize-none" />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label className="text-xs font-medium">Mål (SMART)</Label>
           <Textarea value={data.goal} onChange={e => update("goal", e.target.value)} placeholder="Specifikt, mätbart mål..." className="text-sm h-16 resize-none" />
@@ -43,7 +43,7 @@ export function ProjectCharterTool({ toolId = "project-charter", toolName = "Pro
           <Textarea value={data.scope} onChange={e => update("scope", e.target.value)} placeholder="In scope / Out of scope..." className="text-sm h-16 resize-none" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label className="text-xs font-medium">Projektteam</Label>
           <Textarea value={data.team} onChange={e => update("team", e.target.value)} placeholder="Champion, Black Belt, Green Belts..." className="text-sm h-16 resize-none" />

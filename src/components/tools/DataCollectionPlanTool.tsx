@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
@@ -26,7 +27,7 @@ export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolNa
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Vad mäts?</Label>
           <Input value={form.measure} onChange={e => setForm({ ...form, measure: e.target.value })} placeholder="T.ex. Cykeltid" className="text-sm" />
@@ -43,7 +44,7 @@ export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolNa
           </Select>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Operationell definition</Label>
           <Input value={form.opDef} onChange={e => setForm({ ...form, opDef: e.target.value })} placeholder="Exakt hur mäts det?" className="text-sm" />
@@ -53,7 +54,7 @@ export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolNa
           <Input value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} placeholder="System, manuell mätning..." className="text-sm" />
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Stickprovsstorlek</Label>
           <Input value={form.sampleSize} onChange={e => setForm({ ...form, sampleSize: e.target.value })} placeholder="30" className="text-sm" />
@@ -70,35 +71,25 @@ export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolNa
       <Button size="sm" onClick={addItem} disabled={!form.measure.trim()} className="gap-1"><Plus className="h-3 w-3" /> Lägg till</Button>
 
       {hasResult && (
-        <div className="border rounded-lg overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="p-2 text-left">Mått</th>
-                <th className="p-2 text-left">Typ</th>
-                <th className="p-2 text-left">Definition</th>
-                <th className="p-2 text-left">Källa</th>
-                <th className="p-2">n</th>
-                <th className="p-2">Freq</th>
-                <th className="p-2">Vem</th>
-                <th className="p-2 w-8"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(item => (
-                <tr key={item.id} className="border-t">
-                  <td className="p-2 font-medium">{item.measure}</td>
-                  <td className="p-2">{item.dataType}</td>
-                  <td className="p-2">{item.opDef || "–"}</td>
-                  <td className="p-2">{item.source || "–"}</td>
-                  <td className="p-2 text-center">{item.sampleSize || "–"}</td>
-                  <td className="p-2 text-center">{item.frequency || "–"}</td>
-                  <td className="p-2 text-center">{item.who || "–"}</td>
-                  <td className="p-2"><Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setItems(items.filter(x => x.id !== item.id))}><Trash2 className="h-3 w-3" /></Button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-1">
+          {items.map(item => (
+            <div key={item.id} className="p-2 border rounded text-xs space-y-1">
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-medium">{item.measure}</span>
+                <div className="flex gap-1 shrink-0">
+                  <Badge variant="secondary" className="text-[10px]">{item.dataType}</Badge>
+                  <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setItems(items.filter(x => x.id !== item.id))}><Trash2 className="h-3 w-3" /></Button>
+                </div>
+              </div>
+              {item.opDef && <div className="text-muted-foreground">Def: {item.opDef}</div>}
+              <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-muted-foreground">
+                {item.source && <span>Källa: {item.source}</span>}
+                {item.sampleSize && <span>n={item.sampleSize}</span>}
+                {item.frequency && <span>{item.frequency}</span>}
+                {item.who && <span>→ {item.who}</span>}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

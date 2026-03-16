@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, ArrowDown, MoveUp, MoveDown } from "lucide-react";
+import { Plus, Trash2, MoveUp, MoveDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
@@ -41,7 +41,7 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Stegnamn</Label>
           <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="T.ex. Montering" className="text-sm" />
@@ -54,7 +54,7 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
           </Select>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Tid (min)</Label>
           <Input type="number" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} placeholder="5" className="text-sm" />
@@ -63,7 +63,7 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
           <Label className="text-xs">Ansvarig</Label>
           <Input value={form.responsible} onChange={e => setForm({ ...form, responsible: e.target.value })} placeholder="Operatör" className="text-sm" />
         </div>
-        <div className="flex items-end">
+        <div className="flex items-end col-span-2 sm:col-span-1">
           <label className="flex items-center gap-1 text-xs cursor-pointer">
             <input type="checkbox" checked={form.valueAdd} onChange={e => setForm({ ...form, valueAdd: e.target.checked })} className="rounded" />
             Värdeskapande
@@ -76,12 +76,12 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
         <>
           <div className="space-y-1">
             {steps.map((step, idx) => (
-              <div key={step.id} className="flex items-center gap-1 text-xs p-2 border rounded">
-                <span className="w-5 text-center text-muted-foreground">{idx + 1}</span>
+              <div key={step.id} className="flex flex-wrap items-center gap-1 text-xs p-2 border rounded">
+                <span className="w-4 text-center text-muted-foreground shrink-0">{idx + 1}</span>
                 <Badge variant={step.valueAdd ? "default" : "secondary"} className="text-[10px] shrink-0">{typeLabels[step.type]}</Badge>
-                <span className="font-medium flex-1">{step.name}</span>
-                {step.time > 0 && <span className="text-muted-foreground">{step.time}m</span>}
-                <div className="flex gap-0.5">
+                <span className="font-medium flex-1 min-w-0 truncate">{step.name}</span>
+                {step.time > 0 && <span className="text-muted-foreground shrink-0">{step.time}m</span>}
+                <div className="flex gap-0.5 shrink-0">
                   <Button variant="ghost" size="icon" className="h-5 w-5" disabled={idx === 0} onClick={() => moveStep(idx, -1)}><MoveUp className="h-3 w-3" /></Button>
                   <Button variant="ghost" size="icon" className="h-5 w-5" disabled={idx === steps.length - 1} onClick={() => moveStep(idx, 1)}><MoveDown className="h-3 w-3" /></Button>
                   <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setSteps(steps.filter(s => s.id !== step.id))}><Trash2 className="h-3 w-3" /></Button>

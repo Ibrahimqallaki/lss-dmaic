@@ -47,7 +47,7 @@ export function CUSUMChart({ toolId = "cusum", toolName = "CUSUM Chart", phase =
         <Label className="text-xs">Data (komma- eller mellanslagsseparerad)</Label>
         <textarea value={rawData} onChange={e => setRawData(e.target.value)} placeholder="10.2, 10.5, 10.1, 10.8, 11.2, 10.9..." className="w-full text-sm p-2 border rounded-md h-16 resize-none bg-background" />
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Målvärde (μ₀)</Label>
           <Input value={target} onChange={e => setTarget(e.target.value)} placeholder="Auto" className="text-sm" type="number" />
@@ -65,23 +65,18 @@ export function CUSUMChart({ toolId = "cusum", toolName = "CUSUM Chart", phase =
 
       {result && (
         <div className="space-y-2">
-          {/* Visual chart */}
           <div className="border rounded-lg p-3 bg-muted/20 h-32 relative">
             <div className="absolute left-8 right-2 top-2 bottom-2">
-              {/* H lines */}
               <div className="absolute left-0 right-0 border-t border-dashed border-destructive/50" style={{ top: `${50 - (parseFloat(h) * result.stdDev / maxVal) * 45}%` }}>
                 <span className="absolute -left-7 -top-2 text-[8px] text-destructive">+H</span>
               </div>
               <div className="absolute left-0 right-0 border-t border-dashed border-destructive/50" style={{ top: `${50 + (parseFloat(h) * result.stdDev / maxVal) * 45}%` }}>
                 <span className="absolute -left-7 -top-2 text-[8px] text-destructive">-H</span>
               </div>
-              {/* Zero line */}
               <div className="absolute left-0 right-0 top-1/2 border-t border-muted-foreground/30" />
-              {/* CUSUM+ points */}
               {result.cusumPos.map((v, i) => (
                 <div key={`p${i}`} className={`absolute w-1.5 h-1.5 rounded-full ${result.signals.includes(i + 1) ? "bg-destructive" : "bg-primary"}`} style={{ left: `${(i / (result.cusumPos.length - 1)) * 100}%`, top: `${50 - (v / maxVal) * 45}%` }} />
               ))}
-              {/* CUSUM- points */}
               {result.cusumNeg.map((v, i) => (
                 <div key={`n${i}`} className={`absolute w-1.5 h-1.5 rounded-full ${result.signals.includes(i + 1) ? "bg-destructive" : "bg-blue-500"}`} style={{ left: `${(i / (result.cusumNeg.length - 1)) * 100}%`, top: `${50 - (v / maxVal) * 45}%` }} />
               ))}

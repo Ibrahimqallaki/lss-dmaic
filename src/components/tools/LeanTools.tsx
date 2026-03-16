@@ -36,13 +36,13 @@ export function FiveSAuditTool({ toolId = "5s", toolName = "5S", phase = 4 }: Pr
   return (
     <div className="space-y-3">
       {categories.map(cat => (
-        <div key={cat.key} className="space-y-1">
+        <div key={cat.key} className="space-y-1.5">
           <Label className="text-xs font-medium">{cat.label} — snitt: {catAvg(cat.key).toFixed(1)}/5</Label>
           {cat.items.map((item, idx) => (
             <div key={idx} className="flex items-center gap-2 text-xs">
-              <span className="flex-1">{item}</span>
-              <span className="w-6 text-center">{scores[cat.key][idx]}</span>
-              <Slider value={[scores[cat.key][idx]]} onValueChange={v => setScore(cat.key, idx, v)} min={1} max={5} step={1} className="w-24" />
+              <span className="flex-1 min-w-0">{item}</span>
+              <span className="w-5 text-center shrink-0">{scores[cat.key][idx]}</span>
+              <Slider value={[scores[cat.key][idx]]} onValueChange={v => setScore(cat.key, idx, v)} min={1} max={5} step={1} className="w-20 sm:w-24 shrink-0" />
             </div>
           ))}
         </div>
@@ -105,7 +105,7 @@ export function PokaYokeTool({ toolId = "mistake-proofing", toolName = "Poka-Yok
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Potentiellt fel</Label>
           <Input value={form.error} onChange={e => setForm({ ...form, error: e.target.value })} placeholder="Felmontering av komponent" className="text-sm" />
@@ -115,7 +115,7 @@ export function PokaYokeTool({ toolId = "mistake-proofing", toolName = "Poka-Yok
           <Input value={form.cause} onChange={e => setForm({ ...form, cause: e.target.value })} placeholder="Symmetrisk design" className="text-sm" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Poka-Yoke-lösning</Label>
           <Input value={form.solution} onChange={e => setForm({ ...form, solution: e.target.value })} placeholder="Asymmetrisk utformning" className="text-sm" />
@@ -133,9 +133,9 @@ export function PokaYokeTool({ toolId = "mistake-proofing", toolName = "Poka-Yok
         <div className="space-y-1">
           {items.map(item => (
             <div key={item.id} className="p-2 border rounded text-xs space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">❌ {item.error}</span>
-                <div className="flex gap-1">
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-medium break-words min-w-0">❌ {item.error}</span>
+                <div className="flex gap-1 shrink-0">
                   <Badge variant={item.level === "prevention" ? "default" : "secondary"} className="text-[10px]">{levelLabels[item.level]}</Badge>
                   <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setItems(items.filter(x => x.id !== item.id))}><Trash2 className="h-3 w-3" /></Button>
                 </div>
