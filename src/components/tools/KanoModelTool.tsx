@@ -50,7 +50,7 @@ export function KanoModelTool({ toolId = "kano-model", toolName = "Kano-modell",
         <Label className="text-xs">Funktion/Egenskap</Label>
         <Input value={feature} onChange={e => setFeature(e.target.value)} placeholder="T.ex. Leveransavisering via SMS" className="text-sm" />
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Funktionell (om det finns)</Label>
           <Select value={functional} onValueChange={setFunctional}>
@@ -78,9 +78,9 @@ export function KanoModelTool({ toolId = "kano-model", toolName = "Kano-modell",
               <div key={cat} className="text-xs">
                 <Badge variant={categoryColors[cat]} className="text-[10px] mb-1">{categoryLabels[cat]} ({catItems.length})</Badge>
                 {catItems.map(item => (
-                  <div key={item.id} className="flex items-center justify-between p-1.5 border rounded ml-2 mb-1">
-                    <span>{item.feature}</span>
-                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setItems(items.filter(x => x.id !== item.id))}><Trash2 className="h-3 w-3" /></Button>
+                  <div key={item.id} className="flex items-center justify-between gap-2 p-1.5 border rounded ml-2 mb-1">
+                    <span className="min-w-0 truncate">{item.feature}</span>
+                    <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setItems(items.filter(x => x.id !== item.id))}><Trash2 className="h-3 w-3" /></Button>
                   </div>
                 ))}
               </div>

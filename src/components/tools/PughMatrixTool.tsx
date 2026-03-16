@@ -40,45 +40,54 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label className="text-xs font-medium">Kriterier</Label>
           <div className="flex gap-1">
-            <Input value={criterionName} onChange={e => setCriterionName(e.target.value)} placeholder="Kriterium" className="text-sm" />
-            <Input type="number" value={criterionWeight} onChange={e => setCriterionWeight(e.target.value)} placeholder="Vikt" className="text-sm w-16" />
-            <Button size="sm" onClick={addCriterion} disabled={!criterionName.trim()}><Plus className="h-3 w-3" /></Button>
+            <Input value={criterionName} onChange={e => setCriterionName(e.target.value)} placeholder="Kriterium" className="text-sm flex-1 min-w-0" />
+            <Input type="number" value={criterionWeight} onChange={e => setCriterionWeight(e.target.value)} placeholder="Vikt" className="text-sm w-14" />
+            <Button size="sm" onClick={addCriterion} disabled={!criterionName.trim()} className="shrink-0"><Plus className="h-3 w-3" /></Button>
           </div>
         </div>
         <div className="space-y-2">
           <Label className="text-xs font-medium">Alternativ</Label>
           <div className="flex gap-1">
-            <Input value={altName} onChange={e => setAltName(e.target.value)} placeholder="Lösning A" className="text-sm" />
-            <Button size="sm" onClick={addAlternative} disabled={!altName.trim()}><Plus className="h-3 w-3" /></Button>
+            <Input value={altName} onChange={e => setAltName(e.target.value)} placeholder="Lösning A" className="text-sm flex-1 min-w-0" />
+            <Button size="sm" onClick={addAlternative} disabled={!altName.trim()} className="shrink-0"><Plus className="h-3 w-3" /></Button>
           </div>
         </div>
       </div>
 
       {hasResult && (
         <>
-          <div className="border rounded-lg overflow-x-auto">
-            <table className="w-full text-xs">
+          <div className="border rounded-lg overflow-x-auto -mx-1 px-1">
+            <table className="w-full text-xs min-w-[360px]">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="p-2 text-left">Kriterium</th>
-                  <th className="p-2 text-center w-12">Vikt</th>
-                  {alternatives.map(alt => <th key={alt} className="p-2 text-center">{alt}<Button variant="ghost" size="icon" className="h-4 w-4 ml-1" onClick={() => setAlternatives(alternatives.filter(a => a !== alt))}><Trash2 className="h-2.5 w-2.5" /></Button></th>)}
+                  <th className="p-1.5 text-left">Kriterium</th>
+                  <th className="p-1.5 text-center w-10">Vikt</th>
+                  {alternatives.map(alt => (
+                    <th key={alt} className="p-1.5 text-center">
+                      <div className="flex items-center justify-center gap-0.5">
+                        <span className="truncate max-w-[60px]">{alt}</span>
+                        <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0" onClick={() => setAlternatives(alternatives.filter(a => a !== alt))}><Trash2 className="h-2.5 w-2.5" /></Button>
+                      </div>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {criteria.map(c => (
                   <tr key={c.id} className="border-t">
-                    <td className="p-2 flex items-center gap-1">
-                      {c.name}
-                      <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => setCriteria(criteria.filter(x => x.id !== c.id))}><Trash2 className="h-2.5 w-2.5" /></Button>
+                    <td className="p-1.5">
+                      <div className="flex items-center gap-0.5">
+                        <span className="truncate">{c.name}</span>
+                        <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0" onClick={() => setCriteria(criteria.filter(x => x.id !== c.id))}><Trash2 className="h-2.5 w-2.5" /></Button>
+                      </div>
                     </td>
-                    <td className="p-2 text-center text-muted-foreground">{c.weight}</td>
+                    <td className="p-1.5 text-center text-muted-foreground">{c.weight}</td>
                     {alternatives.map(alt => (
-                      <td key={alt} className="p-2 text-center">
+                      <td key={alt} className="p-1.5 text-center">
                         <div className="flex justify-center gap-0.5">
                           {[-1, 0, 1].map(s => (
                             <button key={s} onClick={() => setScore(c.id, alt, s)} className={`w-6 h-6 rounded text-[10px] border transition-colors ${(scores[c.id]?.[alt] ?? 0) === s ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
@@ -91,10 +100,10 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
                   </tr>
                 ))}
                 <tr className="border-t bg-muted/30 font-medium">
-                  <td className="p-2">Totalpoäng</td>
-                  <td className="p-2"></td>
+                  <td className="p-1.5">Totalpoäng</td>
+                  <td className="p-1.5"></td>
                   {alternatives.map(alt => (
-                    <td key={alt} className={`p-2 text-center text-sm ${alt === winner ? "text-primary font-bold" : ""}`}>
+                    <td key={alt} className={`p-1.5 text-center text-sm ${alt === winner ? "text-primary font-bold" : ""}`}>
                       {getTotal(alt).toFixed(1)}
                       {alt === winner && " 🏆"}
                     </td>

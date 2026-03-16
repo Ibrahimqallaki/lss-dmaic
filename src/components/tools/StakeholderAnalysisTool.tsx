@@ -48,7 +48,7 @@ export function StakeholderAnalysisTool({ toolId = "stakeholder-analysis", toolN
         <Label className="text-xs">Intressentens namn</Label>
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="T.ex. Produktionschef" className="text-sm" />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1">
           <Label className="text-xs">Inflytande: {power[0]}/10</Label>
           <Slider value={power} onValueChange={setPower} min={1} max={10} step={1} />
@@ -63,7 +63,6 @@ export function StakeholderAnalysisTool({ toolId = "stakeholder-analysis", toolN
 
       {hasResult && (
         <>
-          {/* Power/Interest Grid */}
           <div className="relative border rounded-lg p-4 h-48 bg-muted/20">
             <div className="absolute left-1/2 top-0 bottom-0 border-l border-dashed border-muted-foreground/30" />
             <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-muted-foreground/30" />
@@ -79,13 +78,11 @@ export function StakeholderAnalysisTool({ toolId = "stakeholder-analysis", toolN
           </div>
           <div className="space-y-1">
             {stakeholders.map(s => (
-              <div key={s.id} className="flex items-center justify-between text-xs p-1.5 border rounded">
-                <span className="font-medium">{s.name}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">P:{s.power} I:{s.interest}</span>
-                  <Badge variant={strategyColor(s.strategy)} className="text-[10px]">{s.strategy}</Badge>
-                  <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setStakeholders(stakeholders.filter(x => x.id !== s.id))}><Trash2 className="h-3 w-3" /></Button>
-                </div>
+              <div key={s.id} className="flex flex-wrap items-center gap-1.5 text-xs p-1.5 border rounded">
+                <span className="font-medium flex-1 min-w-0 truncate">{s.name}</span>
+                <span className="text-muted-foreground shrink-0">P:{s.power} I:{s.interest}</span>
+                <Badge variant={strategyColor(s.strategy)} className="text-[10px] shrink-0">{s.strategy}</Badge>
+                <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setStakeholders(stakeholders.filter(x => x.id !== s.id))}><Trash2 className="h-3 w-3" /></Button>
               </div>
             ))}
           </div>

@@ -27,17 +27,17 @@ export function SOPTool({ toolId = "sop", toolName = "SOP", phase = 5 }: Props) 
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">SOP-titel</Label><Input value={meta.title} onChange={e => setMeta({ ...meta, title: e.target.value })} placeholder="T.ex. Monteringsinstruktion" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Ansvarig</Label><Input value={meta.responsible} onChange={e => setMeta({ ...meta, responsible: e.target.value })} className="text-sm" placeholder="Processägare" /></div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Syfte</Label><Textarea value={meta.purpose} onChange={e => setMeta({ ...meta, purpose: e.target.value })} className="text-sm h-12 resize-none" placeholder="Varför finns denna SOP?" /></div>
         <div className="space-y-1"><Label className="text-xs">Omfattning</Label><Textarea value={meta.scope} onChange={e => setMeta({ ...meta, scope: e.target.value })} className="text-sm h-12 resize-none" placeholder="Vilka processer/roller?" /></div>
       </div>
       <div className="border-t pt-2 space-y-2">
         <Label className="text-xs font-medium">Processteg</Label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <Input value={form.step} onChange={e => setForm({ ...form, step: e.target.value })} placeholder="Steg" className="text-sm" />
           <Input value={form.detail} onChange={e => setForm({ ...form, detail: e.target.value })} placeholder="Detaljer" className="text-sm" />
           <Input value={form.caution} onChange={e => setForm({ ...form, caution: e.target.value })} placeholder="Varning/OBS" className="text-sm" />
@@ -49,12 +49,12 @@ export function SOPTool({ toolId = "sop", toolName = "SOP", phase = 5 }: Props) 
           {steps.map((s, i) => (
             <div key={s.id} className="flex items-start gap-2 text-xs p-2 border rounded">
               <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 text-[10px]">{i + 1}</span>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="font-medium">{s.step}</div>
                 {s.detail && <div className="text-muted-foreground">{s.detail}</div>}
                 {s.caution && <div className="text-destructive">⚠️ {s.caution}</div>}
               </div>
-              <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setSteps(steps.filter(x => x.id !== s.id))}><Trash2 className="h-3 w-3" /></Button>
+              <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setSteps(steps.filter(x => x.id !== s.id))}><Trash2 className="h-3 w-3" /></Button>
             </div>
           ))}
         </div>
@@ -81,11 +81,11 @@ export function TrainingPlanTool({ toolId = "training-plan", toolName = "Utbildn
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Utbildningsämne</Label><Input value={form.topic} onChange={e => setForm({ ...form, topic: e.target.value })} placeholder="Ny SOP för montering" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Målgrupp</Label><Input value={form.audience} onChange={e => setForm({ ...form, audience: e.target.value })} placeholder="Operatörer skift A" className="text-sm" /></div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Metod</Label><Input value={form.method} onChange={e => setForm({ ...form, method: e.target.value })} placeholder="Workshop, e-learning..." className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Datum</Label><Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="text-sm" /></div>
       </div>
@@ -95,12 +95,14 @@ export function TrainingPlanTool({ toolId = "training-plan", toolName = "Utbildn
         <>
           <div className="space-y-1">
             {items.map(i => (
-              <div key={i.id} className="flex items-center gap-2 text-xs p-2 border rounded">
-                <button onClick={() => toggleComplete(i.id)}>{i.completed ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Circle className="h-4 w-4 text-muted-foreground" />}</button>
-                <span className={`flex-1 font-medium ${i.completed ? "line-through text-muted-foreground" : ""}`}>{i.topic}</span>
-                <span className="text-muted-foreground">{i.audience}</span>
-                {i.date && <span className="text-muted-foreground">{i.date}</span>}
-                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setItems(items.filter(x => x.id !== i.id))}><Trash2 className="h-3 w-3" /></Button>
+              <div key={i.id} className="flex flex-wrap items-center gap-1.5 text-xs p-2 border rounded">
+                <button onClick={() => toggleComplete(i.id)} className="shrink-0">{i.completed ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Circle className="h-4 w-4 text-muted-foreground" />}</button>
+                <span className={`flex-1 min-w-0 font-medium ${i.completed ? "line-through text-muted-foreground" : ""}`}>{i.topic}</span>
+                <div className="flex items-center gap-1.5 w-full sm:w-auto pl-6 sm:pl-0">
+                  {i.audience && <span className="text-muted-foreground truncate">{i.audience}</span>}
+                  {i.date && <span className="text-muted-foreground shrink-0">{i.date}</span>}
+                  <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 ml-auto" onClick={() => setItems(items.filter(x => x.id !== i.id))}><Trash2 className="h-3 w-3" /></Button>
+                </div>
               </div>
             ))}
           </div>
@@ -127,11 +129,11 @@ export function ResponsePlanTool({ toolId = "response-plan", toolName = "Reaktio
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Trigger (när?)</Label><Input value={form.trigger} onChange={e => setForm({ ...form, trigger: e.target.value })} placeholder="Punkt utanför kontrollgräns" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Åtgärd</Label><Input value={form.action} onChange={e => setForm({ ...form, action: e.target.value })} placeholder="Stoppa produktion, kalibrera" className="text-sm" /></div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Ansvarig</Label><Input value={form.responsible} onChange={e => setForm({ ...form, responsible: e.target.value })} placeholder="Operatör" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Eskalering</Label><Input value={form.escalation} onChange={e => setForm({ ...form, escalation: e.target.value })} placeholder="Kontakta produktionschef" className="text-sm" /></div>
       </div>
@@ -139,7 +141,7 @@ export function ResponsePlanTool({ toolId = "response-plan", toolName = "Reaktio
 
       {items.length > 0 && items.map(i => (
         <div key={i.id} className="p-2 border rounded text-xs space-y-1">
-          <div className="flex justify-between"><span className="font-medium text-destructive">🚨 {i.trigger}</span><Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setItems(items.filter(x => x.id !== i.id))}><Trash2 className="h-3 w-3" /></Button></div>
+          <div className="flex justify-between items-start gap-2"><span className="font-medium text-destructive break-words min-w-0">🚨 {i.trigger}</span><Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setItems(items.filter(x => x.id !== i.id))}><Trash2 className="h-3 w-3" /></Button></div>
           <div>→ {i.action}</div>
           {i.responsible && <div className="text-muted-foreground">Ansvarig: {i.responsible}</div>}
           {i.escalation && <div className="text-muted-foreground">Eskalering: {i.escalation}</div>}
@@ -176,8 +178,8 @@ export function HandoverChecklistTool({ toolId = "handover-checklist", toolName 
     <div className="space-y-2">
       {items.map(item => (
         <div key={item.id} className="flex items-start gap-2 text-xs p-2 border rounded">
-          <button onClick={() => toggle(item.id)} className="mt-0.5">{item.checked ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Circle className="h-4 w-4 text-muted-foreground" />}</button>
-          <span className={`flex-1 ${item.checked ? "line-through text-muted-foreground" : ""}`}>{item.text}</span>
+          <button onClick={() => toggle(item.id)} className="mt-0.5 shrink-0">{item.checked ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Circle className="h-4 w-4 text-muted-foreground" />}</button>
+          <span className={`flex-1 min-w-0 ${item.checked ? "line-through text-muted-foreground" : ""}`}>{item.text}</span>
         </div>
       ))}
       <div className="p-2 bg-muted/50 rounded-lg text-xs text-center">
@@ -217,9 +219,9 @@ export function LessonsLearnedTool({ toolId = "lessons-learned", toolName = "Les
 
       {items.length > 0 && items.map(i => (
         <div key={i.id} className="p-2 border rounded text-xs space-y-1">
-          <div className="flex justify-between"><Badge variant="secondary" className="text-[10px]">{categories[i.category]}</Badge><Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setItems(items.filter(x => x.id !== i.id))}><Trash2 className="h-3 w-3" /></Button></div>
-          <div className="font-medium">{i.lesson}</div>
-          {i.recommendation && <div className="text-primary">→ {i.recommendation}</div>}
+          <div className="flex justify-between items-start gap-2"><Badge variant="secondary" className="text-[10px] shrink-0">{categories[i.category]}</Badge><Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setItems(items.filter(x => x.id !== i.id))}><Trash2 className="h-3 w-3" /></Button></div>
+          <div className="font-medium break-words">{i.lesson}</div>
+          {i.recommendation && <div className="text-primary break-words">→ {i.recommendation}</div>}
         </div>
       ))}
 
@@ -244,7 +246,7 @@ export function BenefitValidationTool({ toolId = "benefit-validation", toolName 
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">KPI/Mätetal</Label><Input value={form.metric} onChange={e => setForm({ ...form, metric: e.target.value })} placeholder="Cykeltid" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Enhet</Label><Input value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })} placeholder="minuter" className="text-sm" /></div>
       </div>
@@ -256,10 +258,10 @@ export function BenefitValidationTool({ toolId = "benefit-validation", toolName 
       <Button size="sm" onClick={addItem} disabled={!form.metric.trim()} className="gap-1"><Plus className="h-3 w-3" /> Lägg till</Button>
 
       {hasResult && (
-        <div className="border rounded-lg overflow-x-auto">
-          <table className="w-full text-xs">
+        <div className="border rounded-lg overflow-x-auto -mx-1 px-1">
+          <table className="w-full text-xs min-w-[400px]">
             <thead className="bg-muted/50">
-              <tr><th className="p-2 text-left">KPI</th><th className="p-2 text-right">Baseline</th><th className="p-2 text-right">Mål</th><th className="p-2 text-right">Faktiskt</th><th className="p-2">Status</th><th className="p-2 w-6"></th></tr>
+              <tr><th className="p-1.5 text-left">KPI</th><th className="p-1.5 text-right">Baseline</th><th className="p-1.5 text-right">Mål</th><th className="p-1.5 text-right">Faktiskt</th><th className="p-1.5">Status</th><th className="p-1.5 w-6"></th></tr>
             </thead>
             <tbody>
               {items.map(i => {
@@ -267,12 +269,12 @@ export function BenefitValidationTool({ toolId = "benefit-validation", toolName 
                 const achieved = !isNaN(a) && !isNaN(t) && !isNaN(b) && ((t < b && a <= t) || (t > b && a >= t));
                 return (
                   <tr key={i.id} className="border-t">
-                    <td className="p-2 font-medium">{i.metric} {i.unit && `(${i.unit})`}</td>
-                    <td className="p-2 text-right font-mono">{i.baseline || "–"}</td>
-                    <td className="p-2 text-right font-mono">{i.target || "–"}</td>
-                    <td className="p-2 text-right font-mono font-medium">{i.actual || "–"}</td>
-                    <td className="p-2 text-center">{i.actual ? (achieved ? "✅" : "⚠️") : "–"}</td>
-                    <td className="p-2"><Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setItems(items.filter(x => x.id !== i.id))}><Trash2 className="h-3 w-3" /></Button></td>
+                    <td className="p-1.5 font-medium">{i.metric} {i.unit && `(${i.unit})`}</td>
+                    <td className="p-1.5 text-right font-mono">{i.baseline || "–"}</td>
+                    <td className="p-1.5 text-right font-mono">{i.target || "–"}</td>
+                    <td className="p-1.5 text-right font-mono">{i.actual || "–"}</td>
+                    <td className="p-1.5 text-center">{!isNaN(a) ? (achieved ? "✅" : "❌") : "–"}</td>
+                    <td className="p-1.5"><Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setItems(items.filter(x => x.id !== i.id))}><Trash2 className="h-3 w-3" /></Button></td>
                   </tr>
                 );
               })}
