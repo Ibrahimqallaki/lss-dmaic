@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, RotateCcw, ArrowRight } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { toast } from "sonner";
 
 interface SIPOCData {
   suppliers: string[];
@@ -31,13 +33,10 @@ interface SIPOCDiagramProps {
 export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }: SIPOCDiagramProps) {
   const [data, setData] = useState<SIPOCData>({ suppliers: [""], inputs: [""], process: [""], outputs: [""], customers: [""] });
   const [processName, setProcessName] = useState("");
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
 
   const updateItem = (key: keyof SIPOCData, index: number, value: string) => {
-    setData((prev) => ({
-      ...prev,
-      [key]: prev[key].map((item, i) => (i === index ? value : item)),
-    }));
+    setData((prev) => ({ ...prev, [key]: prev[key].map((item, i) => (i === index ? value : item)) }));
   };
 
   const addItem = (key: keyof SIPOCData) => {
@@ -55,6 +54,21 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
     setProcessName("");
   };
 
+  const handleLoad = (inputs: Record<string, unknown>) => {
+    setProcessName(String(inputs.processName || ""));
+    const d = inputs.data as any;
+    if (d) {
+      setData({
+        suppliers: Array.isArray(d.suppliers) ? d.suppliers.map(String) : [""],
+        inputs: Array.isArray(d.inputs) ? d.inputs.map(String) : [""],
+        process: Array.isArray(d.process) ? d.process.map(String) : [""],
+        outputs: Array.isArray(d.outputs) ? d.outputs.map(String) : [""],
+        customers: Array.isArray(d.customers) ? d.customers.map(String) : [""],
+      });
+    }
+    toast.success("Sparad beräkning laddad!");
+  };
+
   const filledCounts = columns.map((col) => data[col.key].filter((v) => v.trim()).length);
   const totalFilled = filledCounts.reduce((a, b) => a + b, 0);
   const hasResult = totalFilled >= 3;
@@ -65,9 +79,7 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
       filledData[col.key] = data[col.key].filter(v => v.trim());
     }
     saveCalculation({
-      toolId,
-      toolName,
-      phase,
+      toolId, toolName, phase,
       inputs: { processName, data: filledData },
       results: { totalItems: totalFilled, filledColumns: columns.filter(c => data[c.key].some(v => v.trim())).length },
     });
@@ -75,35 +87,23 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
 
   return (
     <div className="space-y-4">
-      {/* Process name */}
+      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+
       <div>
         <label className="text-sm font-medium text-foreground">Processnamn</label>
-        <Input
-          placeholder="T.ex. Orderhanteringsprocessen"
-          value={processName}
-          onChange={(e) => setProcessName(e.target.value)}
-          className="mt-1"
-        />
+        <Input placeholder="T.ex. Orderhanteringsprocessen" value={processName} onChange={(e) => setProcessName(e.target.value)} className="mt-1" />
       </div>
 
-      {/* SIPOC columns - responsive */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
         {columns.map((col, colIdx) => (
           <div key={col.key} className="space-y-2">
             <div className="flex items-center gap-1">
               <Badge className={col.color}>{col.label}</Badge>
-              {colIdx < columns.length - 1 && (
-                <ArrowRight className="h-3 w-3 text-muted-foreground hidden md:block" />
-              )}
+              {colIdx < columns.length - 1 && <ArrowRight className="h-3 w-3 text-muted-foreground hidden md:block" />}
             </div>
             {data[col.key].map((item, i) => (
               <div key={i} className="flex gap-1">
-                <Input
-                  value={item}
-                  onChange={(e) => updateItem(col.key, i, e.target.value)}
-                  placeholder={col.placeholder}
-                  className="text-sm"
-                />
+                <Input value={item} onChange={(e) => updateItem(col.key, i, e.target.value)} placeholder={col.placeholder} className="text-sm" />
                 {data[col.key].length > 1 && (
                   <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => removeItem(col.key, i)}>
                     <Trash2 className="h-3 w-3" />
@@ -118,29 +118,18 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
         ))}
       </div>
 
-      {/* Summary */}
       {totalFilled >= 3 && (
         <div className="bg-muted/50 rounded-lg p-3 text-sm">
           <p className="font-medium mb-1">{processName || "SIPOC"} — Sammanfattning</p>
           <div className="flex flex-wrap gap-3">
             {columns.map((col, i) => (
-              <span key={col.key} className="text-muted-foreground">
-                {col.label}: {filledCounts[i]}
-              </span>
+              <span key={col.key} className="text-muted-foreground">{col.label}: {filledCounts[i]}</span>
             ))}
           </div>
         </div>
       )}
 
-      {/* Save button */}
-      <CalculatorSaveButton
-        canSave={canSave}
-        isSaving={isSaving}
-        hasResult={hasResult}
-        notes={notes}
-        onNotesChange={setNotes}
-        onSave={handleSave}
-      />
+      <CalculatorSaveButton canSave={canSave} isSaving={isSaving} hasResult={hasResult} notes={notes} onNotesChange={setNotes} onSave={handleSave} />
 
       <div className="flex justify-end">
         <Button size="sm" variant="ghost" onClick={reset}>
