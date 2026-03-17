@@ -5,21 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, ChevronRight } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { toast } from "sonner";
 
-interface CTQItem {
-  id: string;
-  customerNeed: string;
-  driver: string;
-  ctq: string;
-  spec: string;
-}
+interface CTQItem { id: string; customerNeed: string; driver: string; ctq: string; spec: string; }
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
 export function CTQTreeTool({ toolId = "ctq", toolName = "CTQ Tree", phase = 1 }: Props) {
   const [items, setItems] = useState<CTQItem[]>([]);
   const [form, setForm] = useState({ customerNeed: "", driver: "", ctq: "", spec: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
 
   const addItem = () => {
     if (!form.customerNeed.trim() || !form.ctq.trim()) return;
@@ -27,29 +23,27 @@ export function CTQTreeTool({ toolId = "ctq", toolName = "CTQ Tree", phase = 1 }
     setForm({ customerNeed: "", driver: "", ctq: "", spec: "" });
   };
 
+  const handleLoad = (inputs: Record<string, unknown>) => {
+    const loaded = inputs.items as any[];
+    if (Array.isArray(loaded)) {
+      setItems(loaded.map(i => ({ id: crypto.randomUUID(), customerNeed: String(i.customerNeed || ""), driver: String(i.driver || ""), ctq: String(i.ctq || ""), spec: String(i.spec || "") })));
+      toast.success("Sparad beräkning laddad!");
+    }
+  };
+
   const hasResult = items.length > 0;
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+
       <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1">
-          <Label className="text-xs">Kundbehov</Label>
-          <Input value={form.customerNeed} onChange={e => setForm({ ...form, customerNeed: e.target.value })} placeholder="Snabb leverans" className="text-sm" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Drivare</Label>
-          <Input value={form.driver} onChange={e => setForm({ ...form, driver: e.target.value })} placeholder="Orderplock, transport" className="text-sm" />
-        </div>
+        <div className="space-y-1"><Label className="text-xs">Kundbehov</Label><Input value={form.customerNeed} onChange={e => setForm({ ...form, customerNeed: e.target.value })} placeholder="Snabb leverans" className="text-sm" /></div>
+        <div className="space-y-1"><Label className="text-xs">Drivare</Label><Input value={form.driver} onChange={e => setForm({ ...form, driver: e.target.value })} placeholder="Orderplock, transport" className="text-sm" /></div>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1">
-          <Label className="text-xs">CTQ (Critical to Quality)</Label>
-          <Input value={form.ctq} onChange={e => setForm({ ...form, ctq: e.target.value })} placeholder="Leveranstid" className="text-sm" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Specifikation</Label>
-          <Input value={form.spec} onChange={e => setForm({ ...form, spec: e.target.value })} placeholder="≤ 2 arbetsdagar" className="text-sm" />
-        </div>
+        <div className="space-y-1"><Label className="text-xs">CTQ (Critical to Quality)</Label><Input value={form.ctq} onChange={e => setForm({ ...form, ctq: e.target.value })} placeholder="Leveranstid" className="text-sm" /></div>
+        <div className="space-y-1"><Label className="text-xs">Specifikation</Label><Input value={form.spec} onChange={e => setForm({ ...form, spec: e.target.value })} placeholder="≤ 2 arbetsdagar" className="text-sm" /></div>
       </div>
       <Button size="sm" onClick={addItem} disabled={!form.customerNeed.trim() || !form.ctq.trim()} className="gap-1"><Plus className="h-3 w-3" /> Lägg till</Button>
 

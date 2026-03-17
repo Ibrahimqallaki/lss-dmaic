@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, RotateCcw, ArrowDown } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { toast } from "sonner";
 
 interface WhyChain {
   id: string;
@@ -26,7 +28,7 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
     { id: crypto.randomUUID(), problem: "", whys: [""], rootCause: "", countermeasure: "" },
   ]);
   const [activeChain, setActiveChain] = useState(0);
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
 
   const chain = chains[activeChain];
 
@@ -66,6 +68,21 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
     updateChain({ problem: "", whys: [""], rootCause: "", countermeasure: "" });
   };
 
+  const handleLoad = (inputs: Record<string, unknown>) => {
+    const loaded = inputs.chains as any[];
+    if (Array.isArray(loaded)) {
+      setChains(loaded.map(c => ({
+        id: crypto.randomUUID(),
+        problem: String(c.problem || ""),
+        whys: Array.isArray(c.whys) ? c.whys.map(String) : [""],
+        rootCause: String(c.rootCause || ""),
+        countermeasure: String(c.countermeasure || ""),
+      })));
+      setActiveChain(0);
+      toast.success("Sparad beräkning laddad!");
+    }
+  };
+
   const filledWhys = chain.whys.filter((w) => w.trim()).length;
   const hasResult = !!chain.rootCause.trim();
 
@@ -74,41 +91,30 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
       toolId,
       toolName,
       phase,
-      inputs: { chains: chains.map(c => ({ problem: c.problem, whys: c.whys })) },
+      inputs: { chains: chains.map(c => ({ problem: c.problem, whys: c.whys, rootCause: c.rootCause, countermeasure: c.countermeasure })) },
       results: { chains: chains.map(c => ({ rootCause: c.rootCause, countermeasure: c.countermeasure, whyCount: c.whys.filter(w => w.trim()).length })) },
     });
   };
 
   return (
     <div className="space-y-4">
-      {/* Chain tabs */}
+      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+
       {chains.length > 1 && (
         <div className="flex gap-2 flex-wrap">
           {chains.map((c, i) => (
-            <Button
-              key={c.id}
-              size="sm"
-              variant={i === activeChain ? "default" : "outline"}
-              onClick={() => setActiveChain(i)}
-            >
+            <Button key={c.id} size="sm" variant={i === activeChain ? "default" : "outline"} onClick={() => setActiveChain(i)}>
               Kedja {i + 1}
             </Button>
           ))}
         </div>
       )}
 
-      {/* Problem statement */}
       <div>
         <label className="text-sm font-medium text-foreground">Problemformulering</label>
-        <Input
-          placeholder="Beskriv problemet som observerats..."
-          value={chain.problem}
-          onChange={(e) => updateChain({ problem: e.target.value })}
-          className="mt-1"
-        />
+        <Input placeholder="Beskriv problemet som observerats..." value={chain.problem} onChange={(e) => updateChain({ problem: e.target.value })} className="mt-1" />
       </div>
 
-      {/* Why chain */}
       <div className="space-y-2">
         {chain.whys.map((why, index) => (
           <div key={index}>
@@ -122,11 +128,7 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
                 Varför {index + 1}
               </Badge>
               <Input
-                placeholder={
-                  index === 0
-                    ? "Varför uppstod problemet?"
-                    : `Varför ${chain.whys[index - 1] ? `"${chain.whys[index - 1].slice(0, 30)}..."` : "det"}?`
-                }
+                placeholder={index === 0 ? "Varför uppstod problemet?" : `Varför ${chain.whys[index - 1] ? `"${chain.whys[index - 1].slice(0, 30)}..."` : "det"}?`}
                 value={why}
                 onChange={(e) => updateWhy(index, e.target.value)}
                 className="flex-1"
@@ -147,33 +149,19 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
         </Button>
       </div>
 
-      {/* Root cause */}
       {filledWhys >= 2 && (
         <div className="border-t pt-4 space-y-3">
           <div>
             <label className="text-sm font-medium text-foreground">Rotorsak (slutsats)</label>
-            <Textarea
-              placeholder="Sammanfatta den identifierade rotorsaken..."
-              value={chain.rootCause}
-              onChange={(e) => updateChain({ rootCause: e.target.value })}
-              className="mt-1"
-              rows={2}
-            />
+            <Textarea placeholder="Sammanfatta den identifierade rotorsaken..." value={chain.rootCause} onChange={(e) => updateChain({ rootCause: e.target.value })} className="mt-1" rows={2} />
           </div>
           <div>
             <label className="text-sm font-medium text-foreground">Föreslagen motåtgärd</label>
-            <Textarea
-              placeholder="Beskriv åtgärden för att eliminera rotorsaken..."
-              value={chain.countermeasure}
-              onChange={(e) => updateChain({ countermeasure: e.target.value })}
-              className="mt-1"
-              rows={2}
-            />
+            <Textarea placeholder="Beskriv åtgärden för att eliminera rotorsaken..." value={chain.countermeasure} onChange={(e) => updateChain({ countermeasure: e.target.value })} className="mt-1" rows={2} />
           </div>
         </div>
       )}
 
-      {/* Summary */}
       {chain.rootCause && (
         <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
           <p className="font-medium">Sammanfattning</p>
@@ -184,17 +172,8 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
         </div>
       )}
 
-      {/* Save button */}
-      <CalculatorSaveButton
-        canSave={canSave}
-        isSaving={isSaving}
-        hasResult={hasResult}
-        notes={notes}
-        onNotesChange={setNotes}
-        onSave={handleSave}
-      />
+      <CalculatorSaveButton canSave={canSave} isSaving={isSaving} hasResult={hasResult} notes={notes} onNotesChange={setNotes} onSave={handleSave} />
 
-      {/* Actions */}
       <div className="flex gap-2 justify-end">
         <Button size="sm" variant="ghost" onClick={resetChain}>
           <RotateCcw className="h-3 w-3 mr-1" /> Återställ

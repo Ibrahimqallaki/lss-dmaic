@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2 } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { toast } from "sonner";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -16,7 +18,7 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
   const [criterionName, setCriterionName] = useState("");
   const [criterionWeight, setCriterionWeight] = useState("1");
   const [altName, setAltName] = useState("");
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
 
   const addCriterion = () => {
     if (!criterionName.trim()) return;
@@ -34,12 +36,35 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
     setScores(prev => ({ ...prev, [criterionId]: { ...prev[criterionId], [alt]: score } }));
   };
 
+  const handleLoad = (inputs: Record<string, unknown>) => {
+    const c = inputs.criteria as any[];
+    const a = inputs.alternatives as any[];
+    const s = inputs.scores as any;
+    if (Array.isArray(c)) {
+      const newCriteria = c.map(cr => ({ id: crypto.randomUUID(), name: String(cr.name || ""), weight: Number(cr.weight) || 1 }));
+      setCriteria(newCriteria);
+      if (Array.isArray(a)) setAlternatives(a.map(String));
+      // Remap scores from old criterion IDs to new ones by index
+      if (s && Array.isArray(c)) {
+        const oldIds = c.map(cr => cr.id);
+        const newScores: Record<string, Record<string, number>> = {};
+        oldIds.forEach((oldId, idx) => {
+          if (s[oldId]) newScores[newCriteria[idx].id] = s[oldId];
+        });
+        setScores(newScores);
+      }
+      toast.success("Sparad beräkning laddad!");
+    }
+  };
+
   const getTotal = (alt: string) => criteria.reduce((sum, c) => sum + (scores[c.id]?.[alt] || 0) * c.weight, 0);
   const hasResult = criteria.length > 0 && alternatives.length > 0;
   const winner = alternatives.length > 0 ? alternatives.reduce((best, alt) => getTotal(alt) > getTotal(best) ? alt : best, alternatives[0]) : "";
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label className="text-xs font-medium">Kriterier</Label>
@@ -104,8 +129,7 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
                   <td className="p-1.5"></td>
                   {alternatives.map(alt => (
                     <td key={alt} className={`p-1.5 text-center text-sm ${alt === winner ? "text-primary font-bold" : ""}`}>
-                      {getTotal(alt).toFixed(1)}
-                      {alt === winner && " 🏆"}
+                      {getTotal(alt).toFixed(1)}{alt === winner && " 🏆"}
                     </td>
                   ))}
                 </tr>

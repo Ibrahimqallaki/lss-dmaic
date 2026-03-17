@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { toast } from "sonner";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -18,13 +19,28 @@ export function ProjectCharterTool({ toolId = "project-charter", toolName = "Pro
     timeline: "",
     metrics: "",
   });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
 
   const update = (field: string, value: string) => setData(prev => ({ ...prev, [field]: value }));
   const hasResult = Object.values(data).some(v => v.trim());
 
+  const handleLoad = (inputs: Record<string, unknown>) => {
+    setData({
+      problemStatement: String(inputs.problemStatement || ""),
+      businessCase: String(inputs.businessCase || ""),
+      goal: String(inputs.goal || ""),
+      scope: String(inputs.scope || ""),
+      team: String(inputs.team || ""),
+      timeline: String(inputs.timeline || ""),
+      metrics: String(inputs.metrics || ""),
+    });
+    toast.success("Sparad beräkning laddad!");
+  };
+
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+
       <div className="space-y-2">
         <Label className="text-xs font-medium">Problemformulering</Label>
         <Textarea value={data.problemStatement} onChange={e => update("problemStatement", e.target.value)} placeholder="Beskriv problemet tydligt: vad, var, när, omfattning..." className="text-sm h-20 resize-none" />

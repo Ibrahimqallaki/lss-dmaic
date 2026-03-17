@@ -7,11 +7,11 @@ import { Plus, Trash2, MoveUp, MoveDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { toast } from "sonner";
 
 type StepType = "operation" | "transport" | "inspection" | "delay" | "storage";
-
 interface ProcessStep { id: string; name: string; type: StepType; time: number; valueAdd: boolean; responsible: string; }
-
 const typeLabels: Record<StepType, string> = { operation: "⚙️ Operation", transport: "🚚 Transport", inspection: "🔍 Inspektion", delay: "⏳ Väntan", storage: "📦 Lagring" };
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
@@ -19,7 +19,7 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Processkartläggning", phase = 2 }: Props) {
   const [steps, setSteps] = useState<ProcessStep[]>([]);
   const [form, setForm] = useState({ name: "", type: "operation" as StepType, time: "", valueAdd: true, responsible: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
 
   const addStep = () => {
     if (!form.name.trim()) return;
@@ -27,11 +27,14 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
     setForm({ ...form, name: "", time: "", responsible: "" });
   };
 
-  const moveStep = (idx: number, dir: number) => {
-    const newSteps = [...steps];
-    const [item] = newSteps.splice(idx, 1);
-    newSteps.splice(idx + dir, 0, item);
-    setSteps(newSteps);
+  const moveStep = (idx: number, dir: number) => { const n = [...steps]; const [item] = n.splice(idx, 1); n.splice(idx + dir, 0, item); setSteps(n); };
+
+  const handleLoad = (inputs: Record<string, unknown>) => {
+    const loaded = inputs.steps as any[];
+    if (Array.isArray(loaded)) {
+      setSteps(loaded.map(s => ({ id: crypto.randomUUID(), name: String(s.name || ""), type: (s.type || "operation") as StepType, time: Number(s.time) || 0, valueAdd: s.valueAdd !== false, responsible: String(s.responsible || "") })));
+      toast.success("Sparad beräkning laddad!");
+    }
   };
 
   const hasResult = steps.length > 0;
@@ -41,33 +44,20 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div className="space-y-1">
-          <Label className="text-xs">Stegnamn</Label>
-          <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="T.ex. Montering" className="text-sm" />
-        </div>
+        <div className="space-y-1"><Label className="text-xs">Stegnamn</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="T.ex. Montering" className="text-sm" /></div>
         <div className="space-y-1">
           <Label className="text-xs">Typ</Label>
-          <Select value={form.type} onValueChange={v => setForm({ ...form, type: v as StepType })}>
-            <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-            <SelectContent>{Object.entries(typeLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
-          </Select>
+          <Select value={form.type} onValueChange={v => setForm({ ...form, type: v as StepType })}><SelectTrigger className="text-sm"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(typeLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>
         </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        <div className="space-y-1">
-          <Label className="text-xs">Tid (min)</Label>
-          <Input type="number" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} placeholder="5" className="text-sm" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Ansvarig</Label>
-          <Input value={form.responsible} onChange={e => setForm({ ...form, responsible: e.target.value })} placeholder="Operatör" className="text-sm" />
-        </div>
+        <div className="space-y-1"><Label className="text-xs">Tid (min)</Label><Input type="number" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} placeholder="5" className="text-sm" /></div>
+        <div className="space-y-1"><Label className="text-xs">Ansvarig</Label><Input value={form.responsible} onChange={e => setForm({ ...form, responsible: e.target.value })} placeholder="Operatör" className="text-sm" /></div>
         <div className="flex items-end col-span-2 sm:col-span-1">
-          <label className="flex items-center gap-1 text-xs cursor-pointer">
-            <input type="checkbox" checked={form.valueAdd} onChange={e => setForm({ ...form, valueAdd: e.target.checked })} className="rounded" />
-            Värdeskapande
-          </label>
+          <label className="flex items-center gap-1 text-xs cursor-pointer"><input type="checkbox" checked={form.valueAdd} onChange={e => setForm({ ...form, valueAdd: e.target.checked })} className="rounded" />Värdeskapande</label>
         </div>
       </div>
       <Button size="sm" onClick={addStep} disabled={!form.name.trim()} className="gap-1"><Plus className="h-3 w-3" /> Lägg till steg</Button>

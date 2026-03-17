@@ -7,6 +7,8 @@ import { Plus, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { toast } from "sonner";
 
 type KanoCategory = "must-be" | "performance" | "delighter" | "indifferent" | "reverse";
 
@@ -31,7 +33,7 @@ export function KanoModelTool({ toolId = "kano-model", toolName = "Kano-modell",
   const [feature, setFeature] = useState("");
   const [functional, setFunctional] = useState("3");
   const [dysfunctional, setDysfunctional] = useState("3");
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
 
   const responses = ["1 – Gillar inte", "2 – Tolererar", "3 – Neutral", "4 – Förväntar", "5 – Gillar"];
 
@@ -42,28 +44,29 @@ export function KanoModelTool({ toolId = "kano-model", toolName = "Kano-modell",
     setFeature("");
   };
 
+  const handleLoad = (inputs: Record<string, unknown>) => {
+    const loaded = inputs.items as any[];
+    if (Array.isArray(loaded)) {
+      setItems(loaded.map(i => ({ id: crypto.randomUUID(), feature: String(i.feature || ""), functional: String(i.functional || "3"), dysfunctional: String(i.dysfunctional || "3"), category: (i.category || "indifferent") as KanoCategory })));
+      toast.success("Sparad beräkning laddad!");
+    }
+  };
+
   const hasResult = items.length > 0;
 
   return (
     <div className="space-y-3">
-      <div className="space-y-1">
-        <Label className="text-xs">Funktion/Egenskap</Label>
-        <Input value={feature} onChange={e => setFeature(e.target.value)} placeholder="T.ex. Leveransavisering via SMS" className="text-sm" />
-      </div>
+      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+
+      <div className="space-y-1"><Label className="text-xs">Funktion/Egenskap</Label><Input value={feature} onChange={e => setFeature(e.target.value)} placeholder="T.ex. Leveransavisering via SMS" className="text-sm" /></div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Funktionell (om det finns)</Label>
-          <Select value={functional} onValueChange={setFunctional}>
-            <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-            <SelectContent>{responses.map((r, i) => <SelectItem key={i} value={String(i+1)}>{r}</SelectItem>)}</SelectContent>
-          </Select>
+          <Select value={functional} onValueChange={setFunctional}><SelectTrigger className="text-sm"><SelectValue /></SelectTrigger><SelectContent>{responses.map((r, i) => <SelectItem key={i} value={String(i+1)}>{r}</SelectItem>)}</SelectContent></Select>
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Dysfunktionell (om det saknas)</Label>
-          <Select value={dysfunctional} onValueChange={setDysfunctional}>
-            <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-            <SelectContent>{responses.map((r, i) => <SelectItem key={i} value={String(i+1)}>{r}</SelectItem>)}</SelectContent>
-          </Select>
+          <Select value={dysfunctional} onValueChange={setDysfunctional}><SelectTrigger className="text-sm"><SelectValue /></SelectTrigger><SelectContent>{responses.map((r, i) => <SelectItem key={i} value={String(i+1)}>{r}</SelectItem>)}</SelectContent></Select>
         </div>
       </div>
       <div className="text-xs">Klassificering: <Badge variant={categoryColors[classifyKano(functional, dysfunctional)]}>{categoryLabels[classifyKano(functional, dysfunctional)]}</Badge></div>

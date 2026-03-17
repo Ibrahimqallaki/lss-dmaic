@@ -3,15 +3,28 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { toast } from "sonner";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
 export function ProblemStatementTool({ toolId = "problem-statement", toolName = "Problemformulering", phase = 1 }: Props) {
   const [data, setData] = useState({ what: "", where: "", when: "", extent: "", impact: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
 
   const update = (field: string, value: string) => setData(prev => ({ ...prev, [field]: value }));
   const hasResult = Object.values(data).some(v => v.trim());
+
+  const handleLoad = (inputs: Record<string, unknown>) => {
+    setData({
+      what: String(inputs.what || ""),
+      where: String(inputs.where || ""),
+      when: String(inputs.when || ""),
+      extent: String(inputs.extent || ""),
+      impact: String(inputs.impact || ""),
+    });
+    toast.success("Sparad beräkning laddad!");
+  };
 
   const fields = [
     { key: "what", label: "VAD är problemet?", placeholder: "Beskriv defekten/avvikelsen objektivt..." },
@@ -23,6 +36,8 @@ export function ProblemStatementTool({ toolId = "problem-statement", toolName = 
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+
       {fields.map(f => (
         <div key={f.key} className="space-y-1">
           <Label className="text-xs font-medium">{f.label}</Label>
