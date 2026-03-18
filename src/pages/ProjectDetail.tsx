@@ -57,6 +57,8 @@ export default function ProjectDetail() {
   const [project, setProject] = useState<Project | null>(null);
   const [notes, setNotes] = useState<ProjectNote[]>([]);
   const [calculations, setCalculations] = useState<ProjectCalculation[]>([]);
+  const [tollgateItems, setTollgateItems] = useState<{ phase: number; title: string; is_completed: boolean }[]>([]);
+  const [sigmaEntries, setSigmaEntries] = useState<{ phase: number; sigma_level: number; dpmo: number | null; measurement_date: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activePhase, setActivePhase] = useState(1);
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
