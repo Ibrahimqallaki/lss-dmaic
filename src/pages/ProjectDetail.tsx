@@ -57,6 +57,8 @@ export default function ProjectDetail() {
   const [project, setProject] = useState<Project | null>(null);
   const [notes, setNotes] = useState<ProjectNote[]>([]);
   const [calculations, setCalculations] = useState<ProjectCalculation[]>([]);
+  const [tollgateItems, setTollgateItems] = useState<{ phase: number; title: string; is_completed: boolean }[]>([]);
+  const [sigmaEntries, setSigmaEntries] = useState<{ phase: number; sigma_level: number; dpmo: number | null; measurement_date: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activePhase, setActivePhase] = useState(1);
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
@@ -115,6 +117,24 @@ export default function ProjectDetail() {
       .order("created_at", { ascending: false });
 
     setCalculations(calcsData || []);
+
+    // Fetch tollgate items for export
+    const { data: tollgateData } = await supabase
+      .from("tollgate_items")
+      .select("phase, title, is_completed")
+      .eq("project_id", projectId!)
+      .order("sort_order");
+
+    setTollgateItems(tollgateData || []);
+
+    // Fetch sigma entries for export
+    const { data: sigmaData } = await supabase
+      .from("sigma_tracking")
+      .select("phase, sigma_level, dpmo, measurement_date")
+      .eq("project_id", projectId!)
+      .order("measurement_date");
+
+    setSigmaEntries(sigmaData || []);
 
     setIsLoading(false);
   };
@@ -234,7 +254,7 @@ export default function ProjectDetail() {
                 variant="outline"
                 size="sm"
                 className="bg-white/20 border-white/40 text-white hover:bg-white/30"
-                onClick={() => exportProjectToPDF(project, notes, calculations)}
+                onClick={() => exportProjectToPDF(project, notes, calculations, tollgateItems, sigmaEntries)}
               >
                 <Download className="h-4 w-4 mr-2" />
                 PDF
@@ -243,7 +263,7 @@ export default function ProjectDetail() {
                 variant="outline"
                 size="sm"
                 className="bg-white/20 border-white/40 text-white hover:bg-white/30"
-                onClick={() => exportA3Report(project, notes, calculations)}
+                onClick={() => exportA3Report(project, notes, calculations, tollgateItems, sigmaEntries)}
               >
                 <Download className="h-4 w-4 mr-2" />
                 A3 Rapport
