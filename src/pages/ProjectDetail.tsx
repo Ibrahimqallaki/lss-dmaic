@@ -118,6 +118,24 @@ export default function ProjectDetail() {
 
     setCalculations(calcsData || []);
 
+    // Fetch tollgate items for export
+    const { data: tollgateData } = await supabase
+      .from("tollgate_items")
+      .select("phase, title, is_completed")
+      .eq("project_id", projectId!)
+      .order("sort_order");
+
+    setTollgateItems(tollgateData || []);
+
+    // Fetch sigma entries for export
+    const { data: sigmaData } = await supabase
+      .from("sigma_tracking")
+      .select("phase, sigma_level, dpmo, measurement_date")
+      .eq("project_id", projectId!)
+      .order("measurement_date");
+
+    setSigmaEntries(sigmaData || []);
+
     setIsLoading(false);
   };
 
