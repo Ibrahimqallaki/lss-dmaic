@@ -254,7 +254,7 @@ export default function ProjectDetail() {
                 variant="outline"
                 size="sm"
                 className="bg-white/20 border-white/40 text-white hover:bg-white/30"
-                onClick={() => exportProjectToPDF(project, notes, calculations)}
+                onClick={() => exportProjectToPDF(project, notes, calculations, tollgateItems, sigmaEntries)}
               >
                 <Download className="h-4 w-4 mr-2" />
                 PDF
@@ -263,7 +263,7 @@ export default function ProjectDetail() {
                 variant="outline"
                 size="sm"
                 className="bg-white/20 border-white/40 text-white hover:bg-white/30"
-                onClick={() => exportA3Report(project, notes, calculations)}
+                onClick={() => exportA3Report(project, notes, calculations, tollgateItems, sigmaEntries)}
               >
                 <Download className="h-4 w-4 mr-2" />
                 A3 Rapport

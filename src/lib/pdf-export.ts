@@ -41,10 +41,85 @@ interface SigmaEntry {
   measurement_date: string;
 }
 
+/** Format an unknown value for display in the PDF */
+function formatValue(value: unknown, maxLen = 60): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number") return value.toFixed(4);
+  if (typeof value === "boolean") return value ? "Ja" : "Nej";
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "";
+    // Array of objects (e.g. SIPOC rows, Pugh criteria)
+    if (typeof value[0] === "object" && value[0] !== null) {
+      return value
+        .map((item) =>
+          Object.values(item as Record<string, unknown>)
+            .filter((v) => typeof v === "string" && v.trim())
+            .map((v) => String(v).slice(0, 30))
+            .join(" | ")
+        )
+        .filter(Boolean)
+        .join("; ");
+    }
+    // Array of primitives
+    return value.filter(Boolean).map((v) => String(v).slice(0, 40)).join(", ");
+  }
+  if (typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== null && v !== undefined && v !== "")
+      .map(([k, v]) => `${k}: ${formatValue(v, 30)}`)
+      .join(", ");
+  }
+  const s = String(value);
+  return s.length > maxLen ? s.slice(0, maxLen) + "…" : s;
+}
+
+/** Render key-value entries from inputs/results into the PDF */
+function renderEntries(
+  doc: jsPDF,
+  data: unknown,
+  label: string,
+  marginLeft: number,
+  contentWidth: number,
+  yPos: number,
+  checkPageBreak: (n: number) => void,
+  color: [number, number, number] = [80, 80, 80]
+): number {
+  if (!data || typeof data !== "object") return yPos;
+  const entries = Object.entries(data as Record<string, unknown>).filter(
+    ([, v]) => v !== null && v !== undefined && v !== "" && !(Array.isArray(v) && v.length === 0)
+  );
+  if (entries.length === 0) return yPos;
+
+  checkPageBreak(10);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(color[0], color[1], color[2]);
+  doc.text(label, marginLeft + 10, yPos);
+  yPos += 5;
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(60);
+  entries.forEach(([key, value]) => {
+    const displayValue = formatValue(value);
+    if (!displayValue) return;
+    const line = `${key}: ${displayValue}`;
+    const lines = doc.splitTextToSize(line, contentWidth - 20);
+    lines.forEach((l: string) => {
+      checkPageBreak(5);
+      doc.setFontSize(9);
+      doc.text(l, marginLeft + 14, yPos);
+      yPos += 4.5;
+    });
+  });
+  return yPos;
+}
+
 export function exportProjectToPDF(
   project: Project,
   notes: ProjectNote[],
-  calculations: ProjectCalculation[]
+  calculations: ProjectCalculation[],
+  tollgateItems: TollgateItem[] = [],
+  sigmaEntries: SigmaEntry[] = []
 ) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -81,7 +156,21 @@ export function exportProjectToPDF(
   doc.setTextColor(120);
   const statusText = project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad";
   doc.text(`Status: ${statusText} | Exporterad: ${new Date().toLocaleDateString("sv-SE")}`, marginLeft, yPos);
-  yPos += 15;
+  yPos += 8;
+
+  // Sigma summary
+  if (sigmaEntries.length > 0) {
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(40);
+    const sigmaText = sigmaEntries
+      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)}σ`)
+      .join("  →  ");
+    doc.text(`Sigma-utveckling: ${sigmaText}`, marginLeft, yPos);
+    yPos += 7;
+  }
+
+  yPos += 3;
 
   // Divider
   doc.setDrawColor(200);
@@ -92,8 +181,9 @@ export function exportProjectToPDF(
   phases.forEach((phase) => {
     const phaseNotes = notes.filter((n) => n.phase === phase.id);
     const phaseCalcs = calculations.filter((c) => c.phase === phase.id);
+    const phaseTollgate = tollgateItems.filter((t) => t.phase === phase.id);
 
-    if (phaseNotes.length === 0 && phaseCalcs.length === 0) return;
+    if (phaseNotes.length === 0 && phaseCalcs.length === 0 && phaseTollgate.length === 0) return;
 
     checkPageBreak(30);
 
@@ -102,19 +192,37 @@ export function exportProjectToPDF(
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0);
     doc.text(`${phase.icon} ${phase.name}: ${phase.title}`, marginLeft, yPos);
-    yPos += 10;
+    yPos += 8;
+
+    // Tollgate progress
+    if (phaseTollgate.length > 0) {
+      const completed = phaseTollgate.filter((t) => t.is_completed).length;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(100);
+      doc.text(`Tollgate: ${completed}/${phaseTollgate.length} klara`, marginLeft + 5, yPos);
+      yPos += 5;
+      phaseTollgate.forEach((item) => {
+        checkPageBreak(5);
+        doc.setFontSize(8);
+        doc.setTextColor(item.is_completed ? 34 : 150, item.is_completed ? 150 : 150, item.is_completed ? 34 : 150);
+        doc.text(`${item.is_completed ? "✓" : "○"} ${item.title}`, marginLeft + 10, yPos);
+        yPos += 4;
+      });
+      yPos += 3;
+    }
 
     // Notes section
     if (phaseNotes.length > 0) {
       checkPageBreak(15);
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
+      doc.setTextColor(0);
       doc.text("Anteckningar", marginLeft, yPos);
       yPos += 7;
 
       phaseNotes.forEach((note) => {
         checkPageBreak(25);
-        
         doc.setFontSize(11);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(40);
@@ -141,13 +249,13 @@ export function exportProjectToPDF(
       });
     }
 
-    // Calculations section
+    // Calculations section (with both inputs and results)
     if (phaseCalcs.length > 0) {
       checkPageBreak(15);
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0);
-      doc.text("Beräkningar", marginLeft, yPos);
+      doc.text("Verktygsresultat", marginLeft, yPos);
       yPos += 7;
 
       phaseCalcs.forEach((calc) => {
@@ -165,17 +273,11 @@ export function exportProjectToPDF(
         doc.text(new Date(calc.created_at).toLocaleDateString("sv-SE"), marginLeft + 10, yPos);
         yPos += 6;
 
+        // Inputs
+        yPos = renderEntries(doc, calc.inputs, "Indata:", marginLeft, contentWidth, yPos, checkPageBreak, [60, 90, 130]);
+
         // Results
-        if (calc.results && typeof calc.results === "object") {
-          doc.setFontSize(10);
-          Object.entries(calc.results as Record<string, unknown>).forEach(([key, value]) => {
-            checkPageBreak(6);
-            doc.setTextColor(80);
-            const displayValue = typeof value === "number" ? value.toFixed(4) : String(value);
-            doc.text(`${key}: ${displayValue}`, marginLeft + 10, yPos);
-            yPos += 5;
-          });
-        }
+        yPos = renderEntries(doc, calc.results, "Resultat:", marginLeft, contentWidth, yPos, checkPageBreak, [40, 40, 40]);
 
         if (calc.notes) {
           checkPageBreak(10);
@@ -190,7 +292,7 @@ export function exportProjectToPDF(
           });
           doc.setFont("helvetica", "normal");
         }
-        yPos += 3;
+        yPos += 5;
       });
     }
 
@@ -206,7 +308,6 @@ export function exportProjectToPDF(
     doc.text(`Sida ${i} av ${pageCount}`, pageWidth / 2, 290, { align: "center" });
   }
 
-  // Save
   const fileName = `${project.name.replace(/[^a-zA-Z0-9åäöÅÄÖ\s]/g, "").replace(/\s+/g, "_")}_rapport.pdf`;
   doc.save(fileName);
 }
@@ -225,17 +326,16 @@ export function exportA3Report(
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 15;
-  const colWidth = (pageWidth - margin * 2 - 40) / 5; // 5 DMAIC columns
-  let startX = margin;
+  const colWidth = (pageWidth - margin * 2 - 40) / 5;
 
   // Title bar
-  doc.setFillColor(30, 64, 175); // primary blue
+  doc.setFillColor(30, 64, 175);
   doc.rect(0, 0, pageWidth, 25, "F");
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(255);
   doc.text(`A3 RAPPORT: ${project.name}`, margin, 17);
-  
+
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text(`Exporterad: ${new Date().toLocaleDateString("sv-SE")} | Status: ${project.status === "active" ? "Aktiv" : "Klar"}`, pageWidth - margin, 17, { align: "right" });
@@ -254,16 +354,15 @@ export function exportA3Report(
     const x = margin + index * (colWidth + 10);
     let y = topY;
 
-    // Phase header
     const colors: [number, number, number][] = [
-      [59, 130, 246],  // blue
-      [34, 197, 94],   // green
-      [234, 179, 8],   // yellow
-      [168, 85, 247],  // purple
-      [239, 68, 68],   // red
+      [59, 130, 246],
+      [34, 197, 94],
+      [234, 179, 8],
+      [168, 85, 247],
+      [239, 68, 68],
     ];
     const [r, g, b] = colors[index];
-    
+
     doc.setFillColor(r, g, b);
     doc.roundedRect(x, y, colWidth, 14, 2, 2, "F");
     doc.setFontSize(11);
@@ -273,14 +372,13 @@ export function exportA3Report(
     y += 18;
 
     // Tollgate progress
-    const phaseTollgate = tollgateItems.filter(t => t.phase === phase.id);
+    const phaseTollgate = tollgateItems.filter((t) => t.phase === phase.id);
     if (phaseTollgate.length > 0) {
-      const completed = phaseTollgate.filter(t => t.is_completed).length;
+      const completed = phaseTollgate.filter((t) => t.is_completed).length;
       const pct = Math.round((completed / phaseTollgate.length) * 100);
       doc.setFontSize(7);
       doc.setTextColor(100);
       doc.text(`Tollgate: ${completed}/${phaseTollgate.length} (${pct}%)`, x + 2, y);
-      // Progress bar
       doc.setFillColor(230, 230, 230);
       doc.rect(x + 2, y + 1, colWidth - 4, 2, "F");
       doc.setFillColor(r, g, b);
@@ -289,7 +387,7 @@ export function exportA3Report(
     }
 
     // Phase notes
-    const phaseNotes = notes.filter(n => n.phase === phase.id);
+    const phaseNotes = notes.filter((n) => n.phase === phase.id);
     if (phaseNotes.length > 0) {
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
@@ -297,7 +395,7 @@ export function exportA3Report(
       doc.text("Anteckningar:", x + 2, y);
       y += 4;
 
-      phaseNotes.forEach(note => {
+      phaseNotes.forEach((note) => {
         if (y > pageHeight - 30) return;
         doc.setFontSize(7);
         doc.setFont("helvetica", "bold");
@@ -318,17 +416,17 @@ export function exportA3Report(
       });
     }
 
-    // Phase calculations
-    const phaseCalcs = calculations.filter(c => c.phase === phase.id);
+    // Phase calculations — show both inputs and results
+    const phaseCalcs = calculations.filter((c) => c.phase === phase.id);
     if (phaseCalcs.length > 0) {
       y += 2;
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(40);
-      doc.text("Resultat:", x + 2, y);
+      doc.text("Verktygsdata:", x + 2, y);
       y += 4;
 
-      phaseCalcs.forEach(calc => {
+      phaseCalcs.forEach((calc) => {
         if (y > pageHeight - 30) return;
         doc.setFontSize(7);
         doc.setFont("helvetica", "bold");
@@ -336,16 +434,37 @@ export function exportA3Report(
         doc.text(calc.tool_name, x + 3, y);
         y += 3.5;
 
-        if (calc.results && typeof calc.results === "object") {
+        // Inputs
+        if (calc.inputs && typeof calc.inputs === "object") {
           doc.setFont("helvetica", "normal");
-          doc.setTextColor(80);
-          const entries = Object.entries(calc.results as Record<string, unknown>).slice(0, 4);
+          doc.setTextColor(60);
+          const inputEntries = Object.entries(calc.inputs as Record<string, unknown>)
+            .filter(([, v]) => v !== null && v !== undefined && v !== "" && !(Array.isArray(v) && v.length === 0))
+            .slice(0, 5);
+          inputEntries.forEach(([key, value]) => {
+            if (y > pageHeight - 30) return;
+            const display = formatValue(value, 25);
+            if (!display) return;
+            const lines = doc.splitTextToSize(`${key}: ${display}`, colWidth - 10);
+            doc.text(lines.slice(0, 2), x + 5, y);
+            y += lines.slice(0, 2).length * 3;
+          });
+        }
+
+        // Results
+        if (calc.results && typeof calc.results === "object") {
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(40);
+          const entries = Object.entries(calc.results as Record<string, unknown>)
+            .filter(([, v]) => v !== null && v !== undefined && v !== "")
+            .slice(0, 4);
           entries.forEach(([key, value]) => {
             if (y > pageHeight - 30) return;
             const display = typeof value === "number" ? value.toFixed(3) : String(value).slice(0, 25);
             doc.text(`${key}: ${display}`, x + 5, y);
             y += 3;
           });
+          doc.setFont("helvetica", "normal");
         }
         y += 2;
       });
@@ -365,10 +484,10 @@ export function exportA3Report(
     doc.setFont("helvetica", "bold");
     doc.setTextColor(40);
     doc.text("Sigma-utveckling: ", margin, bottomY);
-    
+
     doc.setFont("helvetica", "normal");
     const sigmaText = sigmaEntries
-      .map(e => `${phases.find(p => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)}σ`)
+      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)}σ`)
       .join("  →  ");
     doc.text(sigmaText, margin + 30, bottomY);
 
