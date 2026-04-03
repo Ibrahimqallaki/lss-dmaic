@@ -534,12 +534,12 @@ export function exportA3Report(
           doc.setFont("helvetica", "bold");
           doc.setTextColor(40);
           const entries = Object.entries(calc.results as Record<string, unknown>)
-            .filter(([, v]) => v !== null && v !== undefined && v !== "")
+            .filter(([k, v]) => isMeaningful(k, v))
             .slice(0, 4);
           entries.forEach(([key, value]) => {
             if (y > pageHeight - 30) return;
             const display = typeof value === "number" ? value.toFixed(3) : String(value).slice(0, 25);
-            doc.text(`${key}: ${display}`, x + 5, y);
+            doc.text(`${labelFor(key)}: ${display}`, x + 5, y);
             y += 3;
           });
           doc.setFont("helvetica", "normal");
