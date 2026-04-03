@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,18 +26,8 @@ export function FishboneDiagram({ toolId = "fishbone", toolName = "Fiskbensdiagr
   const [causes, setCauses] = useState<CausesMap>(
     Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.key, [""]]))
   );
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
 
-  const updateCause = (category: string, index: number, value: string) => {
-    setCauses((prev) => ({ ...prev, [category]: prev[category].map((c, i) => (i === index ? value : c)) }));
-  };
-  const addCause = (category: string) => setCauses((prev) => ({ ...prev, [category]: [...prev[category], ""] }));
-  const removeCause = (category: string, index: number) => {
-    if (causes[category].length > 1) setCauses((prev) => ({ ...prev, [category]: prev[category].filter((_, i) => i !== index) }));
-  };
-  const reset = () => { setEffect(""); setCauses(Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.key, [""]]))); };
-
-  const handleLoad = (inputs: Record<string, unknown>) => {
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
     setEffect(String(inputs.effect || ""));
     const c = inputs.causes as any;
     if (c) {
@@ -49,8 +39,19 @@ export function FishboneDiagram({ toolId = "fishbone", toolName = "Fiskbensdiagr
       }
       setCauses(newCauses);
     }
-    toast.success("Sparad beräkning laddad!");
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
+
+  const updateCause = (category: string, index: number, value: string) => {
+    setCauses((prev) => ({ ...prev, [category]: prev[category].map((c, i) => (i === index ? value : c)) }));
   };
+  const addCause = (category: string) => setCauses((prev) => ({ ...prev, [category]: [...prev[category], ""] }));
+  const removeCause = (category: string, index: number) => {
+    if (causes[category].length > 1) setCauses((prev) => ({ ...prev, [category]: prev[category].filter((_, i) => i !== index) }));
+  };
+  const reset = () => { setEffect(""); setCauses(Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.key, [""]]))); };
+
 
   const totalCauses = Object.values(causes).flat().filter((c) => c.trim()).length;
   const hasResult = totalCauses > 0 && !!effect.trim();
@@ -66,7 +67,7 @@ export function FishboneDiagram({ toolId = "fishbone", toolName = "Fiskbensdiagr
 
   return (
     <div className="space-y-4">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div>
         <label className="text-sm font-medium text-foreground">Effekt / Problem</label>

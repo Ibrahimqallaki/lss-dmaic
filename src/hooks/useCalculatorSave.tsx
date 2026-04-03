@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,13 +24,14 @@ interface SavedCalculation {
   created_at: string;
 }
 
-export function useCalculatorSave(toolId?: string) {
+export function useCalculatorSave(toolId?: string, onAutoLoad?: (inputs: Record<string, unknown>) => void) {
   const { projectId } = useParams<{ projectId: string }>();
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [notes, setNotes] = useState("");
-  const [savedCalculations, setSavedCalculations] = useState<SavedCalculation[]>([]);
+  const [savedCalculation, setSavedCalculation] = useState<SavedCalculation | null>(null);
   const [isLoadingSaved, setIsLoadingSaved] = useState(false);
+  const autoLoadedRef = useRef(false);
 
   const canSave = !!projectId && !!user;
 
@@ -43,17 +44,23 @@ export function useCalculatorSave(toolId?: string) {
         .select("id, tool_id, tool_name, inputs, results, notes, created_at")
         .eq("project_id", projectId)
         .eq("tool_id", toolId)
-        .order("created_at", { ascending: false })
-        .limit(20);
+        .maybeSingle();
 
       if (error) throw error;
-      setSavedCalculations((data as unknown as SavedCalculation[]) || []);
+      const saved = (data as unknown as SavedCalculation) || null;
+      setSavedCalculation(saved);
+
+      // Auto-load once on first fetch
+      if (saved && !autoLoadedRef.current && onAutoLoad) {
+        autoLoadedRef.current = true;
+        onAutoLoad(saved.inputs);
+      }
     } catch (e) {
       console.error("Error fetching saved calculations:", e);
     } finally {
       setIsLoadingSaved(false);
     }
-  }, [projectId, user, toolId]);
+  }, [projectId, user, toolId, onAutoLoad]);
 
   useEffect(() => {
     fetchSaved();
@@ -67,7 +74,7 @@ export function useCalculatorSave(toolId?: string) {
 
     setIsSaving(true);
     try {
-      const { error } = await supabase.from("project_calculations").insert([{
+      const { error } = await supabase.from("project_calculations").upsert({
         project_id: projectId,
         user_id: user.id,
         tool_id: params.toolId,
@@ -76,13 +83,12 @@ export function useCalculatorSave(toolId?: string) {
         inputs: params.inputs as Json,
         results: params.results as Json,
         notes: params.notes || notes,
-      }]);
+      }, { onConflict: "project_id,tool_id" });
 
       if (error) throw error;
 
       toast.success("Beräkningen har sparats till projektet!");
       setNotes("");
-      // Refresh saved list
       fetchSaved();
       return true;
     } catch (error) {
@@ -101,7 +107,7 @@ export function useCalculatorSave(toolId?: string) {
     setNotes,
     saveCalculation,
     projectId,
-    savedCalculations,
+    savedCalculation,
     isLoadingSaved,
   };
 }

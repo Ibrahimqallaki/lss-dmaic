@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +33,22 @@ interface SIPOCDiagramProps {
 export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }: SIPOCDiagramProps) {
   const [data, setData] = useState<SIPOCData>({ suppliers: [""], inputs: [""], process: [""], outputs: [""], customers: [""] });
   const [processName, setProcessName] = useState("");
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    setProcessName(String(inputs.processName || ""));
+    const d = inputs.data as any;
+    if (d) {
+      setData({
+        suppliers: Array.isArray(d.suppliers) ? d.suppliers.map(String) : [""],
+        inputs: Array.isArray(d.inputs) ? d.inputs.map(String) : [""],
+        process: Array.isArray(d.process) ? d.process.map(String) : [""],
+        outputs: Array.isArray(d.outputs) ? d.outputs.map(String) : [""],
+        customers: Array.isArray(d.customers) ? d.customers.map(String) : [""],
+      });
+    }
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const updateItem = (key: keyof SIPOCData, index: number, value: string) => {
     setData((prev) => ({ ...prev, [key]: prev[key].map((item, i) => (i === index ? value : item)) }));
@@ -54,20 +69,6 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
     setProcessName("");
   };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    setProcessName(String(inputs.processName || ""));
-    const d = inputs.data as any;
-    if (d) {
-      setData({
-        suppliers: Array.isArray(d.suppliers) ? d.suppliers.map(String) : [""],
-        inputs: Array.isArray(d.inputs) ? d.inputs.map(String) : [""],
-        process: Array.isArray(d.process) ? d.process.map(String) : [""],
-        outputs: Array.isArray(d.outputs) ? d.outputs.map(String) : [""],
-        customers: Array.isArray(d.customers) ? d.customers.map(String) : [""],
-      });
-    }
-    toast.success("Sparad beräkning laddad!");
-  };
 
   const filledCounts = columns.map((col) => data[col.key].filter((v) => v.trim()).length);
   const totalFilled = filledCounts.reduce((a, b) => a + b, 0);
@@ -87,7 +88,7 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
 
   return (
     <div className="space-y-4">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div>
         <label className="text-sm font-medium text-foreground">Processnamn</label>

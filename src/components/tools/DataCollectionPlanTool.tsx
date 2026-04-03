@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,15 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolName = "Datainsamlingsplan", phase = 2 }: Props) {
   const [items, setItems] = useState<DataItem[]>([]);
   const [form, setForm] = useState({ measure: "", dataType: "kontinuerlig", opDef: "", source: "", sampleSize: "", frequency: "", who: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const loaded = inputs.items as any[];
+    if (Array.isArray(loaded)) {
+      setItems(loaded.map(i => ({ id: crypto.randomUUID(), measure: String(i.measure || ""), dataType: String(i.dataType || "kontinuerlig"), opDef: String(i.opDef || ""), source: String(i.source || ""), sampleSize: String(i.sampleSize || ""), frequency: String(i.frequency || ""), who: String(i.who || "") })));
+    }
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => {
     if (!form.measure.trim()) return;
@@ -25,19 +33,12 @@ export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolNa
     setForm({ ...form, measure: "", opDef: "", source: "", sampleSize: "", frequency: "", who: "" });
   };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    const loaded = inputs.items as any[];
-    if (Array.isArray(loaded)) {
-      setItems(loaded.map(i => ({ id: crypto.randomUUID(), measure: String(i.measure || ""), dataType: String(i.dataType || "kontinuerlig"), opDef: String(i.opDef || ""), source: String(i.source || ""), sampleSize: String(i.sampleSize || ""), frequency: String(i.frequency || ""), who: String(i.who || "") })));
-      toast.success("Sparad beräkning laddad!");
-    }
-  };
 
   const hasResult = items.length > 0;
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Vad mäts?</Label><Input value={form.measure} onChange={e => setForm({ ...form, measure: e.target.value })} placeholder="T.ex. Cykeltid" className="text-sm" /></div>

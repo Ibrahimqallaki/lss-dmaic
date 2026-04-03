@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,28 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
   const [criterionName, setCriterionName] = useState("");
   const [criterionWeight, setCriterionWeight] = useState("1");
   const [altName, setAltName] = useState("");
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const c = inputs.criteria as any[];
+    const a = inputs.alternatives as any[];
+    const s = inputs.scores as any;
+    if (Array.isArray(c)) {
+      const newCriteria = c.map(cr => ({ id: crypto.randomUUID(), name: String(cr.name || ""), weight: Number(cr.weight) || 1 }));
+      setCriteria(newCriteria);
+      if (Array.isArray(a)) setAlternatives(a.map(String));
+      // Remap scores from old criterion IDs to new ones by index
+      if (s && Array.isArray(c)) {
+        const oldIds = c.map(cr => cr.id);
+        const newScores: Record<string, Record<string, number>> = {};
+        oldIds.forEach((oldId, idx) => {
+          if (s[oldId]) newScores[newCriteria[idx].id] = s[oldId];
+        });
+        setScores(newScores);
+      }
+    }
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addCriterion = () => {
     if (!criterionName.trim()) return;
@@ -36,26 +57,6 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
     setScores(prev => ({ ...prev, [criterionId]: { ...prev[criterionId], [alt]: score } }));
   };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    const c = inputs.criteria as any[];
-    const a = inputs.alternatives as any[];
-    const s = inputs.scores as any;
-    if (Array.isArray(c)) {
-      const newCriteria = c.map(cr => ({ id: crypto.randomUUID(), name: String(cr.name || ""), weight: Number(cr.weight) || 1 }));
-      setCriteria(newCriteria);
-      if (Array.isArray(a)) setAlternatives(a.map(String));
-      // Remap scores from old criterion IDs to new ones by index
-      if (s && Array.isArray(c)) {
-        const oldIds = c.map(cr => cr.id);
-        const newScores: Record<string, Record<string, number>> = {};
-        oldIds.forEach((oldId, idx) => {
-          if (s[oldId]) newScores[newCriteria[idx].id] = s[oldId];
-        });
-        setScores(newScores);
-      }
-      toast.success("Sparad beräkning laddad!");
-    }
-  };
 
   const getTotal = (alt: string) => criteria.reduce((sum, c) => sum + (scores[c.id]?.[alt] || 0) * c.weight, 0);
   const hasResult = criteria.length > 0 && alternatives.length > 0;
@@ -63,7 +64,7 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">

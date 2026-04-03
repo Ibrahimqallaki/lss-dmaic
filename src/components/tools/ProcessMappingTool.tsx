@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,15 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Processkartläggning", phase = 2 }: Props) {
   const [steps, setSteps] = useState<ProcessStep[]>([]);
   const [form, setForm] = useState({ name: "", type: "operation" as StepType, time: "", valueAdd: true, responsible: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const loaded = inputs.steps as any[];
+    if (Array.isArray(loaded)) {
+      setSteps(loaded.map(s => ({ id: crypto.randomUUID(), name: String(s.name || ""), type: (s.type || "operation") as StepType, time: Number(s.time) || 0, valueAdd: s.valueAdd !== false, responsible: String(s.responsible || "") })));
+    }
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addStep = () => {
     if (!form.name.trim()) return;
@@ -29,13 +37,6 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
 
   const moveStep = (idx: number, dir: number) => { const n = [...steps]; const [item] = n.splice(idx, 1); n.splice(idx + dir, 0, item); setSteps(n); };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    const loaded = inputs.steps as any[];
-    if (Array.isArray(loaded)) {
-      setSteps(loaded.map(s => ({ id: crypto.randomUUID(), name: String(s.name || ""), type: (s.type || "operation") as StepType, time: Number(s.time) || 0, valueAdd: s.valueAdd !== false, responsible: String(s.responsible || "") })));
-      toast.success("Sparad beräkning laddad!");
-    }
-  };
 
   const hasResult = steps.length > 0;
   const totalTime = steps.reduce((s, step) => s + step.time, 0);
@@ -44,7 +45,7 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Stegnamn</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="T.ex. Montering" className="text-sm" /></div>
