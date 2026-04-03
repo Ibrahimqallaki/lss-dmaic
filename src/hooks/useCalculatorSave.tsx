@@ -67,7 +67,7 @@ export function useCalculatorSave(toolId?: string) {
 
     setIsSaving(true);
     try {
-      const { error } = await supabase.from("project_calculations").insert([{
+      const { error } = await supabase.from("project_calculations").upsert({
         project_id: projectId,
         user_id: user.id,
         tool_id: params.toolId,
@@ -76,7 +76,7 @@ export function useCalculatorSave(toolId?: string) {
         inputs: params.inputs as Json,
         results: params.results as Json,
         notes: params.notes || notes,
-      }]);
+      }, { onConflict: "project_id,tool_id" });
 
       if (error) throw error;
 
