@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
@@ -10,7 +10,7 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 
 export function ProblemStatementTool({ toolId = "problem-statement", toolName = "Problemformulering", phase = 1 }: Props) {
   const [data, setData] = useState({ what: "", where: "", when: "", extent: "", impact: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const update = (field: string, value: string) => setData(prev => ({ ...prev, [field]: value }));
   const hasResult = Object.values(data).some(v => v.trim());
@@ -23,7 +23,6 @@ export function ProblemStatementTool({ toolId = "problem-statement", toolName = 
       extent: String(inputs.extent || ""),
       impact: String(inputs.impact || ""),
     });
-    toast.success("Sparad beräkning laddad!");
   };
 
   const fields = [

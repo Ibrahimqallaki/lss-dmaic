@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,7 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
   const [criterionName, setCriterionName] = useState("");
   const [criterionWeight, setCriterionWeight] = useState("1");
   const [altName, setAltName] = useState("");
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addCriterion = () => {
     if (!criterionName.trim()) return;
@@ -53,7 +53,6 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
         });
         setScores(newScores);
       }
-      toast.success("Sparad beräkning laddad!");
     }
   };
 

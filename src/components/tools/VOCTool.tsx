@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -20,7 +20,7 @@ export function VOCTool({ toolId = "voc", toolName = "Voice of Customer", phase 
   const [need, setNeed] = useState("");
   const [priority, setPriority] = useState<"hög" | "medel" | "låg">("medel");
   const [requirement, setRequirement] = useState("");
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => {
     if (!need.trim()) return;
@@ -36,7 +36,6 @@ export function VOCTool({ toolId = "voc", toolName = "Voice of Customer", phase 
     const loaded = inputs.items as any[];
     if (Array.isArray(loaded)) {
       setItems(loaded.map(i => ({ id: crypto.randomUUID(), source: String(i.source || ""), need: String(i.need || ""), priority: (i.priority || "medel") as any, requirement: String(i.requirement || "") })));
-      toast.success("Sparad beräkning laddad!");
     }
   };
 

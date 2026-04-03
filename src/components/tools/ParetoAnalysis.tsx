@@ -18,7 +18,7 @@ export function ParetoAnalysis({ toolId = "pareto", toolName = "Paretoanalys", p
     { id: crypto.randomUUID(), category: "", count: 0 },
     { id: crypto.randomUUID(), category: "", count: 0 },
   ]);
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => setItems((prev) => [...prev, { id: crypto.randomUUID(), category: "", count: 0 }]);
   const removeItem = (id: string) => { if (items.length > 1) setItems((prev) => prev.filter((item) => item.id !== id)); };
@@ -30,7 +30,6 @@ export function ParetoAnalysis({ toolId = "pareto", toolName = "Paretoanalys", p
     const loaded = inputs.items as any[];
     if (Array.isArray(loaded)) {
       setItems(loaded.map(i => ({ id: crypto.randomUUID(), category: String(i.category || ""), count: Number(i.count) || 0 })));
-      toast.success("Sparad beräkning laddad!");
     }
   };
 

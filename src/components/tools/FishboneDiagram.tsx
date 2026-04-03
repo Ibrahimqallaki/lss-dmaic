@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,7 @@ export function FishboneDiagram({ toolId = "fishbone", toolName = "Fiskbensdiagr
   const [causes, setCauses] = useState<CausesMap>(
     Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.key, [""]]))
   );
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const updateCause = (category: string, index: number, value: string) => {
     setCauses((prev) => ({ ...prev, [category]: prev[category].map((c, i) => (i === index ? value : c)) }));
@@ -49,7 +49,6 @@ export function FishboneDiagram({ toolId = "fishbone", toolName = "Fiskbensdiagr
       }
       setCauses(newCauses);
     }
-    toast.success("Sparad beräkning laddad!");
   };
 
   const totalCauses = Object.values(causes).flat().filter((c) => c.trim()).length;

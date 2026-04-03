@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +33,7 @@ interface SIPOCDiagramProps {
 export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }: SIPOCDiagramProps) {
   const [data, setData] = useState<SIPOCData>({ suppliers: [""], inputs: [""], process: [""], outputs: [""], customers: [""] });
   const [processName, setProcessName] = useState("");
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const updateItem = (key: keyof SIPOCData, index: number, value: string) => {
     setData((prev) => ({ ...prev, [key]: prev[key].map((item, i) => (i === index ? value : item)) }));
@@ -66,7 +66,6 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
         customers: Array.isArray(d.customers) ? d.customers.map(String) : [""],
       });
     }
-    toast.success("Sparad beräkning laddad!");
   };
 
   const filledCounts = columns.map((col) => data[col.key].filter((v) => v.trim()).length);

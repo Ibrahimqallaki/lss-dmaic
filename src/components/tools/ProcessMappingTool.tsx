@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Processkartläggning", phase = 2 }: Props) {
   const [steps, setSteps] = useState<ProcessStep[]>([]);
   const [form, setForm] = useState({ name: "", type: "operation" as StepType, time: "", valueAdd: true, responsible: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addStep = () => {
     if (!form.name.trim()) return;
@@ -33,7 +33,6 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
     const loaded = inputs.steps as any[];
     if (Array.isArray(loaded)) {
       setSteps(loaded.map(s => ({ id: crypto.randomUUID(), name: String(s.name || ""), type: (s.type || "operation") as StepType, time: Number(s.time) || 0, valueAdd: s.valueAdd !== false, responsible: String(s.responsible || "") })));
-      toast.success("Sparad beräkning laddad!");
     }
   };
 

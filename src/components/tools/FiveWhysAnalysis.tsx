@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,7 +28,7 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
     { id: crypto.randomUUID(), problem: "", whys: [""], rootCause: "", countermeasure: "" },
   ]);
   const [activeChain, setActiveChain] = useState(0);
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const chain = chains[activeChain];
 
@@ -79,7 +79,6 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
         countermeasure: String(c.countermeasure || ""),
       })));
       setActiveChain(0);
-      toast.success("Sparad beräkning laddad!");
     }
   };
 

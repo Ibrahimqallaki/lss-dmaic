@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -33,7 +33,7 @@ export function KanoModelTool({ toolId = "kano-model", toolName = "Kano-modell",
   const [feature, setFeature] = useState("");
   const [functional, setFunctional] = useState("3");
   const [dysfunctional, setDysfunctional] = useState("3");
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const responses = ["1 – Gillar inte", "2 – Tolererar", "3 – Neutral", "4 – Förväntar", "5 – Gillar"];
 
@@ -48,7 +48,6 @@ export function KanoModelTool({ toolId = "kano-model", toolName = "Kano-modell",
     const loaded = inputs.items as any[];
     if (Array.isArray(loaded)) {
       setItems(loaded.map(i => ({ id: crypto.randomUUID(), feature: String(i.feature || ""), functional: String(i.functional || "3"), dysfunctional: String(i.dysfunctional || "3"), category: (i.category || "indifferent") as KanoCategory })));
-      toast.success("Sparad beräkning laddad!");
     }
   };
 

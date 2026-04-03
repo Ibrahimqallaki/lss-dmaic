@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function CTQTreeTool({ toolId = "ctq", toolName = "CTQ Tree", phase = 1 }: Props) {
   const [items, setItems] = useState<CTQItem[]>([]);
   const [form, setForm] = useState({ customerNeed: "", driver: "", ctq: "", spec: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => {
     if (!form.customerNeed.trim() || !form.ctq.trim()) return;
@@ -27,7 +27,6 @@ export function CTQTreeTool({ toolId = "ctq", toolName = "CTQ Tree", phase = 1 }
     const loaded = inputs.items as any[];
     if (Array.isArray(loaded)) {
       setItems(loaded.map(i => ({ id: crypto.randomUUID(), customerNeed: String(i.customerNeed || ""), driver: String(i.driver || ""), ctq: String(i.ctq || ""), spec: String(i.spec || "") })));
-      toast.success("Sparad beräkning laddad!");
     }
   };
 

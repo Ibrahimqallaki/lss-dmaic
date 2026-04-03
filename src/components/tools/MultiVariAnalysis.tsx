@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function MultiVariAnalysis({ toolId = "multi-vari", toolName = "Multi-Vari-analys", phase = 3 }: Props) {
   const [points, setPoints] = useState<DataPoint[]>([]);
   const [form, setForm] = useState({ withinUnit: "", betweenUnit: "", temporal: "", value: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addPoint = () => {
     const val = parseFloat(form.value);
@@ -28,7 +28,6 @@ export function MultiVariAnalysis({ toolId = "multi-vari", toolName = "Multi-Var
     const loaded = inputs.points as any[];
     if (Array.isArray(loaded)) {
       setPoints(loaded.map(p => ({ id: crypto.randomUUID(), withinUnit: String(p.withinUnit || ""), betweenUnit: String(p.betweenUnit || ""), temporal: String(p.temporal || ""), value: Number(p.value) || 0 })));
-      toast.success("Sparad beräkning laddad!");
     }
   };
 
