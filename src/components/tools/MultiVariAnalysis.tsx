@@ -15,7 +15,7 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function MultiVariAnalysis({ toolId = "multi-vari", toolName = "Multi-Vari-analys", phase = 3 }: Props) {
   const [points, setPoints] = useState<DataPoint[]>([]);
   const [form, setForm] = useState({ withinUnit: "", betweenUnit: "", temporal: "", value: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const addPoint = () => {
     const val = parseFloat(form.value);
@@ -54,7 +54,7 @@ export function MultiVariAnalysis({ toolId = "multi-vari", toolName = "Multi-Var
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Inom enhet (position/mätpunkt)</Label><Input value={form.withinUnit} onChange={e => setForm({ ...form, withinUnit: e.target.value })} placeholder="T.ex. Topp, Mitten, Botten" className="text-sm" /></div>

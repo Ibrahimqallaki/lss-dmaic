@@ -26,7 +26,7 @@ export function FishboneDiagram({ toolId = "fishbone", toolName = "Fiskbensdiagr
   const [causes, setCauses] = useState<CausesMap>(
     Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.key, [""]]))
   );
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const updateCause = (category: string, index: number, value: string) => {
     setCauses((prev) => ({ ...prev, [category]: prev[category].map((c, i) => (i === index ? value : c)) }));
@@ -66,7 +66,7 @@ export function FishboneDiagram({ toolId = "fishbone", toolName = "Fiskbensdiagr
 
   return (
     <div className="space-y-4">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div>
         <label className="text-sm font-medium text-foreground">Effekt / Problem</label>

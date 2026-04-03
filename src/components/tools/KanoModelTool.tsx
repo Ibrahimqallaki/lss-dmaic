@@ -33,7 +33,7 @@ export function KanoModelTool({ toolId = "kano-model", toolName = "Kano-modell",
   const [feature, setFeature] = useState("");
   const [functional, setFunctional] = useState("3");
   const [dysfunctional, setDysfunctional] = useState("3");
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const responses = ["1 – Gillar inte", "2 – Tolererar", "3 – Neutral", "4 – Förväntar", "5 – Gillar"];
 
@@ -56,7 +56,7 @@ export function KanoModelTool({ toolId = "kano-model", toolName = "Kano-modell",
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="space-y-1"><Label className="text-xs">Funktion/Egenskap</Label><Input value={feature} onChange={e => setFeature(e.target.value)} placeholder="T.ex. Leveransavisering via SMS" className="text-sm" /></div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

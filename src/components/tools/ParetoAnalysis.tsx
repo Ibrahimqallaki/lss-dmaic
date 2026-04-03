@@ -18,7 +18,7 @@ export function ParetoAnalysis({ toolId = "pareto", toolName = "Paretoanalys", p
     { id: crypto.randomUUID(), category: "", count: 0 },
     { id: crypto.randomUUID(), category: "", count: 0 },
   ]);
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const addItem = () => setItems((prev) => [...prev, { id: crypto.randomUUID(), category: "", count: 0 }]);
   const removeItem = (id: string) => { if (items.length > 1) setItems((prev) => prev.filter((item) => item.id !== id)); };
@@ -52,7 +52,7 @@ export function ParetoAnalysis({ toolId = "pareto", toolName = "Paretoanalys", p
 
   return (
     <div className="space-y-4">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="space-y-2">
         <div className="grid grid-cols-[1fr_100px_40px] gap-2 text-sm font-medium text-muted-foreground">

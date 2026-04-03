@@ -33,7 +33,7 @@ interface SIPOCDiagramProps {
 export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }: SIPOCDiagramProps) {
   const [data, setData] = useState<SIPOCData>({ suppliers: [""], inputs: [""], process: [""], outputs: [""], customers: [""] });
   const [processName, setProcessName] = useState("");
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const updateItem = (key: keyof SIPOCData, index: number, value: string) => {
     setData((prev) => ({ ...prev, [key]: prev[key].map((item, i) => (i === index ? value : item)) }));
@@ -87,7 +87,7 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
 
   return (
     <div className="space-y-4">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div>
         <label className="text-sm font-medium text-foreground">Processnamn</label>

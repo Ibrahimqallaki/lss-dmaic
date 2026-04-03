@@ -15,7 +15,7 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function CTQTreeTool({ toolId = "ctq", toolName = "CTQ Tree", phase = 1 }: Props) {
   const [items, setItems] = useState<CTQItem[]>([]);
   const [form, setForm] = useState({ customerNeed: "", driver: "", ctq: "", spec: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const addItem = () => {
     if (!form.customerNeed.trim() || !form.ctq.trim()) return;
@@ -35,7 +35,7 @@ export function CTQTreeTool({ toolId = "ctq", toolName = "CTQ Tree", phase = 1 }
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Kundbehov</Label><Input value={form.customerNeed} onChange={e => setForm({ ...form, customerNeed: e.target.value })} placeholder="Snabb leverans" className="text-sm" /></div>

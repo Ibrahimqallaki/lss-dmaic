@@ -10,7 +10,7 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 
 export function ProblemStatementTool({ toolId = "problem-statement", toolName = "Problemformulering", phase = 1 }: Props) {
   const [data, setData] = useState({ what: "", where: "", when: "", extent: "", impact: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const update = (field: string, value: string) => setData(prev => ({ ...prev, [field]: value }));
   const hasResult = Object.values(data).some(v => v.trim());
@@ -36,7 +36,7 @@ export function ProblemStatementTool({ toolId = "problem-statement", toolName = 
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       {fields.map(f => (
         <div key={f.key} className="space-y-1">

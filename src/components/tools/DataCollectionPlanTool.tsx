@@ -17,7 +17,7 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolName = "Datainsamlingsplan", phase = 2 }: Props) {
   const [items, setItems] = useState<DataItem[]>([]);
   const [form, setForm] = useState({ measure: "", dataType: "kontinuerlig", opDef: "", source: "", sampleSize: "", frequency: "", who: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const addItem = () => {
     if (!form.measure.trim()) return;
@@ -37,7 +37,7 @@ export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolNa
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Vad mäts?</Label><Input value={form.measure} onChange={e => setForm({ ...form, measure: e.target.value })} placeholder="T.ex. Cykeltid" className="text-sm" /></div>

@@ -28,7 +28,7 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
     { id: crypto.randomUUID(), problem: "", whys: [""], rootCause: "", countermeasure: "" },
   ]);
   const [activeChain, setActiveChain] = useState(0);
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const chain = chains[activeChain];
 
@@ -98,7 +98,7 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
 
   return (
     <div className="space-y-4">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       {chains.length > 1 && (
         <div className="flex gap-2 flex-wrap">

@@ -19,7 +19,7 @@ export function ProjectCharterTool({ toolId = "project-charter", toolName = "Pro
     timeline: "",
     metrics: "",
   });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const update = (field: string, value: string) => setData(prev => ({ ...prev, [field]: value }));
   const hasResult = Object.values(data).some(v => v.trim());
@@ -39,7 +39,7 @@ export function ProjectCharterTool({ toolId = "project-charter", toolName = "Pro
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="space-y-2">
         <Label className="text-xs font-medium">Problemformulering</Label>

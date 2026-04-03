@@ -19,7 +19,7 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Processkartläggning", phase = 2 }: Props) {
   const [steps, setSteps] = useState<ProcessStep[]>([]);
   const [form, setForm] = useState({ name: "", type: "operation" as StepType, time: "", valueAdd: true, responsible: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const addStep = () => {
     if (!form.name.trim()) return;
@@ -44,7 +44,7 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Stegnamn</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="T.ex. Montering" className="text-sm" /></div>

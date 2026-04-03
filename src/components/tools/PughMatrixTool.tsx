@@ -18,7 +18,7 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
   const [criterionName, setCriterionName] = useState("");
   const [criterionWeight, setCriterionWeight] = useState("1");
   const [altName, setAltName] = useState("");
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculations, isLoadingSaved } = useCalculatorSave(toolId);
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId);
 
   const addCriterion = () => {
     if (!criterionName.trim()) return;
@@ -63,7 +63,7 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
 
   return (
     <div className="space-y-3">
-      <CalculatorLoadButton savedCalculations={savedCalculations} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
