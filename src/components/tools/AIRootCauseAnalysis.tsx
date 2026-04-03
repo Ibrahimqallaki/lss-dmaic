@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Brain, Loader2, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AIRootCauseProps {
   fishboneData?: Record<string, string[]>;
@@ -20,11 +21,18 @@ export function AIRootCauseAnalysis({ fishboneData, fiveWhysData, problemStateme
     setAnalysis("");
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setAnalysis("Fel: Du måste vara inloggad för att använda AI-analysen.");
+        setIsLoading(false);
+        return;
+      }
+
       const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-root-cause`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           fishboneData,

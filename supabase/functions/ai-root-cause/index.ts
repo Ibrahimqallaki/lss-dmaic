@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,7 +10,35 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { fishboneData, fiveWhysData, problemStatement } = await req.json();
+    // Authenticate user
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.json();
+    const fishboneData = body.fishboneData;
+    const fiveWhysData = body.fiveWhysData;
+    const problemStatement = typeof body.problemStatement === "string"
+      ? body.problemStatement.slice(0, 5000)
+      : "";
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -18,31 +47,32 @@ serve(async (req) => {
       context += `Problem: ${problemStatement}\n\n`;
     }
 
-    if (fishboneData) {
+    if (fishboneData && typeof fishboneData === "object") {
       context += "Fiskbensdiagram (6M-analys):\n";
       for (const [category, causes] of Object.entries(fishboneData)) {
         if (Array.isArray(causes) && causes.length > 0) {
-          context += `  ${category}: ${(causes as string[]).join(", ")}\n`;
+          context += `  ${String(category).slice(0, 100)}: ${(causes as string[]).map(c => String(c).slice(0, 200)).join(", ")}\n`;
         }
       }
       context += "\n";
     }
 
-    if (fiveWhysData) {
+    if (Array.isArray(fiveWhysData)) {
       context += "5 Varför-analys:\n";
-      if (Array.isArray(fiveWhysData)) {
-        fiveWhysData.forEach((chain: any, i: number) => {
-          context += `  Kedja ${i + 1}:\n`;
-          if (chain.problem) context += `    Problem: ${chain.problem}\n`;
-          if (chain.whys) {
-            chain.whys.forEach((why: string, j: number) => {
-              if (why) context += `    Varför ${j + 1}: ${why}\n`;
-            });
-          }
-          if (chain.rootCause) context += `    Rotorsak: ${chain.rootCause}\n`;
-        });
-      }
+      fiveWhysData.slice(0, 20).forEach((chain: any, i: number) => {
+        context += `  Kedja ${i + 1}:\n`;
+        if (chain.problem) context += `    Problem: ${String(chain.problem).slice(0, 500)}\n`;
+        if (Array.isArray(chain.whys)) {
+          chain.whys.slice(0, 10).forEach((why: string, j: number) => {
+            if (why) context += `    Varför ${j + 1}: ${String(why).slice(0, 500)}\n`;
+          });
+        }
+        if (chain.rootCause) context += `    Rotorsak: ${String(chain.rootCause).slice(0, 500)}\n`;
+      });
     }
+
+    // Limit total context size
+    context = context.slice(0, 15000);
 
     const systemPrompt = `Du är en erfaren Lean Six Sigma Black Belt-konsult. Baserat på data från rotorsaksanalyser (fiskbensdiagram och 5 Varför), ge konkreta förslag på:
 
