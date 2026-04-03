@@ -100,7 +100,7 @@ export function useCalculatorSave(toolId?: string) {
     setNotes,
     saveCalculation,
     projectId,
-    savedCalculations,
+    savedCalculation,
     isLoadingSaved,
   };
 }
