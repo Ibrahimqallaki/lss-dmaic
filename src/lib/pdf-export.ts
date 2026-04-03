@@ -41,6 +41,86 @@ interface SigmaEntry {
   measurement_date: string;
 }
 
+/** Internal/meta keys that should never appear in reports */
+const HIDDEN_KEYS = new Set([
+  "completedSections", "totalSections", "completedFields", "totalFields",
+  "filledCount", "totalCount", "isComplete", "lastSaved", "version",
+]);
+
+/** Swedish label map for common tool field keys */
+const KEY_LABELS: Record<string, string> = {
+  // Project Charter
+  projectName: "Projektnamn", problemStatement: "Problembeskrivning",
+  goal: "Mål", scope: "Avgränsning", team: "Team",
+  sponsor: "Sponsor", timeline: "Tidplan", businessCase: "Affärsnytta",
+  // Problem Statement
+  what: "Vad", when: "När", where: "Var", who: "Vem",
+  howMuch: "Hur mycket", impact: "Påverkan", statement: "Problemformulering",
+  // SIPOC
+  suppliers: "Leverantörer", inputs: "Input", process: "Process",
+  outputs: "Output", customers: "Kunder", rows: "Rader",
+  // VOC
+  customerSegment: "Kundsegment", needs: "Behov", requirements: "Krav",
+  entries: "Poster", voices: "Röster",
+  // CTQ
+  need: "Behov", driver: "Drivare", ctq: "CTQ", measure: "Mått",
+  target: "Målvärde", specification: "Specifikation",
+  // Fishbone
+  categories: "Kategorier", causes: "Orsaker", effect: "Effekt",
+  // Five Whys
+  problem: "Problem", why1: "Varför 1", why2: "Varför 2",
+  why3: "Varför 3", why4: "Varför 4", why5: "Varför 5",
+  rootCause: "Rotorsak", countermeasure: "Motåtgärd",
+  // Kano
+  feature: "Funktion", category: "Kategori", features: "Funktioner",
+  // Pugh
+  criteria: "Kriterier", alternatives: "Alternativ", scores: "Poäng",
+  winner: "Vinnare", baseline: "Baseline",
+  // Data Collection Plan
+  dataType: "Datatyp", source: "Källa", method: "Metod",
+  frequency: "Frekvens", responsible: "Ansvarig", sampleSize: "Stickprov",
+  // Process Mapping
+  steps: "Steg", description: "Beskrivning", type: "Typ",
+  // Multi-Vari
+  factor1: "Faktor 1", factor2: "Faktor 2", factor3: "Faktor 3",
+  response: "Respons", observations: "Observationer",
+  // Pareto
+  defects: "Defekter", counts: "Antal", cumulative: "Kumulativ",
+  // Pilot Study
+  objective: "Mål", duration: "Varaktighet",
+  successCriteria: "Framgångskriterier", pilotResults: "Pilotresultat",
+  risks: "Risker", decision: "Beslut",
+  // Implementation Plan
+  actions: "Åtgärder", owner: "Ägare", deadline: "Deadline",
+  status: "Status", priority: "Prioritet",
+  // Stakeholder
+  stakeholder: "Intressent", influence: "Inflytande", interest: "Intresse",
+  strategy: "Strategi",
+  // Control
+  controlMethod: "Kontrollmetod", reactionPlan: "Reaktionsplan",
+  // Generic
+  name: "Namn", value: "Värde", notes: "Anteckningar", title: "Titel",
+  result: "Resultat", summary: "Sammanfattning", conclusion: "Slutsats",
+  mean: "Medelvärde", stdDev: "Standardavvikelse", cp: "Cp", cpk: "Cpk",
+  sigma: "Sigma", dpmo: "DPMO", pValue: "P-värde",
+  correlation: "Korrelation", rSquared: "R²",
+};
+
+/** Get display label for a key */
+function labelFor(key: string): string {
+  return KEY_LABELS[key] || key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
+}
+
+/** Check if a value is meaningful (non-empty, non-zero for meta fields) */
+function isMeaningful(key: string, value: unknown): boolean {
+  if (HIDDEN_KEYS.has(key)) return false;
+  if (value === null || value === undefined || value === "") return false;
+  if (Array.isArray(value) && value.length === 0) return false;
+  if (typeof value === "number" && value === 0) return false;
+  if (typeof value === "string" && !value.trim()) return false;
+  return true;
+}
+
 /** Format an unknown value for display in the PDF */
 function formatValue(value: unknown, maxLen = 60): string {
   if (value === null || value === undefined) return "";
@@ -48,25 +128,23 @@ function formatValue(value: unknown, maxLen = 60): string {
   if (typeof value === "boolean") return value ? "Ja" : "Nej";
   if (Array.isArray(value)) {
     if (value.length === 0) return "";
-    // Array of objects (e.g. SIPOC rows, Pugh criteria)
     if (typeof value[0] === "object" && value[0] !== null) {
       return value
         .map((item) =>
-          Object.values(item as Record<string, unknown>)
-            .filter((v) => typeof v === "string" && v.trim())
-            .map((v) => String(v).slice(0, 30))
+          Object.entries(item as Record<string, unknown>)
+            .filter(([k, v]) => isMeaningful(k, v))
+            .map(([k, v]) => `${labelFor(k)}: ${String(v).slice(0, 30)}`)
             .join(" | ")
         )
         .filter(Boolean)
         .join("; ");
     }
-    // Array of primitives
     return value.filter(Boolean).map((v) => String(v).slice(0, 40)).join(", ");
   }
   if (typeof value === "object") {
     return Object.entries(value as Record<string, unknown>)
-      .filter(([, v]) => v !== null && v !== undefined && v !== "")
-      .map(([k, v]) => `${k}: ${formatValue(v, 30)}`)
+      .filter(([k, v]) => isMeaningful(k, v))
+      .map(([k, v]) => `${labelFor(k)}: ${formatValue(v, 30)}`)
       .join(", ");
   }
   const s = String(value);
@@ -86,7 +164,7 @@ function renderEntries(
 ): number {
   if (!data || typeof data !== "object") return yPos;
   const entries = Object.entries(data as Record<string, unknown>).filter(
-    ([, v]) => v !== null && v !== undefined && v !== "" && !(Array.isArray(v) && v.length === 0)
+    ([k, v]) => isMeaningful(k, v)
   );
   if (entries.length === 0) return yPos;
 
@@ -102,7 +180,7 @@ function renderEntries(
   entries.forEach(([key, value]) => {
     const displayValue = formatValue(value);
     if (!displayValue) return;
-    const line = `${key}: ${displayValue}`;
+    const line = `${labelFor(key)}: ${displayValue}`;
     const lines = doc.splitTextToSize(line, contentWidth - 20);
     lines.forEach((l: string) => {
       checkPageBreak(5);
@@ -439,13 +517,13 @@ export function exportA3Report(
           doc.setFont("helvetica", "normal");
           doc.setTextColor(60);
           const inputEntries = Object.entries(calc.inputs as Record<string, unknown>)
-            .filter(([, v]) => v !== null && v !== undefined && v !== "" && !(Array.isArray(v) && v.length === 0))
+            .filter(([k, v]) => isMeaningful(k, v))
             .slice(0, 5);
           inputEntries.forEach(([key, value]) => {
             if (y > pageHeight - 30) return;
             const display = formatValue(value, 25);
             if (!display) return;
-            const lines = doc.splitTextToSize(`${key}: ${display}`, colWidth - 10);
+            const lines = doc.splitTextToSize(`${labelFor(key)}: ${display}`, colWidth - 10);
             doc.text(lines.slice(0, 2), x + 5, y);
             y += lines.slice(0, 2).length * 3;
           });
@@ -456,12 +534,12 @@ export function exportA3Report(
           doc.setFont("helvetica", "bold");
           doc.setTextColor(40);
           const entries = Object.entries(calc.results as Record<string, unknown>)
-            .filter(([, v]) => v !== null && v !== undefined && v !== "")
+            .filter(([k, v]) => isMeaningful(k, v))
             .slice(0, 4);
           entries.forEach(([key, value]) => {
             if (y > pageHeight - 30) return;
             const display = typeof value === "number" ? value.toFixed(3) : String(value).slice(0, 25);
-            doc.text(`${key}: ${display}`, x + 5, y);
+            doc.text(`${labelFor(key)}: ${display}`, x + 5, y);
             y += 3;
           });
           doc.setFont("helvetica", "normal");
