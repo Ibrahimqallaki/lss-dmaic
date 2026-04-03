@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,13 +24,14 @@ interface SavedCalculation {
   created_at: string;
 }
 
-export function useCalculatorSave(toolId?: string) {
+export function useCalculatorSave(toolId?: string, onAutoLoad?: (inputs: Record<string, unknown>) => void) {
   const { projectId } = useParams<{ projectId: string }>();
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [notes, setNotes] = useState("");
   const [savedCalculation, setSavedCalculation] = useState<SavedCalculation | null>(null);
   const [isLoadingSaved, setIsLoadingSaved] = useState(false);
+  const autoLoadedRef = useRef(false);
 
   const canSave = !!projectId && !!user;
 
@@ -46,13 +47,20 @@ export function useCalculatorSave(toolId?: string) {
         .maybeSingle();
 
       if (error) throw error;
-      setSavedCalculation((data as unknown as SavedCalculation) || null);
+      const saved = (data as unknown as SavedCalculation) || null;
+      setSavedCalculation(saved);
+
+      // Auto-load once on first fetch
+      if (saved && !autoLoadedRef.current && onAutoLoad) {
+        autoLoadedRef.current = true;
+        onAutoLoad(saved.inputs);
+      }
     } catch (e) {
       console.error("Error fetching saved calculations:", e);
     } finally {
       setIsLoadingSaved(false);
     }
-  }, [projectId, user, toolId]);
+  }, [projectId, user, toolId, onAutoLoad]);
 
   useEffect(() => {
     fetchSaved();
@@ -81,7 +89,6 @@ export function useCalculatorSave(toolId?: string) {
 
       toast.success("Beräkningen har sparats till projektet!");
       setNotes("");
-      // Refresh saved list
       fetchSaved();
       return true;
     } catch (error) {
