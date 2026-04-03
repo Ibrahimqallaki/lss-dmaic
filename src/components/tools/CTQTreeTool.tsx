@@ -15,6 +15,14 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function CTQTreeTool({ toolId = "ctq", toolName = "CTQ Tree", phase = 1 }: Props) {
   const [items, setItems] = useState<CTQItem[]>([]);
   const [form, setForm] = useState({ customerNeed: "", driver: "", ctq: "", spec: "" });
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const loaded = inputs.items as any[];
+    if (Array.isArray(loaded)) {
+      setItems(loaded.map(i => ({ id: crypto.randomUUID(), customerNeed: String(i.customerNeed || ""), driver: String(i.driver || ""), ctq: String(i.ctq || ""), spec: String(i.spec || "") })));
+    }
+  }, []);
+
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => {
@@ -23,12 +31,6 @@ export function CTQTreeTool({ toolId = "ctq", toolName = "CTQ Tree", phase = 1 }
     setForm({ customerNeed: "", driver: "", ctq: "", spec: "" });
   };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    const loaded = inputs.items as any[];
-    if (Array.isArray(loaded)) {
-      setItems(loaded.map(i => ({ id: crypto.randomUUID(), customerNeed: String(i.customerNeed || ""), driver: String(i.driver || ""), ctq: String(i.ctq || ""), spec: String(i.spec || "") })));
-    }
-  };
 
   const hasResult = items.length > 0;
 

@@ -28,6 +28,21 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
     { id: crypto.randomUUID(), problem: "", whys: [""], rootCause: "", countermeasure: "" },
   ]);
   const [activeChain, setActiveChain] = useState(0);
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const loaded = inputs.chains as any[];
+    if (Array.isArray(loaded)) {
+      setChains(loaded.map(c => ({
+        id: crypto.randomUUID(),
+        problem: String(c.problem || ""),
+        whys: Array.isArray(c.whys) ? c.whys.map(String) : [""],
+        rootCause: String(c.rootCause || ""),
+        countermeasure: String(c.countermeasure || ""),
+      })));
+      setActiveChain(0);
+    }
+  }, []);
+
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const chain = chains[activeChain];
@@ -68,19 +83,6 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
     updateChain({ problem: "", whys: [""], rootCause: "", countermeasure: "" });
   };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    const loaded = inputs.chains as any[];
-    if (Array.isArray(loaded)) {
-      setChains(loaded.map(c => ({
-        id: crypto.randomUUID(),
-        problem: String(c.problem || ""),
-        whys: Array.isArray(c.whys) ? c.whys.map(String) : [""],
-        rootCause: String(c.rootCause || ""),
-        countermeasure: String(c.countermeasure || ""),
-      })));
-      setActiveChain(0);
-    }
-  };
 
   const filledWhys = chain.whys.filter((w) => w.trim()).length;
   const hasResult = !!chain.rootCause.trim();

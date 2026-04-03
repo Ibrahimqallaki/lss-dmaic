@@ -18,6 +18,14 @@ export function ParetoAnalysis({ toolId = "pareto", toolName = "Paretoanalys", p
     { id: crypto.randomUUID(), category: "", count: 0 },
     { id: crypto.randomUUID(), category: "", count: 0 },
   ]);
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const loaded = inputs.items as any[];
+    if (Array.isArray(loaded)) {
+      setItems(loaded.map(i => ({ id: crypto.randomUUID(), category: String(i.category || ""), count: Number(i.count) || 0 })));
+    }
+  }, []);
+
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => setItems((prev) => [...prev, { id: crypto.randomUUID(), category: "", count: 0 }]);
@@ -26,12 +34,6 @@ export function ParetoAnalysis({ toolId = "pareto", toolName = "Paretoanalys", p
     setItems((prev) => prev.map((item) => item.id === id ? { ...item, [field]: field === "count" ? Number(value) || 0 : value } : item));
   };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    const loaded = inputs.items as any[];
-    if (Array.isArray(loaded)) {
-      setItems(loaded.map(i => ({ id: crypto.randomUUID(), category: String(i.category || ""), count: Number(i.count) || 0 })));
-    }
-  };
 
   const chartData = useMemo(() => {
     const valid = items.filter((i) => i.category.trim() && i.count > 0);

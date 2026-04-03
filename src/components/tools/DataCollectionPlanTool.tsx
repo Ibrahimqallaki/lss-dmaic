@@ -17,6 +17,14 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolName = "Datainsamlingsplan", phase = 2 }: Props) {
   const [items, setItems] = useState<DataItem[]>([]);
   const [form, setForm] = useState({ measure: "", dataType: "kontinuerlig", opDef: "", source: "", sampleSize: "", frequency: "", who: "" });
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const loaded = inputs.items as any[];
+    if (Array.isArray(loaded)) {
+      setItems(loaded.map(i => ({ id: crypto.randomUUID(), measure: String(i.measure || ""), dataType: String(i.dataType || "kontinuerlig"), opDef: String(i.opDef || ""), source: String(i.source || ""), sampleSize: String(i.sampleSize || ""), frequency: String(i.frequency || ""), who: String(i.who || "") })));
+    }
+  }, []);
+
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => {
@@ -25,12 +33,6 @@ export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolNa
     setForm({ ...form, measure: "", opDef: "", source: "", sampleSize: "", frequency: "", who: "" });
   };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    const loaded = inputs.items as any[];
-    if (Array.isArray(loaded)) {
-      setItems(loaded.map(i => ({ id: crypto.randomUUID(), measure: String(i.measure || ""), dataType: String(i.dataType || "kontinuerlig"), opDef: String(i.opDef || ""), source: String(i.source || ""), sampleSize: String(i.sampleSize || ""), frequency: String(i.frequency || ""), who: String(i.who || "") })));
-    }
-  };
 
   const hasResult = items.length > 0;
 

@@ -20,6 +20,14 @@ export function VOCTool({ toolId = "voc", toolName = "Voice of Customer", phase 
   const [need, setNeed] = useState("");
   const [priority, setPriority] = useState<"hög" | "medel" | "låg">("medel");
   const [requirement, setRequirement] = useState("");
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const loaded = inputs.items as any[];
+    if (Array.isArray(loaded)) {
+      setItems(loaded.map(i => ({ id: crypto.randomUUID(), source: String(i.source || ""), need: String(i.need || ""), priority: (i.priority || "medel") as any, requirement: String(i.requirement || "") })));
+    }
+  }, []);
+
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => {
@@ -32,12 +40,6 @@ export function VOCTool({ toolId = "voc", toolName = "Voice of Customer", phase 
   const hasResult = items.length > 0;
   const priorityColor = (p: string) => p === "hög" ? "destructive" : p === "medel" ? "default" : "secondary";
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    const loaded = inputs.items as any[];
-    if (Array.isArray(loaded)) {
-      setItems(loaded.map(i => ({ id: crypto.randomUUID(), source: String(i.source || ""), need: String(i.need || ""), priority: (i.priority || "medel") as any, requirement: String(i.requirement || "") })));
-    }
-  };
 
   return (
     <div className="space-y-3">

@@ -15,6 +15,14 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function MultiVariAnalysis({ toolId = "multi-vari", toolName = "Multi-Vari-analys", phase = 3 }: Props) {
   const [points, setPoints] = useState<DataPoint[]>([]);
   const [form, setForm] = useState({ withinUnit: "", betweenUnit: "", temporal: "", value: "" });
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const loaded = inputs.points as any[];
+    if (Array.isArray(loaded)) {
+      setPoints(loaded.map(p => ({ id: crypto.randomUUID(), withinUnit: String(p.withinUnit || ""), betweenUnit: String(p.betweenUnit || ""), temporal: String(p.temporal || ""), value: Number(p.value) || 0 })));
+    }
+  }, []);
+
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addPoint = () => {
@@ -24,12 +32,6 @@ export function MultiVariAnalysis({ toolId = "multi-vari", toolName = "Multi-Var
     setForm({ ...form, value: "" });
   };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    const loaded = inputs.points as any[];
-    if (Array.isArray(loaded)) {
-      setPoints(loaded.map(p => ({ id: crypto.randomUUID(), withinUnit: String(p.withinUnit || ""), betweenUnit: String(p.betweenUnit || ""), temporal: String(p.temporal || ""), value: Number(p.value) || 0 })));
-    }
-  };
 
   const hasResult = points.length >= 3;
   const values = points.map(p => p.value);

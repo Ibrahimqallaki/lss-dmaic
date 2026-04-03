@@ -10,12 +10,8 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 
 export function ProblemStatementTool({ toolId = "problem-statement", toolName = "Problemformulering", phase = 1 }: Props) {
   const [data, setData] = useState({ what: "", where: "", when: "", extent: "", impact: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
-  const update = (field: string, value: string) => setData(prev => ({ ...prev, [field]: value }));
-  const hasResult = Object.values(data).some(v => v.trim());
-
-  const handleLoad = (inputs: Record<string, unknown>) => {
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
     setData({
       what: String(inputs.what || ""),
       where: String(inputs.where || ""),
@@ -23,7 +19,13 @@ export function ProblemStatementTool({ toolId = "problem-statement", toolName = 
       extent: String(inputs.extent || ""),
       impact: String(inputs.impact || ""),
     });
-  };
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
+
+  const update = (field: string, value: string) => setData(prev => ({ ...prev, [field]: value }));
+  const hasResult = Object.values(data).some(v => v.trim());
+
 
   const fields = [
     { key: "what", label: "VAD är problemet?", placeholder: "Beskriv defekten/avvikelsen objektivt..." },

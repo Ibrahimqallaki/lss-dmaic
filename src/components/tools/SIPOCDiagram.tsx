@@ -33,6 +33,21 @@ interface SIPOCDiagramProps {
 export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }: SIPOCDiagramProps) {
   const [data, setData] = useState<SIPOCData>({ suppliers: [""], inputs: [""], process: [""], outputs: [""], customers: [""] });
   const [processName, setProcessName] = useState("");
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    setProcessName(String(inputs.processName || ""));
+    const d = inputs.data as any;
+    if (d) {
+      setData({
+        suppliers: Array.isArray(d.suppliers) ? d.suppliers.map(String) : [""],
+        inputs: Array.isArray(d.inputs) ? d.inputs.map(String) : [""],
+        process: Array.isArray(d.process) ? d.process.map(String) : [""],
+        outputs: Array.isArray(d.outputs) ? d.outputs.map(String) : [""],
+        customers: Array.isArray(d.customers) ? d.customers.map(String) : [""],
+      });
+    }
+  }, []);
+
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const updateItem = (key: keyof SIPOCData, index: number, value: string) => {
@@ -54,19 +69,6 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
     setProcessName("");
   };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    setProcessName(String(inputs.processName || ""));
-    const d = inputs.data as any;
-    if (d) {
-      setData({
-        suppliers: Array.isArray(d.suppliers) ? d.suppliers.map(String) : [""],
-        inputs: Array.isArray(d.inputs) ? d.inputs.map(String) : [""],
-        process: Array.isArray(d.process) ? d.process.map(String) : [""],
-        outputs: Array.isArray(d.outputs) ? d.outputs.map(String) : [""],
-        customers: Array.isArray(d.customers) ? d.customers.map(String) : [""],
-      });
-    }
-  };
 
   const filledCounts = columns.map((col) => data[col.key].filter((v) => v.trim()).length);
   const totalFilled = filledCounts.reduce((a, b) => a + b, 0);

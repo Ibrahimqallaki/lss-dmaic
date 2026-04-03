@@ -18,6 +18,27 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
   const [criterionName, setCriterionName] = useState("");
   const [criterionWeight, setCriterionWeight] = useState("1");
   const [altName, setAltName] = useState("");
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const c = inputs.criteria as any[];
+    const a = inputs.alternatives as any[];
+    const s = inputs.scores as any;
+    if (Array.isArray(c)) {
+      const newCriteria = c.map(cr => ({ id: crypto.randomUUID(), name: String(cr.name || ""), weight: Number(cr.weight) || 1 }));
+      setCriteria(newCriteria);
+      if (Array.isArray(a)) setAlternatives(a.map(String));
+      // Remap scores from old criterion IDs to new ones by index
+      if (s && Array.isArray(c)) {
+        const oldIds = c.map(cr => cr.id);
+        const newScores: Record<string, Record<string, number>> = {};
+        oldIds.forEach((oldId, idx) => {
+          if (s[oldId]) newScores[newCriteria[idx].id] = s[oldId];
+        });
+        setScores(newScores);
+      }
+    }
+  }, []);
+
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addCriterion = () => {
@@ -36,25 +57,6 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
     setScores(prev => ({ ...prev, [criterionId]: { ...prev[criterionId], [alt]: score } }));
   };
 
-  const handleLoad = (inputs: Record<string, unknown>) => {
-    const c = inputs.criteria as any[];
-    const a = inputs.alternatives as any[];
-    const s = inputs.scores as any;
-    if (Array.isArray(c)) {
-      const newCriteria = c.map(cr => ({ id: crypto.randomUUID(), name: String(cr.name || ""), weight: Number(cr.weight) || 1 }));
-      setCriteria(newCriteria);
-      if (Array.isArray(a)) setAlternatives(a.map(String));
-      // Remap scores from old criterion IDs to new ones by index
-      if (s && Array.isArray(c)) {
-        const oldIds = c.map(cr => cr.id);
-        const newScores: Record<string, Record<string, number>> = {};
-        oldIds.forEach((oldId, idx) => {
-          if (s[oldId]) newScores[newCriteria[idx].id] = s[oldId];
-        });
-        setScores(newScores);
-      }
-    }
-  };
 
   const getTotal = (alt: string) => criteria.reduce((sum, c) => sum + (scores[c.id]?.[alt] || 0) * c.weight, 0);
   const hasResult = criteria.length > 0 && alternatives.length > 0;
