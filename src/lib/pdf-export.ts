@@ -164,7 +164,7 @@ function renderEntries(
 ): number {
   if (!data || typeof data !== "object") return yPos;
   const entries = Object.entries(data as Record<string, unknown>).filter(
-    ([, v]) => v !== null && v !== undefined && v !== "" && !(Array.isArray(v) && v.length === 0)
+    ([k, v]) => isMeaningful(k, v)
   );
   if (entries.length === 0) return yPos;
 
