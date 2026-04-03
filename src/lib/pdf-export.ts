@@ -180,7 +180,7 @@ function renderEntries(
   entries.forEach(([key, value]) => {
     const displayValue = formatValue(value);
     if (!displayValue) return;
-    const line = `${key}: ${displayValue}`;
+    const line = `${labelFor(key)}: ${displayValue}`;
     const lines = doc.splitTextToSize(line, contentWidth - 20);
     lines.forEach((l: string) => {
       checkPageBreak(5);
