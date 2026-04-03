@@ -29,7 +29,7 @@ export function useCalculatorSave(toolId?: string) {
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [notes, setNotes] = useState("");
-  const [savedCalculations, setSavedCalculations] = useState<SavedCalculation[]>([]);
+  const [savedCalculation, setSavedCalculation] = useState<SavedCalculation | null>(null);
   const [isLoadingSaved, setIsLoadingSaved] = useState(false);
 
   const canSave = !!projectId && !!user;
