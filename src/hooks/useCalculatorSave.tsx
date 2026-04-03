@@ -43,11 +43,10 @@ export function useCalculatorSave(toolId?: string) {
         .select("id, tool_id, tool_name, inputs, results, notes, created_at")
         .eq("project_id", projectId)
         .eq("tool_id", toolId)
-        .order("created_at", { ascending: false })
-        .limit(20);
+        .maybeSingle();
 
       if (error) throw error;
-      setSavedCalculations((data as unknown as SavedCalculation[]) || []);
+      setSavedCalculation((data as unknown as SavedCalculation) || null);
     } catch (e) {
       console.error("Error fetching saved calculations:", e);
     } finally {
