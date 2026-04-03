@@ -517,13 +517,13 @@ export function exportA3Report(
           doc.setFont("helvetica", "normal");
           doc.setTextColor(60);
           const inputEntries = Object.entries(calc.inputs as Record<string, unknown>)
-            .filter(([, v]) => v !== null && v !== undefined && v !== "" && !(Array.isArray(v) && v.length === 0))
+            .filter(([k, v]) => isMeaningful(k, v))
             .slice(0, 5);
           inputEntries.forEach(([key, value]) => {
             if (y > pageHeight - 30) return;
             const display = formatValue(value, 25);
             if (!display) return;
-            const lines = doc.splitTextToSize(`${key}: ${display}`, colWidth - 10);
+            const lines = doc.splitTextToSize(`${labelFor(key)}: ${display}`, colWidth - 10);
             doc.text(lines.slice(0, 2), x + 5, y);
             y += lines.slice(0, 2).length * 3;
           });
