@@ -47,71 +47,97 @@ const HIDDEN_KEYS = new Set([
   "filledCount", "totalCount", "isComplete", "lastSaved", "version",
 ]);
 
+/**
+ * A3 semantic sections – each DMAIC phase is divided into meaningful blocks
+ * that group related tools under a descriptive heading.
+ */
+interface A3Section {
+  heading: string;
+  toolIds: string[];
+  focusFields?: string[];
+}
+
+const A3_PHASE_SECTIONS: Record<number, A3Section[]> = {
+  1: [
+    { heading: "Problembeskrivning & Mål", toolIds: ["problem-statement", "project-charter"], focusFields: ["problemStatement", "what", "where", "when", "extent", "impact", "statement", "goal", "businessCase", "scope", "timeline", "sponsor", "team"] },
+    { heading: "Kundbehov & Krav", toolIds: ["voc", "ctq", "kano"], focusFields: ["customerSegment", "needs", "requirements", "need", "driver", "ctq", "measure", "target", "feature", "category", "voices", "entries"] },
+    { heading: "Processöversikt", toolIds: ["sipoc", "process-mapping", "stakeholder-analysis"], focusFields: ["suppliers", "inputs", "process", "outputs", "customers", "steps", "stakeholder", "influence", "interest", "strategy", "rows"] },
+  ],
+  2: [
+    { heading: "Datainsamlingsplan", toolIds: ["data-collection-plan"], focusFields: ["dataType", "source", "method", "frequency", "responsible", "sampleSize"] },
+    { heading: "Mätsystemanalys (MSA)", toolIds: ["gage-rr"], focusFields: ["repeatability", "reproducibility", "grr", "ndc", "partVariation", "totalVariation"] },
+    { heading: "Baseline & Kapabilitet", toolIds: ["dpmo-calculator", "cp-cpk-calculator", "control-limits", "normality-test"], focusFields: ["dpmo", "sigma", "cp", "cpk", "mean", "stdDev", "pValue", "usl", "lsl", "ucl", "lcl", "centerLine"] },
+  ],
+  3: [
+    { heading: "Rotorsaksanalys", toolIds: ["fishbone", "five-whys", "ai-root-cause"], focusFields: ["effect", "categories", "causes", "problem", "why1", "why2", "why3", "why4", "why5", "rootCause", "countermeasure"] },
+    { heading: "Statistisk analys", toolIds: ["t-test", "two-sample-t-test", "anova", "chi-square", "correlation", "multi-vari"], focusFields: ["pValue", "tStatistic", "fStatistic", "chiSquare", "correlation", "rSquared", "mean", "stdDev", "conclusion", "significant"] },
+    { heading: "Prioritering", toolIds: ["pareto", "doe"], focusFields: ["defects", "counts", "cumulative", "factors", "response", "effects"] },
+  ],
+  4: [
+    { heading: "Lösningsval", toolIds: ["pugh-matrix", "response-surface"], focusFields: ["criteria", "alternatives", "scores", "winner", "baseline", "optimal"] },
+    { heading: "Pilotstudie", toolIds: ["pilot-study"], focusFields: ["objective", "duration", "successCriteria", "pilotResults", "risks", "decision"] },
+    { heading: "Implementeringsplan", toolIds: ["implementation-plan"], focusFields: ["actions", "owner", "deadline", "status", "priority"] },
+  ],
+  5: [
+    { heading: "Styrplan & Kontrolldiagram", toolIds: ["control-plan", "control-charts", "cusum", "ewma"], focusFields: ["controlMethod", "reactionPlan", "ucl", "lcl", "centerLine", "specification", "frequency", "responsible"] },
+    { heading: "Lean & Standardisering", toolIds: ["lean-tools", "fmea"], focusFields: ["severity", "occurrence", "detection", "rpn", "action", "wasteType"] },
+  ],
+};
+
 /** Swedish label map for common tool field keys */
 const KEY_LABELS: Record<string, string> = {
-  // Project Charter
   projectName: "Projektnamn", problemStatement: "Problembeskrivning",
   goal: "Mål", scope: "Avgränsning", team: "Team",
   sponsor: "Sponsor", timeline: "Tidplan", businessCase: "Affärsnytta",
-  // Problem Statement
   what: "Vad", when: "När", where: "Var", who: "Vem",
   howMuch: "Hur mycket", impact: "Påverkan", statement: "Problemformulering",
-  // SIPOC
+  extent: "Omfattning",
   suppliers: "Leverantörer", inputs: "Input", process: "Process",
   outputs: "Output", customers: "Kunder", rows: "Rader",
-  // VOC
   customerSegment: "Kundsegment", needs: "Behov", requirements: "Krav",
   entries: "Poster", voices: "Röster",
-  // CTQ
   need: "Behov", driver: "Drivare", ctq: "CTQ", measure: "Mått",
   target: "Målvärde", specification: "Specifikation",
-  // Fishbone
   categories: "Kategorier", causes: "Orsaker", effect: "Effekt",
-  // Five Whys
   problem: "Problem", why1: "Varför 1", why2: "Varför 2",
   why3: "Varför 3", why4: "Varför 4", why5: "Varför 5",
   rootCause: "Rotorsak", countermeasure: "Motåtgärd",
-  // Kano
   feature: "Funktion", category: "Kategori", features: "Funktioner",
-  // Pugh
   criteria: "Kriterier", alternatives: "Alternativ", scores: "Poäng",
   winner: "Vinnare", baseline: "Baseline",
-  // Data Collection Plan
   dataType: "Datatyp", source: "Källa", method: "Metod",
   frequency: "Frekvens", responsible: "Ansvarig", sampleSize: "Stickprov",
-  // Process Mapping
   steps: "Steg", description: "Beskrivning", type: "Typ",
-  // Multi-Vari
   factor1: "Faktor 1", factor2: "Faktor 2", factor3: "Faktor 3",
   response: "Respons", observations: "Observationer",
-  // Pareto
   defects: "Defekter", counts: "Antal", cumulative: "Kumulativ",
-  // Pilot Study
+  repeatability: "Repeterbarhet", reproducibility: "Reproducerbarhet",
+  grr: "GRR", ndc: "NDC", partVariation: "Delvariation", totalVariation: "Total variation",
+  usl: "Övre specgräns", lsl: "Nedre specgräns", ucl: "UCL", lcl: "LCL",
+  centerLine: "Centerlinje",
+  tStatistic: "T-statistik", fStatistic: "F-statistik", chiSquare: "Chi-kvadrat",
+  significant: "Signifikant", conclusion: "Slutsats",
   objective: "Mål", duration: "Varaktighet",
   successCriteria: "Framgångskriterier", pilotResults: "Pilotresultat",
   risks: "Risker", decision: "Beslut",
-  // Implementation Plan
   actions: "Åtgärder", owner: "Ägare", deadline: "Deadline",
   status: "Status", priority: "Prioritet",
-  // Stakeholder
   stakeholder: "Intressent", influence: "Inflytande", interest: "Intresse",
   strategy: "Strategi",
-  // Control
   controlMethod: "Kontrollmetod", reactionPlan: "Reaktionsplan",
-  // Generic
+  severity: "Allvarlighet", occurrence: "Frekvens (FMEA)", detection: "Upptäckbarhet",
+  rpn: "RPN", action: "Åtgärd", wasteType: "Slöseri",
   name: "Namn", value: "Värde", notes: "Anteckningar", title: "Titel",
-  result: "Resultat", summary: "Sammanfattning", conclusion: "Slutsats",
+  result: "Resultat", summary: "Sammanfattning",
   mean: "Medelvärde", stdDev: "Standardavvikelse", cp: "Cp", cpk: "Cpk",
   sigma: "Sigma", dpmo: "DPMO", pValue: "P-värde",
-  correlation: "Korrelation", rSquared: "R²",
+  correlation: "Korrelation", rSquared: "R²", optimal: "Optimalt",
 };
 
-/** Get display label for a key */
 function labelFor(key: string): string {
   return KEY_LABELS[key] || key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
 }
 
-/** Check if a value is meaningful (non-empty, non-zero for meta fields) */
 function isMeaningful(key: string, value: unknown): boolean {
   if (HIDDEN_KEYS.has(key)) return false;
   if (value === null || value === undefined || value === "") return false;
@@ -121,7 +147,6 @@ function isMeaningful(key: string, value: unknown): boolean {
   return true;
 }
 
-/** Format an unknown value for display in the PDF */
 function formatValue(value: unknown, maxLen = 60): string {
   if (value === null || value === undefined) return "";
   if (typeof value === "number") return value.toFixed(4);
@@ -151,7 +176,6 @@ function formatValue(value: unknown, maxLen = 60): string {
   return s.length > maxLen ? s.slice(0, maxLen) + "…" : s;
 }
 
-/** Render key-value entries from inputs/results into the PDF */
 function renderEntries(
   doc: jsPDF,
   data: unknown,
@@ -192,6 +216,8 @@ function renderEntries(
   return yPos;
 }
 
+// ─── Standard PDF Export ────────────────────────────────────────────
+
 export function exportProjectToPDF(
   project: Project,
   notes: ProjectNote[],
@@ -213,13 +239,11 @@ export function exportProjectToPDF(
     }
   };
 
-  // Title
   doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
   doc.text(project.name, marginLeft, yPos);
   yPos += 10;
 
-  // Description
   if (project.description) {
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
@@ -229,14 +253,12 @@ export function exportProjectToPDF(
     yPos += descLines.length * 5 + 5;
   }
 
-  // Status and date
   doc.setFontSize(10);
   doc.setTextColor(120);
   const statusText = project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad";
   doc.text(`Status: ${statusText} | Exporterad: ${new Date().toLocaleDateString("sv-SE")}`, marginLeft, yPos);
   yPos += 8;
 
-  // Sigma summary
   if (sigmaEntries.length > 0) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
@@ -249,13 +271,10 @@ export function exportProjectToPDF(
   }
 
   yPos += 3;
-
-  // Divider
   doc.setDrawColor(200);
   doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
   yPos += 10;
 
-  // Loop through each phase
   phases.forEach((phase) => {
     const phaseNotes = notes.filter((n) => n.phase === phase.id);
     const phaseCalcs = calculations.filter((c) => c.phase === phase.id);
@@ -265,14 +284,12 @@ export function exportProjectToPDF(
 
     checkPageBreak(30);
 
-    // Phase header
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0);
     doc.text(`${phase.icon} ${phase.name}: ${phase.title}`, marginLeft, yPos);
     yPos += 8;
 
-    // Tollgate progress
     if (phaseTollgate.length > 0) {
       const completed = phaseTollgate.filter((t) => t.is_completed).length;
       doc.setFontSize(9);
@@ -290,7 +307,6 @@ export function exportProjectToPDF(
       yPos += 3;
     }
 
-    // Notes section
     if (phaseNotes.length > 0) {
       checkPageBreak(15);
       doc.setFontSize(12);
@@ -327,7 +343,6 @@ export function exportProjectToPDF(
       });
     }
 
-    // Calculations section (with both inputs and results)
     if (phaseCalcs.length > 0) {
       checkPageBreak(15);
       doc.setFontSize(12);
@@ -351,10 +366,7 @@ export function exportProjectToPDF(
         doc.text(new Date(calc.created_at).toLocaleDateString("sv-SE"), marginLeft + 10, yPos);
         yPos += 6;
 
-        // Inputs
         yPos = renderEntries(doc, calc.inputs, "Indata:", marginLeft, contentWidth, yPos, checkPageBreak, [60, 90, 130]);
-
-        // Results
         yPos = renderEntries(doc, calc.results, "Resultat:", marginLeft, contentWidth, yPos, checkPageBreak, [40, 40, 40]);
 
         if (calc.notes) {
@@ -377,7 +389,6 @@ export function exportProjectToPDF(
     yPos += 8;
   });
 
-  // Footer on last page
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
@@ -390,9 +401,38 @@ export function exportProjectToPDF(
   doc.save(fileName);
 }
 
-/**
- * Export A3 report - landscape format with DMAIC storyboard layout
- */
+// ─── A3 Report Export ───────────────────────────────────────────────
+
+/** Collect all meaningful fields from inputs+results, optionally filtered by focusFields */
+function collectFields(
+  calcs: ProjectCalculation[],
+  focusFields?: string[]
+): Array<{ label: string; value: string }> {
+  const result: Array<{ label: string; value: string }> = [];
+  const seen = new Set<string>();
+
+  for (const calc of calcs) {
+    const allData: Record<string, unknown> = {
+      ...(calc.inputs && typeof calc.inputs === "object" ? (calc.inputs as Record<string, unknown>) : {}),
+      ...(calc.results && typeof calc.results === "object" ? (calc.results as Record<string, unknown>) : {}),
+    };
+
+    const entries = Object.entries(allData).filter(([k, v]) => isMeaningful(k, v));
+
+    for (const [key, value] of entries) {
+      if (focusFields && focusFields.length > 0 && !focusFields.includes(key)) continue;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const display = formatValue(value, 40);
+      if (display) {
+        result.push({ label: labelFor(key), value: display });
+      }
+    }
+  }
+
+  return result;
+}
+
 export function exportA3Report(
   project: Project,
   notes: ProjectNote[],
@@ -418,7 +458,6 @@ export function exportA3Report(
   doc.setFont("helvetica", "normal");
   doc.text(`Exporterad: ${new Date().toLocaleDateString("sv-SE")} | Status: ${project.status === "active" ? "Aktiv" : "Klar"}`, pageWidth - margin, 17, { align: "right" });
 
-  // Description
   if (project.description) {
     doc.setFontSize(9);
     doc.setTextColor(80);
@@ -426,21 +465,16 @@ export function exportA3Report(
   }
 
   const topY = 42;
+  const colors: [number, number, number][] = [
+    [59, 130, 246], [34, 197, 94], [234, 179, 8], [168, 85, 247], [239, 68, 68],
+  ];
 
-  // Draw 5 DMAIC columns
   phases.forEach((phase, index) => {
     const x = margin + index * (colWidth + 10);
     let y = topY;
-
-    const colors: [number, number, number][] = [
-      [59, 130, 246],
-      [34, 197, 94],
-      [234, 179, 8],
-      [168, 85, 247],
-      [239, 68, 68],
-    ];
     const [r, g, b] = colors[index];
 
+    // Phase header
     doc.setFillColor(r, g, b);
     doc.roundedRect(x, y, colWidth, 14, 2, 2, "F");
     doc.setFontSize(11);
@@ -464,10 +498,81 @@ export function exportA3Report(
       y += 7;
     }
 
+    // Semantic sections for this phase
+    const sections = A3_PHASE_SECTIONS[phase.id] || [];
+    const phaseCalcs = calculations.filter((c) => c.phase === phase.id);
+    const assignedToolIds = new Set(sections.flatMap((s) => s.toolIds));
+
+    for (const section of sections) {
+      const sectionCalcs = phaseCalcs.filter((c) => section.toolIds.includes(c.tool_id));
+      if (sectionCalcs.length === 0) continue;
+      if (y > pageHeight - 30) break;
+
+      // Section heading with subtle background (light tint of phase color)
+      const tintR = Math.round(255 - (255 - r) * 0.12);
+      const tintG = Math.round(255 - (255 - g) * 0.12);
+      const tintB = Math.round(255 - (255 - b) * 0.12);
+      doc.setFillColor(tintR, tintG, tintB);
+      doc.roundedRect(x + 1, y - 1, colWidth - 2, 5, 1, 1, "F");
+
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(r, g, b);
+      doc.text(section.heading, x + 3, y + 3);
+      y += 7;
+
+      // Collect and render fields
+      const fields = collectFields(sectionCalcs, section.focusFields);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(50);
+
+      for (const field of fields) {
+        if (y > pageHeight - 30) break;
+        const text = `${field.label}: ${field.value}`;
+        const lines = doc.splitTextToSize(text, colWidth - 8);
+        const maxLines = Math.min(lines.length, 3);
+        doc.text(lines.slice(0, maxLines), x + 3, y);
+        y += maxLines * 3;
+      }
+
+      y += 2;
+    }
+
+    // Remaining tools not in any section
+    const unassignedCalcs = phaseCalcs.filter((c) => !assignedToolIds.has(c.tool_id));
+    if (unassignedCalcs.length > 0 && y < pageHeight - 30) {
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40);
+      doc.text("Övrigt:", x + 2, y);
+      y += 4;
+
+      for (const calc of unassignedCalcs) {
+        if (y > pageHeight - 30) break;
+        doc.setFontSize(6.5);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(r, g, b);
+        doc.text(calc.tool_name, x + 3, y);
+        y += 3.5;
+
+        const fields = collectFields([calc]);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(50);
+        for (const field of fields.slice(0, 4)) {
+          if (y > pageHeight - 30) break;
+          const lines = doc.splitTextToSize(`${field.label}: ${field.value}`, colWidth - 10);
+          doc.text(lines.slice(0, 2), x + 5, y);
+          y += lines.slice(0, 2).length * 3;
+        }
+        y += 2;
+      }
+    }
+
     // Phase notes
     const phaseNotes = notes.filter((n) => n.phase === phase.id);
-    if (phaseNotes.length > 0) {
-      doc.setFontSize(8);
+    if (phaseNotes.length > 0 && y < pageHeight - 30) {
+      doc.setFontSize(7.5);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(40);
       doc.text("Anteckningar:", x + 2, y);
@@ -475,7 +580,7 @@ export function exportA3Report(
 
       phaseNotes.forEach((note) => {
         if (y > pageHeight - 30) return;
-        doc.setFontSize(7);
+        doc.setFontSize(6.5);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(60);
         const titleLines = doc.splitTextToSize(`• ${note.title}`, colWidth - 6);
@@ -486,63 +591,9 @@ export function exportA3Report(
           doc.setFont("helvetica", "normal");
           doc.setTextColor(80);
           const contentLines = doc.splitTextToSize(note.content, colWidth - 8);
-          const maxLines = Math.min(contentLines.length, 4);
+          const maxLines = Math.min(contentLines.length, 3);
           doc.text(contentLines.slice(0, maxLines), x + 5, y);
           y += maxLines * 3.5;
-        }
-        y += 2;
-      });
-    }
-
-    // Phase calculations — show both inputs and results
-    const phaseCalcs = calculations.filter((c) => c.phase === phase.id);
-    if (phaseCalcs.length > 0) {
-      y += 2;
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(40);
-      doc.text("Verktygsdata:", x + 2, y);
-      y += 4;
-
-      phaseCalcs.forEach((calc) => {
-        if (y > pageHeight - 30) return;
-        doc.setFontSize(7);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(r, g, b);
-        doc.text(calc.tool_name, x + 3, y);
-        y += 3.5;
-
-        // Inputs
-        if (calc.inputs && typeof calc.inputs === "object") {
-          doc.setFont("helvetica", "normal");
-          doc.setTextColor(60);
-          const inputEntries = Object.entries(calc.inputs as Record<string, unknown>)
-            .filter(([k, v]) => isMeaningful(k, v))
-            .slice(0, 5);
-          inputEntries.forEach(([key, value]) => {
-            if (y > pageHeight - 30) return;
-            const display = formatValue(value, 25);
-            if (!display) return;
-            const lines = doc.splitTextToSize(`${labelFor(key)}: ${display}`, colWidth - 10);
-            doc.text(lines.slice(0, 2), x + 5, y);
-            y += lines.slice(0, 2).length * 3;
-          });
-        }
-
-        // Results
-        if (calc.results && typeof calc.results === "object") {
-          doc.setFont("helvetica", "bold");
-          doc.setTextColor(40);
-          const entries = Object.entries(calc.results as Record<string, unknown>)
-            .filter(([k, v]) => isMeaningful(k, v))
-            .slice(0, 4);
-          entries.forEach(([key, value]) => {
-            if (y > pageHeight - 30) return;
-            const display = typeof value === "number" ? value.toFixed(3) : String(value).slice(0, 25);
-            doc.text(`${labelFor(key)}: ${display}`, x + 5, y);
-            y += 3;
-          });
-          doc.setFont("helvetica", "normal");
         }
         y += 2;
       });
@@ -555,7 +606,7 @@ export function exportA3Report(
     doc.line(x + colWidth, topY, x + colWidth, pageHeight - 25);
   });
 
-  // Sigma tracking section at bottom
+  // Sigma tracking at bottom
   if (sigmaEntries.length > 0) {
     const bottomY = pageHeight - 22;
     doc.setFontSize(8);
@@ -579,7 +630,6 @@ export function exportA3Report(
     }
   }
 
-  // Footer
   doc.setFontSize(7);
   doc.setTextColor(150);
   doc.text("Six Sigma DMAIC A3 Report", pageWidth / 2, pageHeight - 8, { align: "center" });
