@@ -47,6 +47,49 @@ const HIDDEN_KEYS = new Set([
   "filledCount", "totalCount", "isComplete", "lastSaved", "version",
 ]);
 
+/**
+ * A3 semantic sections – each DMAIC phase is divided into meaningful blocks
+ * that group related tools under a descriptive heading.
+ */
+interface A3Section {
+  heading: string;
+  toolIds: string[];
+  /** Which fields to highlight from inputs/results (if empty, show all meaningful) */
+  focusFields?: string[];
+}
+
+const A3_PHASE_SECTIONS: Record<number, A3Section[]> = {
+  // Define
+  1: [
+    { heading: "Problembeskrivning & Mål", toolIds: ["problem-statement", "project-charter"], focusFields: ["problemStatement", "what", "where", "when", "extent", "impact", "statement", "goal", "businessCase", "scope", "timeline"] },
+    { heading: "Kundbehov & Krav", toolIds: ["voc", "ctq", "kano"], focusFields: ["customerSegment", "needs", "requirements", "need", "driver", "ctq", "measure", "target", "feature", "category"] },
+    { heading: "Processöversikt", toolIds: ["sipoc", "process-mapping", "stakeholder-analysis"], focusFields: ["suppliers", "inputs", "process", "outputs", "customers", "steps", "stakeholder", "influence", "interest", "strategy"] },
+  ],
+  // Measure
+  2: [
+    { heading: "Datainsamlingsplan", toolIds: ["data-collection-plan"], focusFields: ["dataType", "source", "method", "frequency", "responsible", "sampleSize"] },
+    { heading: "Mätsystemanalys (MSA)", toolIds: ["gage-rr"], focusFields: ["repeatability", "reproducibility", "grr", "ndc", "partVariation", "totalVariation"] },
+    { heading: "Baseline & Kapabilitet", toolIds: ["dpmo-calculator", "cp-cpk-calculator", "control-limits", "normality-test"], focusFields: ["dpmo", "sigma", "cp", "cpk", "mean", "stdDev", "pValue", "usl", "lsl", "ucl", "lcl", "centerLine"] },
+  ],
+  // Analyze
+  3: [
+    { heading: "Rotorsaksanalys", toolIds: ["fishbone", "five-whys", "ai-root-cause"], focusFields: ["effect", "categories", "causes", "problem", "why1", "why2", "why3", "why4", "why5", "rootCause", "countermeasure"] },
+    { heading: "Statistisk analys", toolIds: ["t-test", "two-sample-t-test", "anova", "chi-square", "correlation", "multi-vari"], focusFields: ["pValue", "tStatistic", "fStatistic", "chiSquare", "correlation", "rSquared", "mean", "stdDev", "conclusion", "significant"] },
+    { heading: "Prioritering", toolIds: ["pareto", "doe"], focusFields: ["defects", "counts", "cumulative", "factors", "response", "effects"] },
+  ],
+  // Improve
+  4: [
+    { heading: "Lösningsval", toolIds: ["pugh-matrix", "response-surface"], focusFields: ["criteria", "alternatives", "scores", "winner", "baseline", "optimal"] },
+    { heading: "Pilotstudie", toolIds: ["pilot-study"], focusFields: ["objective", "duration", "successCriteria", "pilotResults", "risks", "decision"] },
+    { heading: "Implementeringsplan", toolIds: ["implementation-plan"], focusFields: ["actions", "owner", "deadline", "status", "priority"] },
+  ],
+  // Control
+  5: [
+    { heading: "Styrplan & Kontrolldiagram", toolIds: ["control-plan", "control-charts", "cusum", "ewma"], focusFields: ["controlMethod", "reactionPlan", "ucl", "lcl", "centerLine", "specification", "frequency", "responsible"] },
+    { heading: "Lean & Standardisering", toolIds: ["lean-tools", "fmea"], focusFields: ["severity", "occurrence", "detection", "rpn", "action", "wasteType"] },
+  ],
+};
+
 /** Swedish label map for common tool field keys */
 const KEY_LABELS: Record<string, string> = {
   // Project Charter
@@ -56,6 +99,7 @@ const KEY_LABELS: Record<string, string> = {
   // Problem Statement
   what: "Vad", when: "När", where: "Var", who: "Vem",
   howMuch: "Hur mycket", impact: "Påverkan", statement: "Problemformulering",
+  extent: "Omfattning",
   // SIPOC
   suppliers: "Leverantörer", inputs: "Input", process: "Process",
   outputs: "Output", customers: "Kunder", rows: "Rader",
@@ -86,6 +130,15 @@ const KEY_LABELS: Record<string, string> = {
   response: "Respons", observations: "Observationer",
   // Pareto
   defects: "Defekter", counts: "Antal", cumulative: "Kumulativ",
+  // MSA / Gage R&R
+  repeatability: "Repeterbarhet", reproducibility: "Reproducerbarhet",
+  grr: "GRR", ndc: "NDC", partVariation: "Delvariation", totalVariation: "Total variation",
+  // Capability
+  usl: "Övre specgräns", lsl: "Nedre specgräns", ucl: "UCL", lcl: "LCL",
+  centerLine: "Centerlinje",
+  // Statistics
+  tStatistic: "T-statistik", fStatistic: "F-statistik", chiSquare: "Chi-kvadrat",
+  significant: "Signifikant", conclusion: "Slutsats",
   // Pilot Study
   objective: "Mål", duration: "Varaktighet",
   successCriteria: "Framgångskriterier", pilotResults: "Pilotresultat",
@@ -98,285 +151,18 @@ const KEY_LABELS: Record<string, string> = {
   strategy: "Strategi",
   // Control
   controlMethod: "Kontrollmetod", reactionPlan: "Reaktionsplan",
+  // FMEA
+  severity: "Allvarlighet", occurrence: "Frekvens", detection: "Upptäckbarhet",
+  rpn: "RPN", action: "Åtgärd",
+  // Lean
+  wasteType: "Slöseri",
   // Generic
   name: "Namn", value: "Värde", notes: "Anteckningar", title: "Titel",
-  result: "Resultat", summary: "Sammanfattning", conclusion: "Slutsats",
+  result: "Resultat", summary: "Sammanfattning",
   mean: "Medelvärde", stdDev: "Standardavvikelse", cp: "Cp", cpk: "Cpk",
   sigma: "Sigma", dpmo: "DPMO", pValue: "P-värde",
-  correlation: "Korrelation", rSquared: "R²",
+  correlation: "Korrelation", rSquared: "R²", optimal: "Optimalt",
 };
-
-/** Get display label for a key */
-function labelFor(key: string): string {
-  return KEY_LABELS[key] || key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
-}
-
-/** Check if a value is meaningful (non-empty, non-zero for meta fields) */
-function isMeaningful(key: string, value: unknown): boolean {
-  if (HIDDEN_KEYS.has(key)) return false;
-  if (value === null || value === undefined || value === "") return false;
-  if (Array.isArray(value) && value.length === 0) return false;
-  if (typeof value === "number" && value === 0) return false;
-  if (typeof value === "string" && !value.trim()) return false;
-  return true;
-}
-
-/** Format an unknown value for display in the PDF */
-function formatValue(value: unknown, maxLen = 60): string {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "number") return value.toFixed(4);
-  if (typeof value === "boolean") return value ? "Ja" : "Nej";
-  if (Array.isArray(value)) {
-    if (value.length === 0) return "";
-    if (typeof value[0] === "object" && value[0] !== null) {
-      return value
-        .map((item) =>
-          Object.entries(item as Record<string, unknown>)
-            .filter(([k, v]) => isMeaningful(k, v))
-            .map(([k, v]) => `${labelFor(k)}: ${String(v).slice(0, 30)}`)
-            .join(" | ")
-        )
-        .filter(Boolean)
-        .join("; ");
-    }
-    return value.filter(Boolean).map((v) => String(v).slice(0, 40)).join(", ");
-  }
-  if (typeof value === "object") {
-    return Object.entries(value as Record<string, unknown>)
-      .filter(([k, v]) => isMeaningful(k, v))
-      .map(([k, v]) => `${labelFor(k)}: ${formatValue(v, 30)}`)
-      .join(", ");
-  }
-  const s = String(value);
-  return s.length > maxLen ? s.slice(0, maxLen) + "…" : s;
-}
-
-/** Render key-value entries from inputs/results into the PDF */
-function renderEntries(
-  doc: jsPDF,
-  data: unknown,
-  label: string,
-  marginLeft: number,
-  contentWidth: number,
-  yPos: number,
-  checkPageBreak: (n: number) => void,
-  color: [number, number, number] = [80, 80, 80]
-): number {
-  if (!data || typeof data !== "object") return yPos;
-  const entries = Object.entries(data as Record<string, unknown>).filter(
-    ([k, v]) => isMeaningful(k, v)
-  );
-  if (entries.length === 0) return yPos;
-
-  checkPageBreak(10);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(color[0], color[1], color[2]);
-  doc.text(label, marginLeft + 10, yPos);
-  yPos += 5;
-
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(60);
-  entries.forEach(([key, value]) => {
-    const displayValue = formatValue(value);
-    if (!displayValue) return;
-    const line = `${labelFor(key)}: ${displayValue}`;
-    const lines = doc.splitTextToSize(line, contentWidth - 20);
-    lines.forEach((l: string) => {
-      checkPageBreak(5);
-      doc.setFontSize(9);
-      doc.text(l, marginLeft + 14, yPos);
-      yPos += 4.5;
-    });
-  });
-  return yPos;
-}
-
-export function exportProjectToPDF(
-  project: Project,
-  notes: ProjectNote[],
-  calculations: ProjectCalculation[],
-  tollgateItems: TollgateItem[] = [],
-  sigmaEntries: SigmaEntry[] = []
-) {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const marginLeft = 20;
-  const marginRight = 20;
-  const contentWidth = pageWidth - marginLeft - marginRight;
-  let yPos = 20;
-
-  const checkPageBreak = (neededSpace: number) => {
-    if (yPos + neededSpace > 270) {
-      doc.addPage();
-      yPos = 20;
-    }
-  };
-
-  // Title
-  doc.setFontSize(24);
-  doc.setFont("helvetica", "bold");
-  doc.text(project.name, marginLeft, yPos);
-  yPos += 10;
-
-  // Description
-  if (project.description) {
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100);
-    const descLines = doc.splitTextToSize(project.description, contentWidth);
-    doc.text(descLines, marginLeft, yPos);
-    yPos += descLines.length * 5 + 5;
-  }
-
-  // Status and date
-  doc.setFontSize(10);
-  doc.setTextColor(120);
-  const statusText = project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad";
-  doc.text(`Status: ${statusText} | Exporterad: ${new Date().toLocaleDateString("sv-SE")}`, marginLeft, yPos);
-  yPos += 8;
-
-  // Sigma summary
-  if (sigmaEntries.length > 0) {
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(40);
-    const sigmaText = sigmaEntries
-      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)}σ`)
-      .join("  →  ");
-    doc.text(`Sigma-utveckling: ${sigmaText}`, marginLeft, yPos);
-    yPos += 7;
-  }
-
-  yPos += 3;
-
-  // Divider
-  doc.setDrawColor(200);
-  doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
-  yPos += 10;
-
-  // Loop through each phase
-  phases.forEach((phase) => {
-    const phaseNotes = notes.filter((n) => n.phase === phase.id);
-    const phaseCalcs = calculations.filter((c) => c.phase === phase.id);
-    const phaseTollgate = tollgateItems.filter((t) => t.phase === phase.id);
-
-    if (phaseNotes.length === 0 && phaseCalcs.length === 0 && phaseTollgate.length === 0) return;
-
-    checkPageBreak(30);
-
-    // Phase header
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0);
-    doc.text(`${phase.icon} ${phase.name}: ${phase.title}`, marginLeft, yPos);
-    yPos += 8;
-
-    // Tollgate progress
-    if (phaseTollgate.length > 0) {
-      const completed = phaseTollgate.filter((t) => t.is_completed).length;
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(100);
-      doc.text(`Tollgate: ${completed}/${phaseTollgate.length} klara`, marginLeft + 5, yPos);
-      yPos += 5;
-      phaseTollgate.forEach((item) => {
-        checkPageBreak(5);
-        doc.setFontSize(8);
-        doc.setTextColor(item.is_completed ? 34 : 150, item.is_completed ? 150 : 150, item.is_completed ? 34 : 150);
-        doc.text(`${item.is_completed ? "✓" : "○"} ${item.title}`, marginLeft + 10, yPos);
-        yPos += 4;
-      });
-      yPos += 3;
-    }
-
-    // Notes section
-    if (phaseNotes.length > 0) {
-      checkPageBreak(15);
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(0);
-      doc.text("Anteckningar", marginLeft, yPos);
-      yPos += 7;
-
-      phaseNotes.forEach((note) => {
-        checkPageBreak(25);
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(40);
-        doc.text(`• ${note.title}`, marginLeft + 5, yPos);
-        yPos += 5;
-
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(120);
-        doc.text(new Date(note.created_at).toLocaleDateString("sv-SE"), marginLeft + 10, yPos);
-        yPos += 5;
-
-        if (note.content) {
-          doc.setFontSize(10);
-          doc.setTextColor(60);
-          const contentLines = doc.splitTextToSize(note.content, contentWidth - 15);
-          contentLines.forEach((line: string) => {
-            checkPageBreak(6);
-            doc.text(line, marginLeft + 10, yPos);
-            yPos += 5;
-          });
-        }
-        yPos += 3;
-      });
-    }
-
-    // Calculations section (with both inputs and results)
-    if (phaseCalcs.length > 0) {
-      checkPageBreak(15);
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(0);
-      doc.text("Verktygsresultat", marginLeft, yPos);
-      yPos += 7;
-
-      phaseCalcs.forEach((calc) => {
-        checkPageBreak(30);
-
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(40);
-        doc.text(`• ${calc.tool_name}`, marginLeft + 5, yPos);
-        yPos += 5;
-
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(120);
-        doc.text(new Date(calc.created_at).toLocaleDateString("sv-SE"), marginLeft + 10, yPos);
-        yPos += 6;
-
-        // Inputs
-        yPos = renderEntries(doc, calc.inputs, "Indata:", marginLeft, contentWidth, yPos, checkPageBreak, [60, 90, 130]);
-
-        // Results
-        yPos = renderEntries(doc, calc.results, "Resultat:", marginLeft, contentWidth, yPos, checkPageBreak, [40, 40, 40]);
-
-        if (calc.notes) {
-          checkPageBreak(10);
-          doc.setFontSize(9);
-          doc.setTextColor(100);
-          doc.setFont("helvetica", "italic");
-          const noteLines = doc.splitTextToSize(`Anteckning: ${calc.notes}`, contentWidth - 15);
-          noteLines.forEach((line: string) => {
-            checkPageBreak(5);
-            doc.text(line, marginLeft + 10, yPos);
-            yPos += 5;
-          });
-          doc.setFont("helvetica", "normal");
-        }
-        yPos += 5;
-      });
-    }
-
-    yPos += 8;
-  });
-
   // Footer on last page
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
