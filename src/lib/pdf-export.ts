@@ -508,11 +508,12 @@ export function exportA3Report(
       if (sectionCalcs.length === 0) continue;
       if (y > pageHeight - 30) break;
 
-      // Section heading with subtle background
-      doc.setFillColor(r, g, b);
-      doc.setGState(new (doc as any).GState({ opacity: 0.12 }));
+      // Section heading with subtle background (light tint of phase color)
+      const tintR = Math.round(255 - (255 - r) * 0.12);
+      const tintG = Math.round(255 - (255 - g) * 0.12);
+      const tintB = Math.round(255 - (255 - b) * 0.12);
+      doc.setFillColor(tintR, tintG, tintB);
       doc.roundedRect(x + 1, y - 1, colWidth - 2, 5, 1, 1, "F");
-      doc.setGState(new (doc as any).GState({ opacity: 1 }));
 
       doc.setFontSize(7.5);
       doc.setFont("helvetica", "bold");
