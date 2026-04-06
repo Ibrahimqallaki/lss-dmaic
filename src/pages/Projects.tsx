@@ -32,6 +32,7 @@ export default function Projects() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
+  const [newProjectSavings, setNewProjectSavings] = useState("");
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -74,7 +75,8 @@ export default function Projects() {
       .insert({
         name: newProjectName.trim(),
         description: newProjectDescription.trim() || null,
-        user_id: user!.id
+        user_id: user!.id,
+        estimated_savings: newProjectSavings ? Number(newProjectSavings) : null
       })
       .select()
       .single();
@@ -88,6 +90,7 @@ export default function Projects() {
       setProjects([data, ...projects]);
       setNewProjectName("");
       setNewProjectDescription("");
+      setNewProjectSavings("");
       setIsDialogOpen(false);
       navigate(`/project/${data.id}`);
     }
@@ -166,6 +169,16 @@ export default function Projects() {
                         placeholder="Beskriv projektets syfte..."
                         value={newProjectDescription}
                         onChange={(e) => setNewProjectDescription(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="project-savings">Uppskattad besparing (SEK, valfritt)</Label>
+                      <Input
+                        id="project-savings"
+                        type="number"
+                        placeholder="T.ex. 500000"
+                        value={newProjectSavings}
+                        onChange={(e) => setNewProjectSavings(e.target.value)}
                       />
                     </div>
                     <Button onClick={createProject} className="w-full" disabled={isCreating}>

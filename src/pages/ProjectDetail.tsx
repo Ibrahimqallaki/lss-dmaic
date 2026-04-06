@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save, Download, CheckCircle2, Shield, Users, TrendingUp, Brain } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save, Download, CheckCircle2, Shield, Users, TrendingUp, Brain, DollarSign } from "lucide-react";
 import { exportProjectToPDF, exportA3Report } from "@/lib/pdf-export";
 import { phases } from "@/data/dmaic-tools";
 import { ToolCard } from "@/components/ToolCard";
@@ -31,6 +31,8 @@ interface Project {
   current_phase: number;
   status: string;
   user_id: string;
+  estimated_savings: number | null;
+  actual_savings: number | null;
 }
 
 interface ProjectNote {
@@ -243,6 +245,21 @@ export default function ProjectDetail() {
               {project.description && (
                 <p className="text-white/80">{project.description}</p>
               )}
+              {/* Savings indicators */}
+              <div className="flex items-center gap-4 mt-2">
+                {project.estimated_savings != null && (
+                  <span className="text-white/80 text-sm flex items-center gap-1">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Uppskattad: {new Intl.NumberFormat("sv-SE", { style: "currency", currency: "SEK", maximumFractionDigits: 0 }).format(project.estimated_savings)}
+                  </span>
+                )}
+                {project.actual_savings != null && (
+                  <span className="text-white text-sm font-medium flex items-center gap-1">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Faktisk: {new Intl.NumberFormat("sv-SE", { style: "currency", currency: "SEK", maximumFractionDigits: 0 }).format(project.actual_savings)}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <ProjectCollaborators
