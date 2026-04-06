@@ -272,9 +272,11 @@ export type Database = {
       }
       projects: {
         Row: {
+          actual_savings: number | null
           created_at: string
           current_phase: number | null
           description: string | null
+          estimated_savings: number | null
           id: string
           name: string
           status: string | null
@@ -282,9 +284,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          actual_savings?: number | null
           created_at?: string
           current_phase?: number | null
           description?: string | null
+          estimated_savings?: number | null
           id?: string
           name: string
           status?: string | null
@@ -292,9 +296,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          actual_savings?: number | null
           created_at?: string
           current_phase?: number | null
           description?: string | null
+          estimated_savings?: number | null
           id?: string
           name?: string
           status?: string | null
