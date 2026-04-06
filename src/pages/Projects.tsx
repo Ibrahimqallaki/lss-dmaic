@@ -171,6 +171,16 @@ export default function Projects() {
                         onChange={(e) => setNewProjectDescription(e.target.value)}
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="project-savings">Uppskattad besparing (SEK, valfritt)</Label>
+                      <Input
+                        id="project-savings"
+                        type="number"
+                        placeholder="T.ex. 500000"
+                        value={newProjectSavings}
+                        onChange={(e) => setNewProjectSavings(e.target.value)}
+                      />
+                    </div>
                     <Button onClick={createProject} className="w-full" disabled={isCreating}>
                       {isCreating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                       Skapa projekt
