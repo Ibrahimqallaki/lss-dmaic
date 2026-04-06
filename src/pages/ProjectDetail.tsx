@@ -245,6 +245,21 @@ export default function ProjectDetail() {
               {project.description && (
                 <p className="text-white/80">{project.description}</p>
               )}
+              {/* Savings indicators */}
+              <div className="flex items-center gap-4 mt-2">
+                {project.estimated_savings != null && (
+                  <span className="text-white/80 text-sm flex items-center gap-1">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Uppskattad: {new Intl.NumberFormat("sv-SE", { style: "currency", currency: "SEK", maximumFractionDigits: 0 }).format(project.estimated_savings)}
+                  </span>
+                )}
+                {project.actual_savings != null && (
+                  <span className="text-white text-sm font-medium flex items-center gap-1">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Faktisk: {new Intl.NumberFormat("sv-SE", { style: "currency", currency: "SEK", maximumFractionDigits: 0 }).format(project.actual_savings)}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <ProjectCollaborators
