@@ -32,6 +32,7 @@ export default function Projects() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
+  const [newProjectSavings, setNewProjectSavings] = useState("");
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -74,7 +75,8 @@ export default function Projects() {
       .insert({
         name: newProjectName.trim(),
         description: newProjectDescription.trim() || null,
-        user_id: user!.id
+        user_id: user!.id,
+        estimated_savings: newProjectSavings ? Number(newProjectSavings) : null
       })
       .select()
       .single();
@@ -88,6 +90,7 @@ export default function Projects() {
       setProjects([data, ...projects]);
       setNewProjectName("");
       setNewProjectDescription("");
+      setNewProjectSavings("");
       setIsDialogOpen(false);
       navigate(`/project/${data.id}`);
     }
