@@ -42,6 +42,13 @@ interface TollgateProgress {
   total: number;
 }
 
+interface FMEARisk {
+  project_id: string;
+  rpn: number;
+  failureMode: string;
+  risk: string;
+}
+
 const PHASE_COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#a855f7", "#ef4444"];
 
 function daysSince(dateStr: string): number {
