@@ -347,6 +347,40 @@ export default function Dashboard() {
               </Card>
             )}
 
+            {/* FMEA High Risk Alert */}
+            {highRiskFmea.length > 0 && (
+              <Card className="border-destructive/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2 text-destructive">
+                    <Target className="h-5 w-5" />
+                    FMEA Högriskvarningar (RPN ≥ 200)
+                  </CardTitle>
+                  <CardDescription>Dessa fellägen kräver omedelbara åtgärder</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {highRiskFmea.map((risk, i) => {
+                      const proj = projects.find(p => p.id === risk.project_id);
+                      return (
+                        <Link to={`/project/${risk.project_id}`} key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                          <div>
+                            <p className="font-medium">{proj?.name || "Okänt projekt"}</p>
+                            <p className="text-xs text-muted-foreground">Felläge: {risk.failureMode}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={risk.rpn >= 300 ? "destructive" : "outline"} className={risk.rpn < 300 ? "text-destructive border-destructive/50" : ""}>
+                              RPN {risk.rpn}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">{risk.risk}</Badge>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Project Cards */}
             {projects.length === 0 ? (
               <Card className="text-center py-12">
