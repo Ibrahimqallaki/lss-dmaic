@@ -65,6 +65,7 @@ export default function Dashboard() {
   const [tollgateProgress, setTollgateProgress] = useState<Record<string, TollgateProgress>>({});
   const [sigmaData, setSigmaData] = useState<SigmaEntry[]>([]);
   const [toolsUsed, setToolsUsed] = useState<Record<string, string[]>>({});
+  const [fmeaRisks, setFmeaRisks] = useState<FMEARisk[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
