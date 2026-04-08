@@ -479,6 +479,16 @@ export default function Dashboard() {
                               )}
                             </div>
 
+                            {/* FMEA risk indicator */}
+                            {(fmeaByProject[project.id] || []).some(r => r.rpn >= 200) && (
+                              <div className="flex items-center gap-1 text-xs">
+                                <Target className="h-3 w-3 text-destructive" />
+                                <span className="text-destructive font-medium">
+                                  {(fmeaByProject[project.id] || []).filter(r => r.rpn >= 200).length} högrisk-FMEA
+                                </span>
+                              </div>
+                            )}
+
                             {/* Tools used indicator */}
                             <div className="flex items-center justify-between text-xs text-muted-foreground">
                               <span>{tools.length} verktyg använda</span>
