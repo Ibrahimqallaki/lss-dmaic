@@ -117,19 +117,30 @@ export default function Dashboard() {
 
       setSigmaData(sigmaEntries || []);
 
-      // Tools used per project
+      // Tools used per project + FMEA risks
       const { data: calcData } = await supabase
         .from("project_calculations")
-        .select("project_id, tool_id")
+        .select("project_id, tool_id, results, inputs")
         .in("project_id", ids);
 
       if (calcData) {
         const tools: Record<string, string[]> = {};
-        calcData.forEach(c => {
+        const risks: FMEARisk[] = [];
+        calcData.forEach((c: any) => {
           if (!tools[c.project_id]) tools[c.project_id] = [];
           if (!tools[c.project_id].includes(c.tool_id)) tools[c.project_id].push(c.tool_id);
+          
+          if (c.tool_id === 'fmea' && c.results?.rpn) {
+            risks.push({
+              project_id: c.project_id,
+              rpn: Number(c.results.rpn),
+              failureMode: c.inputs?.failureMode || 'Okänt',
+              risk: c.results.risk || 'Okänd',
+            });
+          }
         });
         setToolsUsed(tools);
+        setFmeaRisks(risks);
       }
     }
 
