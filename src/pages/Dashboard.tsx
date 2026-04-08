@@ -153,6 +153,12 @@ export default function Dashboard() {
   const stagnantProjects = activeProjects.filter(p => daysSince(p.updated_at) > 14);
   const totalEstimatedSavings = projects.reduce((sum, p) => sum + (p.estimated_savings || 0), 0);
   const totalActualSavings = projects.reduce((sum, p) => sum + (p.actual_savings || 0), 0);
+  const highRiskFmea = fmeaRisks.filter(r => r.rpn >= 200);
+  const fmeaByProject = fmeaRisks.reduce<Record<string, FMEARisk[]>>((acc, r) => {
+    if (!acc[r.project_id]) acc[r.project_id] = [];
+    acc[r.project_id].push(r);
+    return acc;
+  }, {});
 
   // Phase distribution for bar chart
   const phaseDistData = phases.map(phase => ({
