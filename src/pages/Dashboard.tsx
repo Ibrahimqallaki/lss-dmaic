@@ -204,7 +204,7 @@ export default function Dashboard() {
             </div>
 
             {/* Top KPI Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
               <Card>
                 <CardContent className="pt-6 text-center">
                   <FolderOpen className="h-7 w-7 mx-auto text-primary mb-2" />
@@ -231,6 +231,13 @@ export default function Dashboard() {
                   <DollarSign className="h-7 w-7 mx-auto text-emerald-500 mb-2" />
                   <div className="text-2xl font-bold">{formatCurrency(totalEstimatedSavings || null)}</div>
                   <p className="text-xs text-muted-foreground">Uppsk. besparing</p>
+                </CardContent>
+              </Card>
+              <Card className={highRiskFmea.length > 0 ? "border-destructive/50 bg-destructive/5" : ""}>
+                <CardContent className="pt-6 text-center">
+                  <Target className={`h-7 w-7 mx-auto mb-2 ${highRiskFmea.length > 0 ? "text-destructive" : "text-muted-foreground"}`} />
+                  <div className="text-3xl font-bold">{highRiskFmea.length}</div>
+                  <p className="text-xs text-muted-foreground">FMEA högrisk (RPN≥200)</p>
                 </CardContent>
               </Card>
               <Card className={stagnantProjects.length > 0 ? "border-orange-400/50 bg-orange-50/30 dark:bg-orange-950/20" : ""}>
