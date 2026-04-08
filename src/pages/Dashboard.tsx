@@ -42,6 +42,13 @@ interface TollgateProgress {
   total: number;
 }
 
+interface FMEARisk {
+  project_id: string;
+  rpn: number;
+  failureMode: string;
+  risk: string;
+}
+
 const PHASE_COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#a855f7", "#ef4444"];
 
 function daysSince(dateStr: string): number {
@@ -58,6 +65,7 @@ export default function Dashboard() {
   const [tollgateProgress, setTollgateProgress] = useState<Record<string, TollgateProgress>>({});
   const [sigmaData, setSigmaData] = useState<SigmaEntry[]>([]);
   const [toolsUsed, setToolsUsed] = useState<Record<string, string[]>>({});
+  const [fmeaRisks, setFmeaRisks] = useState<FMEARisk[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -109,19 +117,30 @@ export default function Dashboard() {
 
       setSigmaData(sigmaEntries || []);
 
-      // Tools used per project
+      // Tools used per project + FMEA risks
       const { data: calcData } = await supabase
         .from("project_calculations")
-        .select("project_id, tool_id")
+        .select("project_id, tool_id, results, inputs")
         .in("project_id", ids);
 
       if (calcData) {
         const tools: Record<string, string[]> = {};
-        calcData.forEach(c => {
+        const risks: FMEARisk[] = [];
+        calcData.forEach((c: any) => {
           if (!tools[c.project_id]) tools[c.project_id] = [];
           if (!tools[c.project_id].includes(c.tool_id)) tools[c.project_id].push(c.tool_id);
+          
+          if (c.tool_id === 'fmea' && c.results?.rpn) {
+            risks.push({
+              project_id: c.project_id,
+              rpn: Number(c.results.rpn),
+              failureMode: c.inputs?.failureMode || 'Okänt',
+              risk: c.results.risk || 'Okänd',
+            });
+          }
         });
         setToolsUsed(tools);
+        setFmeaRisks(risks);
       }
     }
 
@@ -134,6 +153,12 @@ export default function Dashboard() {
   const stagnantProjects = activeProjects.filter(p => daysSince(p.updated_at) > 14);
   const totalEstimatedSavings = projects.reduce((sum, p) => sum + (p.estimated_savings || 0), 0);
   const totalActualSavings = projects.reduce((sum, p) => sum + (p.actual_savings || 0), 0);
+  const highRiskFmea = fmeaRisks.filter(r => r.rpn >= 200);
+  const fmeaByProject = fmeaRisks.reduce<Record<string, FMEARisk[]>>((acc, r) => {
+    if (!acc[r.project_id]) acc[r.project_id] = [];
+    acc[r.project_id].push(r);
+    return acc;
+  }, {});
 
   // Phase distribution for bar chart
   const phaseDistData = phases.map(phase => ({
@@ -179,7 +204,7 @@ export default function Dashboard() {
             </div>
 
             {/* Top KPI Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
               <Card>
                 <CardContent className="pt-6 text-center">
                   <FolderOpen className="h-7 w-7 mx-auto text-primary mb-2" />
@@ -206,6 +231,13 @@ export default function Dashboard() {
                   <DollarSign className="h-7 w-7 mx-auto text-emerald-500 mb-2" />
                   <div className="text-2xl font-bold">{formatCurrency(totalEstimatedSavings || null)}</div>
                   <p className="text-xs text-muted-foreground">Uppsk. besparing</p>
+                </CardContent>
+              </Card>
+              <Card className={highRiskFmea.length > 0 ? "border-destructive/50 bg-destructive/5" : ""}>
+                <CardContent className="pt-6 text-center">
+                  <Target className={`h-7 w-7 mx-auto mb-2 ${highRiskFmea.length > 0 ? "text-destructive" : "text-muted-foreground"}`} />
+                  <div className="text-3xl font-bold">{highRiskFmea.length}</div>
+                  <p className="text-xs text-muted-foreground">FMEA högrisk (RPN≥200)</p>
                 </CardContent>
               </Card>
               <Card className={stagnantProjects.length > 0 ? "border-orange-400/50 bg-orange-50/30 dark:bg-orange-950/20" : ""}>
@@ -315,6 +347,40 @@ export default function Dashboard() {
               </Card>
             )}
 
+            {/* FMEA High Risk Alert */}
+            {highRiskFmea.length > 0 && (
+              <Card className="border-destructive/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2 text-destructive">
+                    <Target className="h-5 w-5" />
+                    FMEA Högriskvarningar (RPN ≥ 200)
+                  </CardTitle>
+                  <CardDescription>Dessa fellägen kräver omedelbara åtgärder</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {highRiskFmea.map((risk, i) => {
+                      const proj = projects.find(p => p.id === risk.project_id);
+                      return (
+                        <Link to={`/project/${risk.project_id}`} key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                          <div>
+                            <p className="font-medium">{proj?.name || "Okänt projekt"}</p>
+                            <p className="text-xs text-muted-foreground">Felläge: {risk.failureMode}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={risk.rpn >= 300 ? "destructive" : "outline"} className={risk.rpn < 300 ? "text-destructive border-destructive/50" : ""}>
+                              RPN {risk.rpn}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">{risk.risk}</Badge>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Project Cards */}
             {projects.length === 0 ? (
               <Card className="text-center py-12">
@@ -412,6 +478,16 @@ export default function Dashboard() {
                                 </span>
                               )}
                             </div>
+
+                            {/* FMEA risk indicator */}
+                            {(fmeaByProject[project.id] || []).some(r => r.rpn >= 200) && (
+                              <div className="flex items-center gap-1 text-xs">
+                                <Target className="h-3 w-3 text-destructive" />
+                                <span className="text-destructive font-medium">
+                                  {(fmeaByProject[project.id] || []).filter(r => r.rpn >= 200).length} högrisk-FMEA
+                                </span>
+                              </div>
+                            )}
 
                             {/* Tools used indicator */}
                             <div className="flex items-center justify-between text-xs text-muted-foreground">
