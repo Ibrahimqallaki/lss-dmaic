@@ -132,6 +132,20 @@ const KEY_LABELS: Record<string, string> = {
   mean: "Medelvärde", stdDev: "Standardavvikelse", cp: "Cp", cpk: "Cpk",
   sigma: "Sigma", dpmo: "DPMO", pValue: "P-värde",
   correlation: "Korrelation", rSquared: "R²", optimal: "Optimalt",
+  // Additional keys previously missing
+  failureMode: "Felläge", chartType: "Diagramtyp", values: "Datavärden",
+  cl: "Centerlinje (CL)", clR: "Centerlinje R", lclR: "LCL (R)", uclR: "UCL (R)",
+  n: "Antal observationer", cpl: "Cpk (nedre)", cpu: "Cpk (övre)",
+  dpu: "Defekter per enhet", yield: "Utbyte (%)",
+  units: "Enheter", opportunities: "Möjligheter",
+  risk: "Risknivå", failureEffect: "Feleffekt", currentControl: "Nuvarande kontroll",
+  recommendedAction: "Rekommenderad åtgärd", processStep: "Processteg",
+  characteristic: "Karaktäristik", measurementMethod: "Mätmetod",
+  reactionPlanDetail: "Reaktionsplan (detalj)", sampleFrequency: "Provtagningsfrekvens",
+  confidenceLevel: "Konfidensnivå", degreesOfFreedom: "Frihetsgrader",
+  testType: "Testtyp", hypothesisResult: "Hypotesresultat",
+  totalDefects: "Totalt antal defekter", totalOpportunities: "Totalt antal möjligheter",
+  data: "Data", groups: "Grupper", effect2: "Effekt",
 };
 
 function labelFor(key: string): string {
@@ -142,38 +156,61 @@ function isMeaningful(key: string, value: unknown): boolean {
   if (HIDDEN_KEYS.has(key)) return false;
   if (value === null || value === undefined || value === "") return false;
   if (Array.isArray(value) && value.length === 0) return false;
-  if (typeof value === "number" && value === 0) return false;
+  // Don't filter out zero — LCL=0, lclR=0 etc. are meaningful
   if (typeof value === "string" && !value.trim()) return false;
   return true;
 }
 
-function formatValue(value: unknown, maxLen = 60): string {
+/** Smart number formatting: integers stay clean, decimals get 2-4 places */
+function formatNumber(n: number): string {
+  if (Number.isInteger(n)) return n.toString();
+  if (Math.abs(n) >= 100) return n.toFixed(1);
+  if (Math.abs(n) >= 1) return n.toFixed(2);
+  return n.toFixed(4);
+}
+
+function formatValue(value: unknown, maxLen = 120): string {
   if (value === null || value === undefined) return "";
-  if (typeof value === "number") return value.toFixed(4);
+  if (typeof value === "number") return formatNumber(value);
   if (typeof value === "boolean") return value ? "Ja" : "Nej";
   if (Array.isArray(value)) {
     if (value.length === 0) return "";
+    // Numeric arrays (e.g. data points): show compact summary
+    if (typeof value[0] === "number") {
+      if (value.length <= 8) return value.map((v: number) => formatNumber(v)).join(", ");
+      const first3 = value.slice(0, 3).map((v: number) => formatNumber(v)).join(", ");
+      const last2 = value.slice(-2).map((v: number) => formatNumber(v)).join(", ");
+      return `${first3}, … , ${last2} (${value.length} st)`;
+    }
+    // Object arrays (e.g. FMEA rows, SIPOC rows): render each as a line
     if (typeof value[0] === "object" && value[0] !== null) {
       return value
         .map((item) =>
           Object.entries(item as Record<string, unknown>)
             .filter(([k, v]) => isMeaningful(k, v))
-            .map(([k, v]) => `${labelFor(k)}: ${String(v).slice(0, 30)}`)
+            .map(([k, v]) => `${labelFor(k)}: ${typeof v === "number" ? formatNumber(v) : String(v).slice(0, 50)}`)
             .join(" | ")
         )
         .filter(Boolean)
-        .join("; ");
+        .join("\n");
     }
-    return value.filter(Boolean).map((v) => String(v).slice(0, 40)).join(", ");
+    return value.filter(Boolean).map((v) => String(v).slice(0, 50)).join(", ");
   }
   if (typeof value === "object") {
     return Object.entries(value as Record<string, unknown>)
       .filter(([k, v]) => isMeaningful(k, v))
-      .map(([k, v]) => `${labelFor(k)}: ${formatValue(v, 30)}`)
+      .map(([k, v]) => `${labelFor(k)}: ${formatValue(v, 50)}`)
       .join(", ");
   }
   const s = String(value);
   return s.length > maxLen ? s.slice(0, maxLen) + "…" : s;
+}
+
+/** Check if a key+value should be highlighted as a risk indicator */
+function isRiskHighlight(key: string, value: unknown): boolean {
+  if (key === "rpn" && typeof value === "number" && value >= 200) return true;
+  if (key === "risk" && typeof value === "string" && /kritisk|hög/i.test(value)) return true;
+  return false;
 }
 
 function renderEntries(
@@ -200,18 +237,57 @@ function renderEntries(
   yPos += 5;
 
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(60);
   entries.forEach(([key, value]) => {
     const displayValue = formatValue(value);
     if (!displayValue) return;
-    const line = `${labelFor(key)}: ${displayValue}`;
-    const lines = doc.splitTextToSize(line, contentWidth - 20);
-    lines.forEach((l: string) => {
+
+    // Risk highlighting: red text for high-risk values
+    const highlight = isRiskHighlight(key, value);
+    if (highlight) {
+      doc.setTextColor(220, 38, 38);
+      doc.setFont("helvetica", "bold");
+    } else {
+      doc.setTextColor(60);
+      doc.setFont("helvetica", "normal");
+    }
+
+    // Multi-line values (e.g. array items separated by \n)
+    const valueLines = displayValue.split("\n");
+    if (valueLines.length > 1) {
+      // Render label on its own line, then each item indented
       checkPageBreak(5);
       doc.setFontSize(9);
-      doc.text(l, marginLeft + 14, yPos);
-      yPos += 4.5;
-    });
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(color[0], color[1], color[2]);
+      doc.text(`${labelFor(key)}:`, marginLeft + 14, yPos);
+      yPos += 5;
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60);
+      valueLines.forEach((vl) => {
+        const subLines = doc.splitTextToSize(`  ${vl}`, contentWidth - 24);
+        subLines.forEach((sl: string) => {
+          checkPageBreak(5);
+          doc.setFontSize(8);
+          doc.text(sl, marginLeft + 16, yPos);
+          yPos += 4;
+        });
+      });
+      yPos += 1;
+    } else {
+      const line = `${labelFor(key)}: ${displayValue}`;
+      const lines = doc.splitTextToSize(line, contentWidth - 20);
+      lines.forEach((l: string) => {
+        checkPageBreak(5);
+        doc.setFontSize(9);
+        doc.text(l, marginLeft + 14, yPos);
+        yPos += 4.5;
+      });
+    }
+
+    if (highlight) {
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60);
+    }
   });
   return yPos;
 }
