@@ -206,6 +206,13 @@ function formatValue(value: unknown, maxLen = 120): string {
   return s.length > maxLen ? s.slice(0, maxLen) + "…" : s;
 }
 
+/** Check if a key+value should be highlighted as a risk indicator */
+function isRiskHighlight(key: string, value: unknown): boolean {
+  if (key === "rpn" && typeof value === "number" && value >= 200) return true;
+  if (key === "risk" && typeof value === "string" && /kritisk|hög/i.test(value)) return true;
+  return false;
+}
+
 function renderEntries(
   doc: jsPDF,
   data: unknown,
@@ -230,18 +237,57 @@ function renderEntries(
   yPos += 5;
 
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(60);
   entries.forEach(([key, value]) => {
     const displayValue = formatValue(value);
     if (!displayValue) return;
-    const line = `${labelFor(key)}: ${displayValue}`;
-    const lines = doc.splitTextToSize(line, contentWidth - 20);
-    lines.forEach((l: string) => {
+
+    // Risk highlighting: red text for high-risk values
+    const highlight = isRiskHighlight(key, value);
+    if (highlight) {
+      doc.setTextColor(220, 38, 38);
+      doc.setFont("helvetica", "bold");
+    } else {
+      doc.setTextColor(60);
+      doc.setFont("helvetica", "normal");
+    }
+
+    // Multi-line values (e.g. array items separated by \n)
+    const valueLines = displayValue.split("\n");
+    if (valueLines.length > 1) {
+      // Render label on its own line, then each item indented
       checkPageBreak(5);
       doc.setFontSize(9);
-      doc.text(l, marginLeft + 14, yPos);
-      yPos += 4.5;
-    });
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(color[0], color[1], color[2]);
+      doc.text(`${labelFor(key)}:`, marginLeft + 14, yPos);
+      yPos += 5;
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60);
+      valueLines.forEach((vl) => {
+        const subLines = doc.splitTextToSize(`  ${vl}`, contentWidth - 24);
+        subLines.forEach((sl: string) => {
+          checkPageBreak(5);
+          doc.setFontSize(8);
+          doc.text(sl, marginLeft + 16, yPos);
+          yPos += 4;
+        });
+      });
+      yPos += 1;
+    } else {
+      const line = `${labelFor(key)}: ${displayValue}`;
+      const lines = doc.splitTextToSize(line, contentWidth - 20);
+      lines.forEach((l: string) => {
+        checkPageBreak(5);
+        doc.setFontSize(9);
+        doc.text(l, marginLeft + 14, yPos);
+        yPos += 4.5;
+      });
+    }
+
+    if (highlight) {
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60);
+    }
   });
   return yPos;
 }
