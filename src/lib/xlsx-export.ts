@@ -115,8 +115,8 @@ export function exportProjectToXLSX(
     Object.keys(inp).forEach(k => allInputKeys.add(k));
     Object.keys(res).forEach(k => allResultKeys.add(k));
   });
-  const inputKeysArr = [...allInputKeys].sort();
-  const resultKeysArr = [...allResultKeys].sort();
+  const inputKeysArr = Array.from(allInputKeys).sort();
+  const resultKeysArr = Array.from(allResultKeys).sort();
   const fullCalcHeaders = [...calcHeaders, ...inputKeysArr.map(k => `[Indata] ${k}`), ...resultKeysArr.map(k => `[Resultat] ${k}`)];
 
   const calcRows = calculations.map(c => {
