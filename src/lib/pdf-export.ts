@@ -156,34 +156,50 @@ function isMeaningful(key: string, value: unknown): boolean {
   if (HIDDEN_KEYS.has(key)) return false;
   if (value === null || value === undefined || value === "") return false;
   if (Array.isArray(value) && value.length === 0) return false;
-  if (typeof value === "number" && value === 0) return false;
+  // Don't filter out zero — LCL=0, lclR=0 etc. are meaningful
   if (typeof value === "string" && !value.trim()) return false;
   return true;
 }
 
-function formatValue(value: unknown, maxLen = 60): string {
+/** Smart number formatting: integers stay clean, decimals get 2-4 places */
+function formatNumber(n: number): string {
+  if (Number.isInteger(n)) return n.toString();
+  if (Math.abs(n) >= 100) return n.toFixed(1);
+  if (Math.abs(n) >= 1) return n.toFixed(2);
+  return n.toFixed(4);
+}
+
+function formatValue(value: unknown, maxLen = 120): string {
   if (value === null || value === undefined) return "";
-  if (typeof value === "number") return value.toFixed(4);
+  if (typeof value === "number") return formatNumber(value);
   if (typeof value === "boolean") return value ? "Ja" : "Nej";
   if (Array.isArray(value)) {
     if (value.length === 0) return "";
+    // Numeric arrays (e.g. data points): show compact summary
+    if (typeof value[0] === "number") {
+      if (value.length <= 8) return value.map((v: number) => formatNumber(v)).join(", ");
+      const first3 = value.slice(0, 3).map((v: number) => formatNumber(v)).join(", ");
+      const last2 = value.slice(-2).map((v: number) => formatNumber(v)).join(", ");
+      return `${first3}, … , ${last2} (${value.length} st)`;
+    }
+    // Object arrays (e.g. FMEA rows, SIPOC rows): render each as a line
     if (typeof value[0] === "object" && value[0] !== null) {
       return value
         .map((item) =>
           Object.entries(item as Record<string, unknown>)
             .filter(([k, v]) => isMeaningful(k, v))
-            .map(([k, v]) => `${labelFor(k)}: ${String(v).slice(0, 30)}`)
+            .map(([k, v]) => `${labelFor(k)}: ${typeof v === "number" ? formatNumber(v) : String(v).slice(0, 50)}`)
             .join(" | ")
         )
         .filter(Boolean)
-        .join("; ");
+        .join("\n");
     }
-    return value.filter(Boolean).map((v) => String(v).slice(0, 40)).join(", ");
+    return value.filter(Boolean).map((v) => String(v).slice(0, 50)).join(", ");
   }
   if (typeof value === "object") {
     return Object.entries(value as Record<string, unknown>)
       .filter(([k, v]) => isMeaningful(k, v))
-      .map(([k, v]) => `${labelFor(k)}: ${formatValue(v, 30)}`)
+      .map(([k, v]) => `${labelFor(k)}: ${formatValue(v, 50)}`)
       .join(", ");
   }
   const s = String(value);
