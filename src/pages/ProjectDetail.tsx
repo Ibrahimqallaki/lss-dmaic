@@ -12,8 +12,10 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save, Download, CheckCircle2, Shield, Users, TrendingUp, Brain, DollarSign } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save, Download, CheckCircle2, Shield, Users, TrendingUp, Brain, DollarSign, Presentation, Table } from "lucide-react";
 import { exportProjectToPDF, exportA3Report } from "@/lib/pdf-export";
+import { exportProjectToPPTX } from "@/lib/pptx-export";
+import { exportProjectToXLSX } from "@/lib/xlsx-export";
 import { phases } from "@/data/dmaic-tools";
 import { ToolCard } from "@/components/ToolCard";
 import { ProjectCollaborators } from "@/components/ProjectCollaborators";
@@ -284,6 +286,24 @@ export default function ProjectDetail() {
               >
                 <Download className="h-4 w-4 mr-2" />
                 A3 Rapport
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/20 border-white/40 text-white hover:bg-white/30"
+                onClick={() => exportProjectToPPTX(project, notes, calculations, tollgateItems, sigmaEntries)}
+              >
+                <Presentation className="h-4 w-4 mr-2" />
+                PPTX
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white/20 border-white/40 text-white hover:bg-white/30"
+                onClick={() => exportProjectToXLSX(project, notes, calculations, tollgateItems, sigmaEntries)}
+              >
+                <Table className="h-4 w-4 mr-2" />
+                Excel
               </Button>
               <Badge variant="outline" className="bg-white/20 text-white border-white/40">
                 {project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad"}
