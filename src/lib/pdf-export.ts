@@ -132,6 +132,20 @@ const KEY_LABELS: Record<string, string> = {
   mean: "Medelvärde", stdDev: "Standardavvikelse", cp: "Cp", cpk: "Cpk",
   sigma: "Sigma", dpmo: "DPMO", pValue: "P-värde",
   correlation: "Korrelation", rSquared: "R²", optimal: "Optimalt",
+  // Additional keys previously missing
+  failureMode: "Felläge", chartType: "Diagramtyp", values: "Datavärden",
+  cl: "Centerlinje (CL)", clR: "Centerlinje R", lclR: "LCL (R)", uclR: "UCL (R)",
+  n: "Antal observationer", cpl: "Cpk (nedre)", cpu: "Cpk (övre)",
+  dpu: "Defekter per enhet", yield: "Utbyte (%)",
+  units: "Enheter", opportunities: "Möjligheter",
+  risk: "Risknivå", failureEffect: "Feleffekt", currentControl: "Nuvarande kontroll",
+  recommendedAction: "Rekommenderad åtgärd", processStep: "Processteg",
+  characteristic: "Karaktäristik", measurementMethod: "Mätmetod",
+  reactionPlanDetail: "Reaktionsplan (detalj)", sampleFrequency: "Provtagningsfrekvens",
+  confidenceLevel: "Konfidensnivå", degreesOfFreedom: "Frihetsgrader",
+  testType: "Testtyp", hypothesisResult: "Hypotesresultat",
+  totalDefects: "Totalt antal defekter", totalOpportunities: "Totalt antal möjligheter",
+  data: "Data", groups: "Grupper", effect2: "Effekt",
 };
 
 function labelFor(key: string): string {
