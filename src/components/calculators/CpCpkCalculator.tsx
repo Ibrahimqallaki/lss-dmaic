@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
+import { CalculatorLoadButton } from "./CalculatorLoadButton";
 
 const EXAMPLE_DATA = {
   usl: "10.5",
@@ -13,14 +14,21 @@ const EXAMPLE_DATA = {
   stdDev: "0.12",
 };
 
-export function CpCpkCalculator() {
+export function CpCpkCalculator({ toolId = "capability-cpk" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [usl, setUsl] = useState("");
   const [lsl, setLsl] = useState("");
   const [mean, setMean] = useState("");
   const [stdDev, setStdDev] = useState("");
   const [result, setResult] = useState<{ cp: number; cpk: number; cpu: number; cpl: number } | null>(null);
 
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.usl !== undefined) setUsl(String(inputs.usl));
+    if (inputs.lsl !== undefined) setLsl(String(inputs.lsl));
+    if (inputs.mean !== undefined) setMean(String(inputs.mean));
+    if (inputs.stdDev !== undefined) setStdDev(String(inputs.stdDev));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = () => {
     setUsl(EXAMPLE_DATA.usl);
@@ -83,6 +91,7 @@ export function CpCpkCalculator() {
 
   return (
     <div className="space-y-4 pt-2">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
           <Sparkles className="h-3 w-3" />
