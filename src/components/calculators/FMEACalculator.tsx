@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
+import { CalculatorLoadButton } from "./CalculatorLoadButton";
 
 const EXAMPLES = {
   critical: { severity: "9", occurrence: "6", detection: "7", label: "Kritisk" },
@@ -39,14 +40,21 @@ const DETECTION_GUIDE = [
   { range: "1-3", desc: "Hög sannolikhet att upptäcka" },
 ];
 
-export function FMEACalculator() {
+export function FMEACalculator({ toolId = "fmea" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [severity, setSeverity] = useState("");
   const [occurrence, setOccurrence] = useState("");
   const [detection, setDetection] = useState("");
   const [failureMode, setFailureMode] = useState("");
   const [result, setResult] = useState<{ rpn: number; risk: string; action: string } | null>(null);
 
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.severity !== undefined) setSeverity(String(inputs.severity));
+    if (inputs.occurrence !== undefined) setOccurrence(String(inputs.occurrence));
+    if (inputs.detection !== undefined) setDetection(String(inputs.detection));
+    if (inputs.failureMode !== undefined) setFailureMode(String(inputs.failureMode));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = (example: keyof typeof EXAMPLES) => {
     const data = EXAMPLES[example];
@@ -132,6 +140,7 @@ export function FMEACalculator() {
 
   return (
     <div className="space-y-4 pt-2">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="flex justify-end gap-1">
         {Object.entries(EXAMPLES).map(([key, data]) => (
           <Button

@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { DataInput } from "./DataInput";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
+import { CalculatorLoadButton } from "./CalculatorLoadButton";
 import {
   ScatterChart,
   Scatter,
@@ -27,12 +28,17 @@ interface CorrelationResult {
   n: number;
 }
 
-export function CorrelationCalculator() {
+export function CorrelationCalculator({ toolId = "correlation" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [xValues, setXValues] = useState("");
   const [yValues, setYValues] = useState("");
   const [result, setResult] = useState<CorrelationResult | null>(null);
 
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.xValues) setXValues(Array.isArray(inputs.xValues) ? (inputs.xValues as number[]).join(", ") : String(inputs.xValues));
+    if (inputs.yValues) setYValues(Array.isArray(inputs.yValues) ? (inputs.yValues as number[]).join(", ") : String(inputs.yValues));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = () => {
     setXValues(EXAMPLE_X);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Sparkles } from "lucide-react";
 import { sigmaTable } from "@/data/dmaic-tools";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
+import { CalculatorLoadButton } from "./CalculatorLoadButton";
 
 const EXAMPLES = {
   manufacturing: { defects: "42", units: "1000", opportunities: "5", label: "Tillverkning" },
@@ -13,13 +14,19 @@ const EXAMPLES = {
   assembly: { defects: "8", units: "2000", opportunities: "3", label: "Montering" },
 };
 
-export function DPMOCalculator() {
+export function DPMOCalculator({ toolId = "dpmo" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [defects, setDefects] = useState("");
   const [units, setUnits] = useState("");
   const [opportunities, setOpportunities] = useState("");
   const [result, setResult] = useState<{ dpmo: number; sigma: number; yield: number; dpu: number } | null>(null);
 
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.defects !== undefined) setDefects(String(inputs.defects));
+    if (inputs.units !== undefined) setUnits(String(inputs.units));
+    if (inputs.opportunities !== undefined) setOpportunities(String(inputs.opportunities));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = (example: keyof typeof EXAMPLES) => {
     const data = EXAMPLES[example];
@@ -81,6 +88,7 @@ export function DPMOCalculator() {
 
   return (
     <div className="space-y-4 pt-2">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="flex justify-end gap-1">
         {Object.entries(EXAMPLES).map(([key, data]) => (
           <Button

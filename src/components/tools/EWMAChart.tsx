@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -12,7 +13,14 @@ export function EWMAChart({ toolId = "ewma", toolName = "EWMA Chart", phase = 5 
   const [lambda, setLambda] = useState("0.2");
   const [lFactor, setLFactor] = useState("3");
   const [result, setResult] = useState<{ ewma: number[]; ucl: number[]; lcl: number[]; mean: number; stdDev: number; signals: number[] } | null>(null);
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.data) setRawData(String(inputs.data));
+    if (inputs.lambda) setLambda(String(inputs.lambda));
+    if (inputs.lFactor) setLFactor(String(inputs.lFactor));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const calculate = () => {
     const values = rawData.split(/[,;\s\n]+/).map(Number).filter(v => !isNaN(v));
@@ -47,6 +55,7 @@ export function EWMAChart({ toolId = "ewma", toolName = "EWMA Chart", phase = 5 
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="space-y-1">
         <Label className="text-xs">Data (komma- eller mellanslagsseparerad)</Label>
         <textarea value={rawData} onChange={e => setRawData(e.target.value)} placeholder="10.2, 10.5, 10.1, 10.8, 11.2..." className="w-full text-sm p-2 border rounded-md h-16 resize-none bg-background" />
@@ -67,16 +76,13 @@ export function EWMAChart({ toolId = "ewma", toolName = "EWMA Chart", phase = 5 
         <div className="space-y-2">
           <div className="border rounded-lg p-3 bg-muted/20 h-32 relative">
             <div className="absolute left-2 right-2 top-2 bottom-2">
-              {/* UCL/LCL lines */}
               {result.ucl.map((v, i) => (
                 <div key={`u${i}`} className="absolute w-1 h-1 rounded-full bg-destructive/40" style={{ left: `${(i / (result.ewma.length - 1)) * 100}%`, top: `${(1 - (v - minVal) / range) * 100}%` }} />
               ))}
               {result.lcl.map((v, i) => (
                 <div key={`l${i}`} className="absolute w-1 h-1 rounded-full bg-destructive/40" style={{ left: `${(i / (result.ewma.length - 1)) * 100}%`, top: `${(1 - (v - minVal) / range) * 100}%` }} />
               ))}
-              {/* CL */}
               <div className="absolute left-0 right-0 border-t border-muted-foreground/30" style={{ top: `${(1 - (result.mean - minVal) / range) * 100}%` }} />
-              {/* EWMA points */}
               {result.ewma.map((v, i) => (
                 <div key={`e${i}`} className={`absolute w-1.5 h-1.5 rounded-full ${result.signals.includes(i + 1) ? "bg-destructive" : "bg-primary"}`} style={{ left: `${(i / (result.ewma.length - 1)) * 100}%`, top: `${(1 - (v - minVal) / range) * 100}%` }} />
               ))}

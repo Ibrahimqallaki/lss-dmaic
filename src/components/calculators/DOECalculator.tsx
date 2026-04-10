@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
+import { CalculatorLoadButton } from "./CalculatorLoadButton";
 import {
   Table,
   TableBody,
@@ -32,7 +33,7 @@ const DEFAULT_FACTORS: Factor[] = [
   { name: "Tid", lowLevel: "5 min", highLevel: "10 min" },
 ];
 
-export function DOECalculator() {
+export function DOECalculator({ toolId = "doe-basics" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [factors, setFactors] = useState<Factor[]>([
     { name: "", lowLevel: "", highLevel: "" },
     { name: "", lowLevel: "", highLevel: "" },
@@ -45,7 +46,12 @@ export function DOECalculator() {
     resolution: string;
   } | null>(null);
 
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (Array.isArray(inputs.factors)) setFactors(inputs.factors as Factor[]);
+    if (inputs.levels) setLevels(String(inputs.levels));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = () => {
     setFactors(DEFAULT_FACTORS);

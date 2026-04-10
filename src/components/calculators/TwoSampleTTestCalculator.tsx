@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
+import { CalculatorLoadButton } from "./CalculatorLoadButton";
 
 const getTCritical = (df: number): number => {
   if (df >= 100) return 1.96;
@@ -18,7 +19,7 @@ const getTCritical = (df: number): number => {
   return 1.96;
 };
 
-export function TwoSampleTTestCalculator() {
+export function TwoSampleTTestCalculator({ toolId = "t-test-2sample" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [mean1, setMean1] = useState("");
   const [std1, setStd1] = useState("");
   const [n1, setN1] = useState("");
@@ -29,7 +30,17 @@ export function TwoSampleTTestCalculator() {
     t: number; df: number; tCrit: number; significant: boolean; pApprox: string;
     ci: { lower: number; upper: number }; diff: number;
   } | null>(null);
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.mean1 !== undefined) setMean1(String(inputs.mean1));
+    if (inputs.std1 !== undefined) setStd1(String(inputs.std1));
+    if (inputs.n1 !== undefined) setN1(String(inputs.n1));
+    if (inputs.mean2 !== undefined) setMean2(String(inputs.mean2));
+    if (inputs.std2 !== undefined) setStd2(String(inputs.std2));
+    if (inputs.n2 !== undefined) setN2(String(inputs.n2));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = () => {
     setMean1("50.3"); setStd1("2.1"); setN1("25");

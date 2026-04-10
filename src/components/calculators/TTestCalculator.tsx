@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
+import { CalculatorLoadButton } from "./CalculatorLoadButton";
 
 // T-distribution critical values (two-tailed, α=0.05)
 const T_CRITICAL: Record<number, number> = {
@@ -32,7 +33,7 @@ const EXAMPLES = {
   process: { mean: "25.3", target: "25.0", std: "1.2", n: "15", label: "Processmätning" },
 };
 
-export function TTestCalculator() {
+export function TTestCalculator({ toolId = "t-test-1sample" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [sampleMean, setSampleMean] = useState("");
   const [targetMean, setTargetMean] = useState("");
   const [stdDev, setStdDev] = useState("");
@@ -46,7 +47,14 @@ export function TTestCalculator() {
     ci: { lower: number; upper: number };
   } | null>(null);
 
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.sampleMean !== undefined) setSampleMean(String(inputs.sampleMean));
+    if (inputs.targetMean !== undefined) setTargetMean(String(inputs.targetMean));
+    if (inputs.stdDev !== undefined) setStdDev(String(inputs.stdDev));
+    if (inputs.sampleSize !== undefined) setSampleSize(String(inputs.sampleSize));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = (example: keyof typeof EXAMPLES) => {
     const data = EXAMPLES[example];
@@ -104,6 +112,7 @@ export function TTestCalculator() {
 
   return (
     <div className="space-y-4 pt-2">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="flex justify-end gap-1">
         {Object.entries(EXAMPLES).map(([key, data]) => (
           <Button

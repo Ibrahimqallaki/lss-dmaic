@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 
 interface Run { id: string; factors: number[]; response: number; }
 
@@ -15,7 +16,16 @@ export function ResponseSurfaceTool({ toolId = "response-surface", toolName = "R
   const [runs, setRuns] = useState<Run[]>([]);
   const [currentFactors, setCurrentFactors] = useState<string[]>(["", ""]);
   const [currentResponse, setCurrentResponse] = useState("");
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (Array.isArray(inputs.factorNames)) {
+      setFactorNames(inputs.factorNames as string[]);
+      setCurrentFactors((inputs.factorNames as string[]).map(() => ""));
+    }
+    if (Array.isArray(inputs.runs)) setRuns(inputs.runs as Run[]);
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addFactor = () => {
     setFactorNames([...factorNames, `Faktor ${String.fromCharCode(65 + factorNames.length)}`]);
@@ -34,10 +44,10 @@ export function ResponseSurfaceTool({ toolId = "response-surface", toolName = "R
   const hasResult = runs.length >= 3;
   const responses = runs.map(r => r.response);
   const bestRun = runs.length ? runs.reduce((best, r) => r.response > best.response ? r : best, runs[0]) : null;
-  const worstRun = runs.length ? runs.reduce((worst, r) => r.response < worst.response ? r : worst, runs[0]) : null;
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="flex items-end gap-2 flex-wrap">
         {factorNames.map((name, i) => (
           <div key={i} className="space-y-1 flex-1 min-w-20">
