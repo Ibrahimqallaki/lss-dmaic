@@ -16,7 +16,7 @@ const getFCritical = (df1: number, df2: number): number => {
   return df2 < 10 ? 3.48 : df2 < 20 ? 2.71 : df2 < 40 ? 2.45 : 2.21;
 };
 
-export function ANOVACalculator() {
+export function ANOVACalculator({ toolId = "anova" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [groupData, setGroupData] = useState("");
   const [result, setResult] = useState<{
     groups: number; totalN: number; grandMean: number;
@@ -25,7 +25,12 @@ export function ANOVACalculator() {
     F: number; FCrit: number; significant: boolean;
     groupMeans: number[];
   } | null>(null);
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.groupData) setGroupData(String(inputs.groupData));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = () => {
     setGroupData("23 25 27 24 26\n30 32 28 31 29\n20 22 21 23 19");

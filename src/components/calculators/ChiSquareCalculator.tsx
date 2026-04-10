@@ -21,14 +21,19 @@ const getChi2Critical = (df: number): number => {
   return df + Math.sqrt(2 * df); // rough approximation
 };
 
-export function ChiSquareCalculator() {
+export function ChiSquareCalculator({ toolId = "chi-square" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [tableData, setTableData] = useState("");
   const [result, setResult] = useState<{
     chi2: number; df: number; chi2Crit: number; significant: boolean;
     observed: number[][]; expected: number[][];
     rows: number; cols: number;
   } | null>(null);
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.tableData) setTableData(String(inputs.tableData));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = () => {
     setTableData("50 30 20\n35 45 20\n15 25 60");

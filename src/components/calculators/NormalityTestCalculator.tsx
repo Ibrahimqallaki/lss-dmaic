@@ -13,14 +13,19 @@ const getADCritical = (n: number): number => {
   return 0.752; // Standard critical value
 };
 
-export function NormalityTestCalculator() {
+export function NormalityTestCalculator({ toolId = "normality-test" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [data, setData] = useState("");
   const [result, setResult] = useState<{
     n: number; mean: number; stdDev: number; skewness: number; kurtosis: number;
     adStatistic: number; adCritical: number; isNormal: boolean;
     min: number; max: number; median: number;
   } | null>(null);
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.data) setData(Array.isArray(inputs.data) ? (inputs.data as number[]).join(", ") : String(inputs.data));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = () => {
     setData("10.2 10.5 9.8 10.1 10.3 9.9 10.0 10.4 10.2 10.1 9.7 10.3 10.0 10.2 10.1 9.8 10.5 10.3 10.0 10.4");
