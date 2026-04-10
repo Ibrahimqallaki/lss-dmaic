@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
 import { DataInput } from "./DataInput";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
+import { CalculatorLoadButton } from "./CalculatorLoadButton";
 
 type ChartType = "imr" | "xbar-r" | "xbar-s" | "p" | "c";
 
@@ -69,7 +70,7 @@ interface ControlLimitResult {
   n?: number;
 }
 
-export function ControlLimitsCalculator() {
+export function ControlLimitsCalculator({ toolId: passedToolId }: { toolId?: string; toolName?: string; phase?: number }) {
   const [chartType, setChartType] = useState<ChartType>("imr");
   const [values, setValues] = useState("");
   const [defects, setDefects] = useState("");
@@ -77,7 +78,15 @@ export function ControlLimitsCalculator() {
   const [subgroupSize, setSubgroupSize] = useState("5");
   const [result, setResult] = useState<ControlLimitResult | null>(null);
 
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+  const effectiveToolId = passedToolId || `spc-${chartType}`;
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.chartType) setChartType(inputs.chartType as ChartType);
+    if (inputs.values && Array.isArray(inputs.values)) setValues((inputs.values as number[]).join(", "));
+    if (inputs.subgroupSize !== undefined) setSubgroupSize(String(inputs.subgroupSize));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(effectiveToolId, handleLoad);
 
   const loadExample = () => {
     setValues(EXAMPLE_VALUES);
@@ -191,6 +200,7 @@ export function ControlLimitsCalculator() {
 
   return (
     <div className="space-y-4 pt-2">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="flex justify-between items-center">
         <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
           <Sparkles className="h-3 w-3" />

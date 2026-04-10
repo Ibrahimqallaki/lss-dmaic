@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "./CalculatorSaveButton";
+import { CalculatorLoadButton } from "./CalculatorLoadButton";
 
 const EXAMPLE = {
   operators: "3",
@@ -55,13 +56,20 @@ interface GageRRResult {
   verdict: string;
 }
 
-export function GageRRCalculator() {
+export function GageRRCalculator({ toolId = "gage-rr" }: { toolId?: string; toolName?: string; phase?: number }) {
   const [operators, setOperators] = useState("");
   const [parts, setParts] = useState("");
   const [trials, setTrials] = useState("");
   const [data, setData] = useState("");
   const [result, setResult] = useState<GageRRResult | null>(null);
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.operators !== undefined) setOperators(String(inputs.operators));
+    if (inputs.parts !== undefined) setParts(String(inputs.parts));
+    if (inputs.trials !== undefined) setTrials(String(inputs.trials));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const loadExample = () => {
     setOperators(EXAMPLE.operators);
@@ -187,6 +195,7 @@ export function GageRRCalculator() {
 
   return (
     <div className="space-y-4 pt-2">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={loadExample}>
           <Sparkles className="h-3 w-3" /> Exempeldata
