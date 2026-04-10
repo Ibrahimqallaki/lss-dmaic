@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 
 interface Task { id: string; task: string; responsible: string; deadline: string; status: "ej påbörjad" | "pågår" | "klar"; priority: "hög" | "medel" | "låg"; }
 
@@ -15,7 +16,13 @@ interface Props { toolId?: string; toolName?: string; phase?: number; }
 export function ImplementationPlanTool({ toolId = "implementation-plan", toolName = "Implementeringsplan", phase = 4 }: Props) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [form, setForm] = useState({ task: "", responsible: "", deadline: "", priority: "medel" as Task["priority"] });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const loaded = inputs.tasks as Task[] | undefined;
+    if (Array.isArray(loaded)) setTasks(loaded);
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addTask = () => {
     if (!form.task.trim()) return;
@@ -32,6 +39,7 @@ export function ImplementationPlanTool({ toolId = "implementation-plan", toolNam
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Aktivitet</Label>

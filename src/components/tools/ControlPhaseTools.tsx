@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -15,7 +16,16 @@ export function SOPTool({ toolId = "sop", toolName = "SOP", phase = 5 }: Props) 
   const [steps, setSteps] = useState<{ id: string; step: string; detail: string; caution: string }[]>([]);
   const [meta, setMeta] = useState({ title: "", purpose: "", scope: "", responsible: "" });
   const [form, setForm] = useState({ step: "", detail: "", caution: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.meta && typeof inputs.meta === "object") {
+      const m = inputs.meta as any;
+      setMeta({ title: String(m.title || ""), purpose: String(m.purpose || ""), scope: String(m.scope || ""), responsible: String(m.responsible || "") });
+    }
+    if (Array.isArray(inputs.steps)) setSteps(inputs.steps as any[]);
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addStep = () => {
     if (!form.step.trim()) return;
@@ -27,6 +37,7 @@ export function SOPTool({ toolId = "sop", toolName = "SOP", phase = 5 }: Props) 
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">SOP-titel</Label><Input value={meta.title} onChange={e => setMeta({ ...meta, title: e.target.value })} placeholder="T.ex. Monteringsinstruktion" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Ansvarig</Label><Input value={meta.responsible} onChange={e => setMeta({ ...meta, responsible: e.target.value })} className="text-sm" placeholder="Processägare" /></div>
@@ -68,7 +79,12 @@ export function SOPTool({ toolId = "sop", toolName = "SOP", phase = 5 }: Props) 
 export function TrainingPlanTool({ toolId = "training-plan", toolName = "Utbildningsplan", phase = 5 }: Props) {
   const [items, setItems] = useState<{ id: string; topic: string; audience: string; method: string; date: string; completed: boolean }[]>([]);
   const [form, setForm] = useState({ topic: "", audience: "", method: "", date: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (Array.isArray(inputs.items)) setItems(inputs.items as any[]);
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => {
     if (!form.topic.trim()) return;
@@ -81,6 +97,7 @@ export function TrainingPlanTool({ toolId = "training-plan", toolName = "Utbildn
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Utbildningsämne</Label><Input value={form.topic} onChange={e => setForm({ ...form, topic: e.target.value })} placeholder="Ny SOP för montering" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Målgrupp</Label><Input value={form.audience} onChange={e => setForm({ ...form, audience: e.target.value })} placeholder="Operatörer skift A" className="text-sm" /></div>
@@ -119,7 +136,12 @@ export function TrainingPlanTool({ toolId = "training-plan", toolName = "Utbildn
 export function ResponsePlanTool({ toolId = "response-plan", toolName = "Reaktionsplan", phase = 5 }: Props) {
   const [items, setItems] = useState<{ id: string; trigger: string; action: string; responsible: string; escalation: string }[]>([]);
   const [form, setForm] = useState({ trigger: "", action: "", responsible: "", escalation: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (Array.isArray(inputs.items)) setItems(inputs.items as any[]);
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => {
     if (!form.trigger.trim()) return;
@@ -129,6 +151,7 @@ export function ResponsePlanTool({ toolId = "response-plan", toolName = "Reaktio
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Trigger (när?)</Label><Input value={form.trigger} onChange={e => setForm({ ...form, trigger: e.target.value })} placeholder="Punkt utanför kontrollgräns" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Åtgärd</Label><Input value={form.action} onChange={e => setForm({ ...form, action: e.target.value })} placeholder="Stoppa produktion, kalibrera" className="text-sm" /></div>
@@ -169,13 +192,19 @@ export function HandoverChecklistTool({ toolId = "handover-checklist", toolName 
   ];
 
   const [items, setItems] = useState(defaultItems.map((text, i) => ({ id: String(i), text, checked: false, comment: "" })));
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (Array.isArray(inputs.items)) setItems(inputs.items as any[]);
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const toggle = (id: string) => setItems(items.map(i => i.id === id ? { ...i, checked: !i.checked } : i));
   const completed = items.filter(i => i.checked).length;
 
   return (
     <div className="space-y-2">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       {items.map(item => (
         <div key={item.id} className="flex items-start gap-2 text-xs p-2 border rounded">
           <button onClick={() => toggle(item.id)} className="mt-0.5 shrink-0">{item.checked ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Circle className="h-4 w-4 text-muted-foreground" />}</button>
@@ -195,7 +224,12 @@ export function HandoverChecklistTool({ toolId = "handover-checklist", toolName 
 export function LessonsLearnedTool({ toolId = "lessons-learned", toolName = "Lessons Learned", phase = 5 }: Props) {
   const [items, setItems] = useState<{ id: string; category: string; lesson: string; recommendation: string }[]>([]);
   const [form, setForm] = useState({ category: "process", lesson: "", recommendation: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (Array.isArray(inputs.items)) setItems(inputs.items as any[]);
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const categories: Record<string, string> = { process: "Process", team: "Teamarbete", data: "Data & analys", tools: "Verktyg", management: "Ledarskap" };
 
@@ -207,6 +241,7 @@ export function LessonsLearnedTool({ toolId = "lessons-learned", toolName = "Les
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="space-y-1">
         <Label className="text-xs">Kategori</Label>
         <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
@@ -234,7 +269,12 @@ export function LessonsLearnedTool({ toolId = "lessons-learned", toolName = "Les
 export function BenefitValidationTool({ toolId = "benefit-validation", toolName = "Nyttovalidering", phase = 5 }: Props) {
   const [items, setItems] = useState<{ id: string; metric: string; baseline: string; target: string; actual: string; unit: string }[]>([]);
   const [form, setForm] = useState({ metric: "", baseline: "", target: "", actual: "", unit: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (Array.isArray(inputs.items)) setItems(inputs.items as any[]);
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addItem = () => {
     if (!form.metric.trim()) return;
@@ -246,6 +286,7 @@ export function BenefitValidationTool({ toolId = "benefit-validation", toolName 
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">KPI/Mätetal</Label><Input value={form.metric} onChange={e => setForm({ ...form, metric: e.target.value })} placeholder="Cykeltid" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Enhet</Label><Input value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })} placeholder="minuter" className="text-sm" /></div>

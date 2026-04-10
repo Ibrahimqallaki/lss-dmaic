@@ -1,15 +1,31 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
 export function PilotStudyTool({ toolId = "pilot-study", toolName = "Pilotstudie", phase = 4 }: Props) {
   const [data, setData] = useState({ objective: "", scope: "", duration: "", sampleSize: "", successCriteria: "", baseline: "", pilotResults: "", risks: "", decision: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    setData({
+      objective: String(inputs.objective || ""),
+      scope: String(inputs.scope || ""),
+      duration: String(inputs.duration || ""),
+      sampleSize: String(inputs.sampleSize || ""),
+      successCriteria: String(inputs.successCriteria || ""),
+      baseline: String(inputs.baseline || ""),
+      pilotResults: String(inputs.pilotResults || ""),
+      risks: String(inputs.risks || ""),
+      decision: String(inputs.decision || ""),
+    });
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
   const update = (f: string, v: string) => setData(prev => ({ ...prev, [f]: v }));
   const hasResult = Object.values(data).some(v => v.trim());
 
@@ -27,6 +43,7 @@ export function PilotStudyTool({ toolId = "pilot-study", toolName = "Pilotstudie
 
   return (
     <div className="space-y-2">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       {fields.map(f => (
         <div key={f.key} className="space-y-1">
           <Label className="text-xs font-medium">{f.label}</Label>

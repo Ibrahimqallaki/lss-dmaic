@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -24,7 +25,14 @@ export function FiveSAuditTool({ toolId = "5s", toolName = "5S", phase = 4 }: Pr
   const [scores, setScores] = useState<Record<string, number[]>>(
     Object.fromEntries(categories.map(c => [c.key, c.items.map(() => 3)]))
   );
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.scores && typeof inputs.scores === "object") {
+      setScores(inputs.scores as Record<string, number[]>);
+    }
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const setScore = (catKey: string, idx: number, val: number[]) => {
     setScores(prev => ({ ...prev, [catKey]: prev[catKey].map((s, i) => i === idx ? val[0] : s) }));
@@ -35,6 +43,7 @@ export function FiveSAuditTool({ toolId = "5s", toolName = "5S", phase = 4 }: Pr
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       {categories.map(cat => (
         <div key={cat.key} className="space-y-1.5">
           <Label className="text-xs font-medium">{cat.label} — snitt: {catAvg(cat.key).toFixed(1)}/5</Label>
@@ -59,7 +68,21 @@ export function FiveSAuditTool({ toolId = "5s", toolName = "5S", phase = 4 }: Pr
 // Kaizen Event Tool
 export function KaizenEventTool({ toolId = "kaizen", toolName = "Kaizen Event", phase = 4 }: Props) {
   const [data, setData] = useState({ theme: "", scope: "", team: "", currentState: "", targetState: "", actions: "", results: "", standardization: "" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    setData({
+      theme: String(inputs.theme || ""),
+      scope: String(inputs.scope || ""),
+      team: String(inputs.team || ""),
+      currentState: String(inputs.currentState || ""),
+      targetState: String(inputs.targetState || ""),
+      actions: String(inputs.actions || ""),
+      results: String(inputs.results || ""),
+      standardization: String(inputs.standardization || ""),
+    });
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
   const update = (f: string, v: string) => setData(prev => ({ ...prev, [f]: v }));
   const hasResult = Object.values(data).some(v => v.trim());
   const fields = [
@@ -75,6 +98,7 @@ export function KaizenEventTool({ toolId = "kaizen", toolName = "Kaizen Event", 
 
   return (
     <div className="space-y-2">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       {fields.map(f => (
         <div key={f.key} className="space-y-1">
           <Label className="text-xs font-medium">{f.label}</Label>
@@ -90,7 +114,12 @@ export function KaizenEventTool({ toolId = "kaizen", toolName = "Kaizen Event", 
 export function PokaYokeTool({ toolId = "mistake-proofing", toolName = "Poka-Yoke", phase = 4 }: Props) {
   const [items, setItems] = useState<{ id: string; error: string; cause: string; type: string; solution: string; level: string }[]>([]);
   const [form, setForm] = useState({ error: "", cause: "", type: "kontakt", solution: "", level: "prevention" });
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (Array.isArray(inputs.items)) setItems(inputs.items as any[]);
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const typeLabels: Record<string, string> = { kontakt: "Kontaktmetod", fastAntal: "Fast antal", sekvens: "Sekvensmetod" };
   const levelLabels: Record<string, string> = { prevention: "Förebyggande (bäst)", detection: "Detektering", mitigation: "Begränsning" };
@@ -105,6 +134,7 @@ export function PokaYokeTool({ toolId = "mistake-proofing", toolName = "Poka-Yok
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Potentiellt fel</Label>

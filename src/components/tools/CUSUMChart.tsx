@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -13,7 +14,15 @@ export function CUSUMChart({ toolId = "cusum", toolName = "CUSUM Chart", phase =
   const [k, setK] = useState("0.5");
   const [h, setH] = useState("4");
   const [result, setResult] = useState<{ cusumPos: number[]; cusumNeg: number[]; signals: number[]; mean: number; stdDev: number } | null>(null);
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    if (inputs.data) setRawData(String(inputs.data));
+    if (inputs.target) setTarget(String(inputs.target));
+    if (inputs.k) setK(String(inputs.k));
+    if (inputs.h) setH(String(inputs.h));
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const calculate = () => {
     const values = rawData.split(/[,;\s\n]+/).map(Number).filter(v => !isNaN(v));
@@ -43,6 +52,7 @@ export function CUSUMChart({ toolId = "cusum", toolName = "CUSUM Chart", phase =
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="space-y-1">
         <Label className="text-xs">Data (komma- eller mellanslagsseparerad)</Label>
         <textarea value={rawData} onChange={e => setRawData(e.target.value)} placeholder="10.2, 10.5, 10.1, 10.8, 11.2, 10.9..." className="w-full text-sm p-2 border rounded-md h-16 resize-none bg-background" />

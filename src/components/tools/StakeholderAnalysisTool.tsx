@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
+import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
 
 interface Stakeholder { id: string; name: string; power: number; interest: number; strategy: string; }
 
@@ -31,7 +32,13 @@ export function StakeholderAnalysisTool({ toolId = "stakeholder-analysis", toolN
   const [name, setName] = useState("");
   const [power, setPower] = useState([5]);
   const [interest, setInterest] = useState([5]);
-  const { canSave, isSaving, notes, setNotes, saveCalculation } = useCalculatorSave();
+
+  const handleLoad = useCallback((inputs: Record<string, unknown>) => {
+    const loaded = inputs.stakeholders as Stakeholder[] | undefined;
+    if (Array.isArray(loaded)) setStakeholders(loaded);
+  }, []);
+
+  const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
 
   const addStakeholder = () => {
     if (!name.trim()) return;
@@ -44,6 +51,7 @@ export function StakeholderAnalysisTool({ toolId = "stakeholder-analysis", toolN
 
   return (
     <div className="space-y-3">
+      <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
       <div className="space-y-2">
         <Label className="text-xs">Intressentens namn</Label>
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="T.ex. Produktionschef" className="text-sm" />
