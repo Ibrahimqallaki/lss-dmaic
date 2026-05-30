@@ -377,7 +377,7 @@ export function exportProjectToPDF(
         checkPageBreak(5);
         doc.setFontSize(8);
         doc.setTextColor(item.is_completed ? 34 : 150, item.is_completed ? 150 : 150, item.is_completed ? 34 : 150);
-        doc.text(`${item.is_completed ? "✓" : "○"} ${item.title}`, marginLeft + 10, yPos);
+        doc.text(`${item.is_completed ? "[x]" : "[ ]"} ${item.title}`, marginLeft + 10, yPos);
         yPos += 4;
       });
       yPos += 3;
