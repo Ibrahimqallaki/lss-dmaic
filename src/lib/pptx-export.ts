@@ -181,7 +181,7 @@ export function exportProjectToPPTX(
     const phaseCalcs = calculations.filter(c => c.phase === phase.id);
     const phaseTollgate = tollgateItems.filter(t => t.phase === phase.id);
 
-    if (phaseNotes.length === 0 && phaseCalcs.length === 0 && phaseTollgate.length === 0) return;
+    const isEmpty = phaseNotes.length === 0 && phaseCalcs.length === 0 && phaseTollgate.length === 0;
 
     const color = PHASE_COLORS[phase.id] || "334155";
     const slide = pptx.addSlide();
