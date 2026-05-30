@@ -340,8 +340,8 @@ export function exportProjectToPDF(
     doc.setFont("helvetica", "bold");
     doc.setTextColor(40);
     const sigmaText = sigmaEntries
-      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)}σ`)
-      .join("  →  ");
+      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)} sigma`)
+      .join("  ->  ");
     doc.text(`Sigma-utveckling: ${sigmaText}`, marginLeft, yPos);
     yPos += 7;
   }
@@ -377,7 +377,7 @@ export function exportProjectToPDF(
         checkPageBreak(5);
         doc.setFontSize(8);
         doc.setTextColor(item.is_completed ? 34 : 150, item.is_completed ? 150 : 150, item.is_completed ? 34 : 150);
-        doc.text(`${item.is_completed ? "✓" : "○"} ${item.title}`, marginLeft + 10, yPos);
+        doc.text(`${item.is_completed ? "[x]" : "[ ]"} ${item.title}`, marginLeft + 10, yPos);
         yPos += 4;
       });
       yPos += 3;
@@ -692,8 +692,8 @@ export function exportA3Report(
 
     doc.setFont("helvetica", "normal");
     const sigmaText = sigmaEntries
-      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)}σ`)
-      .join("  →  ");
+      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)} sigma`)
+      .join("  ->  ");
     doc.text(sigmaText, margin + 30, bottomY);
 
     const first = Number(sigmaEntries[0].sigma_level);
@@ -702,7 +702,7 @@ export function exportA3Report(
     if (improvement !== 0) {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(improvement > 0 ? 34 : 239, improvement > 0 ? 197 : 68, improvement > 0 ? 94 : 68);
-      doc.text(`(${improvement > 0 ? "+" : ""}${improvement.toFixed(2)}σ)`, margin + 30 + doc.getTextWidth(sigmaText) + 5, bottomY);
+      doc.text(`(${improvement > 0 ? "+" : ""}${improvement.toFixed(2)} sigma)`, margin + 30 + doc.getTextWidth(sigmaText) + 5, bottomY);
     }
   }
 
