@@ -692,8 +692,8 @@ export function exportA3Report(
 
     doc.setFont("helvetica", "normal");
     const sigmaText = sigmaEntries
-      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)}σ`)
-      .join("  →  ");
+      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)} sigma`)
+      .join("  ->  ");
     doc.text(sigmaText, margin + 30, bottomY);
 
     const first = Number(sigmaEntries[0].sigma_level);
