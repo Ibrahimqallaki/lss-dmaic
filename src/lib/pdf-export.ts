@@ -340,8 +340,8 @@ export function exportProjectToPDF(
     doc.setFont("helvetica", "bold");
     doc.setTextColor(40);
     const sigmaText = sigmaEntries
-      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)}σ`)
-      .join("  →  ");
+      .map((e) => `${phases.find((p) => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)} sigma`)
+      .join("  ->  ");
     doc.text(`Sigma-utveckling: ${sigmaText}`, marginLeft, yPos);
     yPos += 7;
   }
