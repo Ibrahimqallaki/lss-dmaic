@@ -702,7 +702,7 @@ export function exportA3Report(
     if (improvement !== 0) {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(improvement > 0 ? 34 : 239, improvement > 0 ? 197 : 68, improvement > 0 ? 94 : 68);
-      doc.text(`(${improvement > 0 ? "+" : ""}${improvement.toFixed(2)}σ)`, margin + 30 + doc.getTextWidth(sigmaText) + 5, bottomY);
+      doc.text(`(${improvement > 0 ? "+" : ""}${improvement.toFixed(2)} sigma)`, margin + 30 + doc.getTextWidth(sigmaText) + 5, bottomY);
     }
   }
 
