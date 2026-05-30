@@ -363,7 +363,7 @@ export function exportProjectToPDF(
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0);
-    doc.text(`${phase.icon} ${phase.name}: ${phase.title}`, marginLeft, yPos);
+    doc.text(`Fas ${phase.id} – ${phase.name}: ${phase.title}`, marginLeft, yPos);
     yPos += 8;
 
     if (phaseTollgate.length > 0) {
@@ -556,7 +556,7 @@ export function exportA3Report(
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(255);
-    doc.text(`${phase.icon} ${phase.name}`, x + 4, y + 10);
+    doc.text(`${phase.id}. ${phase.name}`, x + 4, y + 10);
     y += 18;
 
     // Tollgate progress
