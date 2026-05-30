@@ -181,7 +181,7 @@ export function exportProjectToPPTX(
     const phaseCalcs = calculations.filter(c => c.phase === phase.id);
     const phaseTollgate = tollgateItems.filter(t => t.phase === phase.id);
 
-    if (phaseNotes.length === 0 && phaseCalcs.length === 0 && phaseTollgate.length === 0) return;
+    const isEmpty = phaseNotes.length === 0 && phaseCalcs.length === 0 && phaseTollgate.length === 0;
 
     const color = PHASE_COLORS[phase.id] || "334155";
     const slide = pptx.addSlide();
@@ -196,6 +196,18 @@ export function exportProjectToPPTX(
     });
 
     let yPos = 1.3;
+
+    if (isEmpty) {
+      slide.addText("Inget innehåll registrerat för denna fas ännu.", {
+        x: 0.5, y: 3.2, w: 12.3, h: 0.6,
+        fontSize: 16, fontFace: "Arial", italic: true, color: "94A3B8", align: "center",
+      });
+      slide.addText(phase.description || "", {
+        x: 0.5, y: 3.9, w: 12.3, h: 0.5,
+        fontSize: 12, fontFace: "Arial", color: "64748B", align: "center",
+      });
+      return;
+    }
 
     // Tollgate status
     if (phaseTollgate.length > 0) {
