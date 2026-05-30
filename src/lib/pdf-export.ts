@@ -363,7 +363,7 @@ export function exportProjectToPDF(
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0);
-    doc.text(`${phase.icon} ${phase.name}: ${phase.title}`, marginLeft, yPos);
+    doc.text(`Fas ${phase.id} – ${phase.name}: ${phase.title}`, marginLeft, yPos);
     yPos += 8;
 
     if (phaseTollgate.length > 0) {
