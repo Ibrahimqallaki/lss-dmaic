@@ -197,6 +197,18 @@ export function exportProjectToPPTX(
 
     let yPos = 1.3;
 
+    if (isEmpty) {
+      slide.addText("Inget innehåll registrerat för denna fas ännu.", {
+        x: 0.5, y: 3.2, w: 12.3, h: 0.6,
+        fontSize: 16, fontFace: "Arial", italic: true, color: "94A3B8", align: "center",
+      });
+      slide.addText(phase.description || "", {
+        x: 0.5, y: 3.9, w: 12.3, h: 0.5,
+        fontSize: 12, fontFace: "Arial", color: "64748B", align: "center",
+      });
+      return;
+    }
+
     // Tollgate status
     if (phaseTollgate.length > 0) {
       const completed = phaseTollgate.filter(t => t.is_completed).length;
