@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -41,9 +42,20 @@ export function FiveSAuditTool({ toolId = "5s", toolName = "5S", phase = 4 }: Pr
   const catAvg = (key: string) => { const s = scores[key]; return s.reduce((a, b) => a + b, 0) / s.length; };
   const totalAvg = categories.reduce((sum, c) => sum + catAvg(c.key), 0) / categories.length;
 
+  const loadExample = () => {
+    setScores({
+      sortera: [4, 5, 3],
+      strukturera: [4, 3, 4],
+      stada: [5, 4, 4],
+      standardisera: [3, 3, 4],
+      sjalvdisciplin: [2, 3, 3],
+    });
+  };
+
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       {categories.map(cat => (
         <div key={cat.key} className="space-y-1.5">
           <Label className="text-xs font-medium">{cat.label} — snitt: {catAvg(cat.key).toFixed(1)}/5</Label>
