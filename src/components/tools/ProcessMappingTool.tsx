@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 type StepType = "operation" | "transport" | "inspection" | "delay" | "storage";
@@ -37,6 +38,22 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
 
   const moveStep = (idx: number, dir: number) => { const n = [...steps]; const [item] = n.splice(idx, 1); n.splice(idx + dir, 0, item); setSteps(n); };
 
+  const loadExample = () => {
+    const sample: { name: string; type: StepType; time: number; valueAdd: boolean; responsible: string }[] = [
+      { name: "Ta emot order", type: "operation", time: 3, valueAdd: true, responsible: "Säljadmin" },
+      { name: "Kreditkontroll", type: "inspection", time: 8, valueAdd: false, responsible: "Ekonomi" },
+      { name: "Vänta på godkännande", type: "delay", time: 45, valueAdd: false, responsible: "–" },
+      { name: "Plocka order", type: "operation", time: 12, valueAdd: true, responsible: "Lager" },
+      { name: "Transport till pack", type: "transport", time: 5, valueAdd: false, responsible: "Lager" },
+      { name: "Packa", type: "operation", time: 7, valueAdd: true, responsible: "Pack" },
+      { name: "Mellanlager", type: "storage", time: 30, valueAdd: false, responsible: "Lager" },
+      { name: "Lasta lastbil", type: "transport", time: 6, valueAdd: false, responsible: "Logistik" },
+    ];
+    setSteps(sample.map(s => ({ id: crypto.randomUUID(), ...s })));
+  };
+
+
+
 
   const hasResult = steps.length > 0;
   const totalTime = steps.reduce((s, step) => s + step.time, 0);
@@ -46,6 +63,7 @@ export function ProcessMappingTool({ toolId = "process-mapping", toolName = "Pro
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Stegnamn</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="T.ex. Montering" className="text-sm" /></div>

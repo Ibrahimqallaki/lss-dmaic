@@ -6,6 +6,7 @@ import { Plus, Trash2, RotateCcw, ArrowRight } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 interface SIPOCData {
@@ -69,6 +70,17 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
     setProcessName("");
   };
 
+  const loadExample = () => {
+    setProcessName("Orderhanteringsprocessen");
+    setData({
+      suppliers: ["Kund", "Säljavdelning", "Lager"],
+      inputs: ["Order", "Produktdata", "Lagersaldo"],
+      process: ["Ta emot order", "Kreditkontroll", "Plocka", "Packa", "Skicka"],
+      outputs: ["Levererad order", "Faktura", "Spårningsnummer"],
+      customers: ["Slutkund", "Ekonomiavdelning"],
+    });
+  };
+
 
   const filledCounts = columns.map((col) => data[col.key].filter((v) => v.trim()).length);
   const totalFilled = filledCounts.reduce((a, b) => a + b, 0);
@@ -89,6 +101,7 @@ export function SIPOCDiagram({ toolId = "sipoc", toolName = "SIPOC", phase = 1 }
   return (
     <div className="space-y-4">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div>
         <label className="text-sm font-medium text-foreground">Processnamn</label>

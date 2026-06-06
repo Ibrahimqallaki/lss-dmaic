@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -23,6 +24,14 @@ export function CUSUMChart({ toolId = "cusum", toolName = "CUSUM Chart", phase =
   }, []);
 
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
+
+  const loadExample = () => {
+    setRawData("10.1, 10.3, 9.8, 10.2, 10.0, 10.4, 10.6, 10.8, 11.0, 11.2, 11.4, 11.3, 11.5, 11.6, 11.8");
+    setTarget("10");
+    setK("0.5");
+    setH("4");
+    setResult(null);
+  };
 
   const calculate = () => {
     const values = rawData.split(/[,;\s\n]+/).map(Number).filter(v => !isNaN(v));
@@ -53,6 +62,7 @@ export function CUSUMChart({ toolId = "cusum", toolName = "CUSUM Chart", phase =
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       <div className="space-y-1">
         <Label className="text-xs">Data (komma- eller mellanslagsseparerad)</Label>
         <textarea value={rawData} onChange={e => setRawData(e.target.value)} placeholder="10.2, 10.5, 10.1, 10.8, 11.2, 10.9..." className="w-full text-sm p-2 border rounded-md h-16 resize-none bg-background" />

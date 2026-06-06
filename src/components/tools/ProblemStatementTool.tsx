@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
@@ -26,6 +27,17 @@ export function ProblemStatementTool({ toolId = "problem-statement", toolName = 
   const update = (field: string, value: string) => setData(prev => ({ ...prev, [field]: value }));
   const hasResult = Object.values(data).some(v => v.trim());
 
+  const loadExample = () => {
+    setData({
+      what: "Andelen leveranser som anländer efter utlovat datum.",
+      where: "B2B-kanal, alla regioner. Främst lagret i Göteborg.",
+      when: "Sedan januari, ökande trend, värst på fredagar.",
+      extent: "14% sena leveranser (mot 5% mål), 32 klagomål, 180 000 kr i kreditnotor.",
+      impact: "NPS-ras på 12 punkter, hot om förlorade ramavtal hos 3 storkunder.",
+    });
+  };
+
+
 
   const fields = [
     { key: "what", label: "VAD är problemet?", placeholder: "Beskriv defekten/avvikelsen objektivt..." },
@@ -38,6 +50,7 @@ export function ProblemStatementTool({ toolId = "problem-statement", toolName = 
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       {fields.map(f => (
         <div key={f.key} className="space-y-1">

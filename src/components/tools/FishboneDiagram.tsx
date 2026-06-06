@@ -6,6 +6,7 @@ import { Plus, Trash2, RotateCcw } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 const DEFAULT_CATEGORIES = [
@@ -51,6 +52,17 @@ export function FishboneDiagram({ toolId = "fishbone", toolName = "Fiskbensdiagr
     if (causes[category].length > 1) setCauses((prev) => ({ ...prev, [category]: prev[category].filter((_, i) => i !== index) }));
   };
   const reset = () => { setEffect(""); setCauses(Object.fromEntries(DEFAULT_CATEGORIES.map((c) => [c.key, [""]]))); };
+  const loadExample = () => {
+    setEffect("Hög andel defekta produkter i slutkontroll");
+    setCauses({
+      manniska: ["Brist på utbildning", "Trötta operatörer (övertid)"],
+      maskin: ["Ojämn temperaturkalibrering", "Slitna verktyg"],
+      material: ["Variation i råmaterial mellan batcher", "Felaktig lagring"],
+      metod: ["Otydlig SOP", "Inkonsekvent kontrollrutin"],
+      miljo: ["Hög luftfuktighet", "Damm i produktionsmiljö"],
+      matning: ["Okalibrerad mätutrustning", "Subjektiv okulär kontroll"],
+    });
+  };
 
 
   const totalCauses = Object.values(causes).flat().filter((c) => c.trim()).length;
@@ -68,6 +80,7 @@ export function FishboneDiagram({ toolId = "fishbone", toolName = "Fiskbensdiagr
   return (
     <div className="space-y-4">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div>
         <label className="text-sm font-medium text-foreground">Effekt / Problem</label>

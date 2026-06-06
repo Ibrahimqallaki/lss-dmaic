@@ -7,6 +7,7 @@ import { Plus, Trash2, RotateCcw, ArrowDown } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 interface WhyChain {
@@ -83,6 +84,24 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
     updateChain({ problem: "", whys: [""], rootCause: "", countermeasure: "" });
   };
 
+  const loadExample = () => {
+    setChains([{
+      id: crypto.randomUUID(),
+      problem: "Kundleveranser försenas regelbundet",
+      whys: [
+        "Plocklistan blir klar för sent på dagen",
+        "Lagerpersonalen får ordern först efter lunch",
+        "Ordern fastnar i kreditkontroll på morgonen",
+        "Manuell kreditkontroll utförs av en person",
+        "Det finns ingen automatiserad regel för låg risk-kunder",
+      ],
+      rootCause: "Saknad automation av kreditkontroll för befintliga lågrisk-kunder",
+      countermeasure: "Implementera automatisk kreditgodkännande för kunder med >12 mån historik och kreditscore A/B",
+    }]);
+    setActiveChain(0);
+  };
+
+
 
   const filledWhys = chain.whys.filter((w) => w.trim()).length;
   const hasResult = !!chain.rootCause.trim();
@@ -100,6 +119,7 @@ export function FiveWhysAnalysis({ toolId = "5-whys", toolName = "5 Varför", ph
   return (
     <div className="space-y-4">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       {chains.length > 1 && (
         <div className="flex gap-2 flex-wrap">

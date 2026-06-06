@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 interface DataPoint { id: string; withinUnit: string; betweenUnit: string; temporal: string; value: number; }
@@ -32,6 +33,22 @@ export function MultiVariAnalysis({ toolId = "multi-vari", toolName = "Multi-Var
     setForm({ ...form, value: "" });
   };
 
+  const loadExample = () => {
+    const sample = [
+      { withinUnit: "Topp", betweenUnit: "Enhet 1", temporal: "FM", value: 10.2 },
+      { withinUnit: "Mitten", betweenUnit: "Enhet 1", temporal: "FM", value: 10.4 },
+      { withinUnit: "Botten", betweenUnit: "Enhet 1", temporal: "FM", value: 10.1 },
+      { withinUnit: "Topp", betweenUnit: "Enhet 2", temporal: "FM", value: 10.8 },
+      { withinUnit: "Mitten", betweenUnit: "Enhet 2", temporal: "FM", value: 10.9 },
+      { withinUnit: "Botten", betweenUnit: "Enhet 2", temporal: "FM", value: 10.7 },
+      { withinUnit: "Topp", betweenUnit: "Enhet 1", temporal: "EM", value: 10.5 },
+      { withinUnit: "Mitten", betweenUnit: "Enhet 1", temporal: "EM", value: 10.6 },
+      { withinUnit: "Topp", betweenUnit: "Enhet 2", temporal: "EM", value: 11.1 },
+      { withinUnit: "Mitten", betweenUnit: "Enhet 2", temporal: "EM", value: 11.0 },
+    ];
+    setPoints(sample.map(p => ({ id: crypto.randomUUID(), ...p })));
+  };
+
 
   const hasResult = points.length >= 3;
   const values = points.map(p => p.value);
@@ -56,6 +73,7 @@ export function MultiVariAnalysis({ toolId = "multi-vari", toolName = "Multi-Var
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Inom enhet (position/mätpunkt)</Label><Input value={form.withinUnit} onChange={e => setForm({ ...form, withinUnit: e.target.value })} placeholder="T.ex. Topp, Mitten, Botten" className="text-sm" /></div>

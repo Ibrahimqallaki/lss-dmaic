@@ -7,6 +7,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
@@ -40,10 +41,21 @@ export function VOCTool({ toolId = "voc", toolName = "Voice of Customer", phase 
   const hasResult = items.length > 0;
   const priorityColor = (p: string) => p === "hög" ? "destructive" : p === "medel" ? "default" : "secondary";
 
+  const loadExample = () => {
+    setItems([
+      { id: crypto.randomUUID(), source: "Kundintervju", need: "Snabb leverans", priority: "hög", requirement: "≤ 2 arbetsdagar" },
+      { id: crypto.randomUUID(), source: "NPS-enkät", need: "Tydlig orderbekräftelse", priority: "medel", requirement: "E-post inom 5 min" },
+      { id: crypto.randomUUID(), source: "Klagomål", need: "Felfri leverans", priority: "hög", requirement: "Defektandel < 1%" },
+      { id: crypto.randomUUID(), source: "Kundpanel", need: "Spårning i realtid", priority: "medel", requirement: "Uppdatering var 30:e min" },
+      { id: crypto.randomUUID(), source: "Säljteam", need: "Flexibla returer", priority: "låg", requirement: "Retur inom 30 dagar" },
+    ]);
+  };
+
 
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Källa</Label><Input value={source} onChange={e => setSource(e.target.value)} placeholder="Intervju, enkät, klagomål..." className="text-sm" /></div>

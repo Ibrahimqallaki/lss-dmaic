@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 interface DataItem { id: string; measure: string; dataType: string; opDef: string; source: string; sampleSize: string; frequency: string; who: string; }
@@ -33,12 +34,21 @@ export function DataCollectionPlanTool({ toolId = "data-collection-plan", toolNa
     setForm({ ...form, measure: "", opDef: "", source: "", sampleSize: "", frequency: "", who: "" });
   };
 
+  const loadExample = () => {
+    setItems([
+      { id: crypto.randomUUID(), measure: "Cykeltid order→leverans", dataType: "kontinuerlig", opDef: "Tid från orderläggning till leveransbekräftelse, i timmar", source: "ERP-system", sampleSize: "30/dag", frequency: "Dagligen", who: "Logistikkoordinator" },
+      { id: crypto.randomUUID(), measure: "Andel sena leveranser", dataType: "attribut", opDef: "Order levererad efter utlovat datum", source: "ERP + TMS", sampleSize: "Alla", frequency: "Veckovis", who: "BI-team" },
+      { id: crypto.randomUUID(), measure: "Plockfel", dataType: "diskret", opDef: "Antal felplockade artiklar per order", source: "WMS + manuell kontroll", sampleSize: "50/dag", frequency: "Dagligen", who: "Lagerchef" },
+      { id: crypto.randomUUID(), measure: "Kreditkontrollstid", dataType: "kontinuerlig", opDef: "Tid från order till kreditgodkännande, i minuter", source: "Ekonomisystem", sampleSize: "20/dag", frequency: "Dagligen", who: "Ekonomi" },
+    ]);
+  };
 
   const hasResult = items.length > 0;
 
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Vad mäts?</Label><Input value={form.measure} onChange={e => setForm({ ...form, measure: e.target.value })} placeholder="T.ex. Cykeltid" className="text-sm" /></div>
