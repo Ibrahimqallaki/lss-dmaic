@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -29,6 +30,20 @@ export function PilotStudyTool({ toolId = "pilot-study", toolName = "Pilotstudie
   const update = (f: string, v: string) => setData(prev => ({ ...prev, [f]: v }));
   const hasResult = Object.values(data).some(v => v.trim());
 
+  const loadExample = () => {
+    setData({
+      objective: "Validera ny monteringssekvens innan full rollout",
+      scope: "Skift A, monteringslina 2, produktvariant X",
+      duration: "2 veckor",
+      sampleSize: "200 enheter",
+      successCriteria: "Cykeltid ≤ 5 min, defekter ≤ 1%, Cpk > 1.33",
+      baseline: "Cykeltid 6.2 min, defekter 3.5%, Cpk 0.92",
+      pilotResults: "Cykeltid 4.7 min, defekter 0.8%, Cpk 1.45",
+      risks: "Operatörsmotstånd → utbildning före start. Verktygsslitage → daglig kontroll.",
+      decision: "Go – rulla ut till hela linan",
+    });
+  };
+
   const fields = [
     { key: "objective", label: "Mål med piloten", placeholder: "Vad ska valideras?" },
     { key: "scope", label: "Avgränsning", placeholder: "Vilken del av processen, vilka enheter?" },
@@ -44,6 +59,7 @@ export function PilotStudyTool({ toolId = "pilot-study", toolName = "Pilotstudie
   return (
     <div className="space-y-2">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       {fields.map(f => (
         <div key={f.key} className="space-y-1">
           <Label className="text-xs font-medium">{f.label}</Label>

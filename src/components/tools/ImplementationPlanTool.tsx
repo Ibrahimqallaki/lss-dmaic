@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 
 interface Task { id: string; task: string; responsible: string; deadline: string; status: "ej påbörjad" | "pågår" | "klar"; priority: "hög" | "medel" | "låg"; }
 
@@ -34,12 +35,25 @@ export function ImplementationPlanTool({ toolId = "implementation-plan", toolNam
     setTasks(tasks.map(t => t.id === id ? { ...t, status: t.status === "klar" ? "ej påbörjad" : t.status === "ej påbörjad" ? "pågår" : "klar" } : t));
   };
 
+  const loadExample = () => {
+    const today = new Date();
+    const future = (d: number) => new Date(today.getTime() + d * 86400000).toISOString().slice(0, 10);
+    setTasks([
+      { id: crypto.randomUUID(), task: "Utbilda team i ny SOP", responsible: "Anna Lindberg", deadline: future(7), status: "klar", priority: "hög" },
+      { id: crypto.randomUUID(), task: "Konfigurera automatisk kreditkontroll", responsible: "IT", deadline: future(14), status: "pågår", priority: "hög" },
+      { id: crypto.randomUUID(), task: "Uppdatera processkarta i ledningssystem", responsible: "Erik N", deadline: future(21), status: "ej påbörjad", priority: "medel" },
+      { id: crypto.randomUUID(), task: "Rulla ut SMS-avisering till kund", responsible: "Sara P", deadline: future(28), status: "ej påbörjad", priority: "medel" },
+      { id: crypto.randomUUID(), task: "Etablera daglig KPI-uppföljning", responsible: "Logistikchef", deadline: future(35), status: "ej påbörjad", priority: "hög" },
+    ]);
+  };
+
   const hasResult = tasks.length > 0;
   const completed = tasks.filter(t => t.status === "klar").length;
 
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Aktivitet</Label>

@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 
 interface Stakeholder { id: string; name: string; power: number; interest: number; strategy: string; }
 
@@ -47,11 +48,30 @@ export function StakeholderAnalysisTool({ toolId = "stakeholder-analysis", toolN
     setName("");
   };
 
+  const loadExample = () => {
+    const sample: { name: string; p: number; i: number }[] = [
+      { name: "VD", p: 9, i: 6 },
+      { name: "Produktionschef", p: 8, i: 9 },
+      { name: "Operatörer", p: 4, i: 8 },
+      { name: "IT-avdelning", p: 5, i: 4 },
+      { name: "Kund (storkund)", p: 7, i: 9 },
+      { name: "HR", p: 3, i: 3 },
+    ];
+    setStakeholders(sample.map(s => ({
+      id: crypto.randomUUID(),
+      name: s.name,
+      power: s.p,
+      interest: s.i,
+      strategy: getStrategy(s.p, s.i),
+    })));
+  };
+
   const hasResult = stakeholders.length > 0;
 
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       <div className="space-y-2">
         <Label className="text-xs">Intressentens namn</Label>
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="T.ex. Produktionschef" className="text-sm" />

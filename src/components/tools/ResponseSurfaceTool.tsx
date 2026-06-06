@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 
 interface Run { id: string; factors: number[]; response: number; }
 
@@ -41,6 +42,20 @@ export function ResponseSurfaceTool({ toolId = "response-surface", toolName = "R
     setCurrentResponse("");
   };
 
+  const loadExample = () => {
+    setFactorNames(["Temperatur", "Tid"]);
+    setCurrentFactors(["", ""]);
+    setRuns([
+      { id: crypto.randomUUID(), factors: [150, 30], response: 72 },
+      { id: crypto.randomUUID(), factors: [170, 30], response: 81 },
+      { id: crypto.randomUUID(), factors: [150, 50], response: 78 },
+      { id: crypto.randomUUID(), factors: [170, 50], response: 92 },
+      { id: crypto.randomUUID(), factors: [160, 40], response: 85 },
+      { id: crypto.randomUUID(), factors: [180, 40], response: 88 },
+      { id: crypto.randomUUID(), factors: [160, 60], response: 90 },
+    ]);
+  };
+
   const hasResult = runs.length >= 3;
   const responses = runs.map(r => r.response);
   const bestRun = runs.length ? runs.reduce((best, r) => r.response > best.response ? r : best, runs[0]) : null;
@@ -48,6 +63,7 @@ export function ResponseSurfaceTool({ toolId = "response-surface", toolName = "R
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       <div className="flex items-end gap-2 flex-wrap">
         {factorNames.map((name, i) => (
           <div key={i} className="space-y-1 flex-1 min-w-20">

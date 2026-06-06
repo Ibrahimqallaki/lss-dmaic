@@ -6,6 +6,7 @@ import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, Compos
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 interface ParetoItem { id: string; category: string; count: number; }
@@ -34,6 +35,18 @@ export function ParetoAnalysis({ toolId = "pareto", toolName = "Paretoanalys", p
     setItems((prev) => prev.map((item) => item.id === id ? { ...item, [field]: field === "count" ? Number(value) || 0 : value } : item));
   };
 
+  const loadExample = () => {
+    setItems([
+      { id: crypto.randomUUID(), category: "Transportskada", count: 45 },
+      { id: crypto.randomUUID(), category: "Fel adress", count: 32 },
+      { id: crypto.randomUUID(), category: "Försenad leverans", count: 18 },
+      { id: crypto.randomUUID(), category: "Saknad produkt", count: 9 },
+      { id: crypto.randomUUID(), category: "Fel produkt", count: 5 },
+      { id: crypto.randomUUID(), category: "Förpackningsfel", count: 3 },
+    ]);
+  };
+
+
 
   const chartData = useMemo(() => {
     const valid = items.filter((i) => i.category.trim() && i.count > 0);
@@ -54,6 +67,7 @@ export function ParetoAnalysis({ toolId = "pareto", toolName = "Paretoanalys", p
   return (
     <div className="space-y-4">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="space-y-2">
         <div className="grid grid-cols-[1fr_100px_40px] gap-2 text-sm font-medium text-muted-foreground">

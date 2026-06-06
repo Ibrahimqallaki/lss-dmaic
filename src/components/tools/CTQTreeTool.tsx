@@ -6,6 +6,7 @@ import { Plus, Trash2, ChevronRight } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 interface CTQItem { id: string; customerNeed: string; driver: string; ctq: string; spec: string; }
@@ -31,12 +32,21 @@ export function CTQTreeTool({ toolId = "ctq", toolName = "CTQ Tree", phase = 1 }
     setForm({ customerNeed: "", driver: "", ctq: "", spec: "" });
   };
 
+  const loadExample = () => {
+    setItems([
+      { id: crypto.randomUUID(), customerNeed: "Snabb leverans", driver: "Orderplock + transport", ctq: "Leveranstid", spec: "≤ 2 arbetsdagar" },
+      { id: crypto.randomUUID(), customerNeed: "Felfri produkt", driver: "Tillverkningskvalitet", ctq: "Defektandel", spec: "< 1%" },
+      { id: crypto.randomUUID(), customerNeed: "Tydlig information", driver: "Orderbekräftelse", ctq: "Svarstid e-post", spec: "≤ 5 min" },
+      { id: crypto.randomUUID(), customerNeed: "Lätt att returnera", driver: "Returprocess", ctq: "Returtid", spec: "≤ 30 dagar" },
+    ]);
+  };
 
   const hasResult = items.length > 0;
 
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Kundbehov</Label><Input value={form.customerNeed} onChange={e => setForm({ ...form, customerNeed: e.target.value })} placeholder="Snabb leverans" className="text-sm" /></div>

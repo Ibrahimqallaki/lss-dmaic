@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -36,9 +37,22 @@ export function ProjectCharterTool({ toolId = "project-charter", toolName = "Pro
   const update = (field: string, value: string) => setData(prev => ({ ...prev, [field]: value }));
   const hasResult = Object.values(data).some(v => v.trim());
 
+  const loadExample = () => {
+    setData({
+      problemStatement: "Andelen sena leveranser har ökat från 5% till 14% under Q1, vilket lett till 32 kundklagomål och 180 000 kr i kreditnotor.",
+      businessCase: "Förlorad kundlojalitet och NPS-ras på 12 punkter. Estimerad besparing 600 000 kr/år vid återgång till <5% sena leveranser.",
+      goal: "Reducera andelen sena leveranser från 14% till <5% inom 6 månader, mätt som % order levererade efter utlovat datum.",
+      scope: "In: Order, plock, pack, transport för B2B-kunder.\nOut: Returflöde, internleveranser.",
+      team: "Champion: Logistikchef\nBlack Belt: Anna Lindberg\nGreen Belts: Erik N (lager), Sara P (transport)",
+      timeline: "Define v.10 • Measure v.13 • Analyze v.17 • Improve v.22 • Control v.28",
+      metrics: "% sena leveranser (primär), cykeltid order→leverans, DPMO plockfel",
+    });
+  };
+
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="space-y-2">
         <Label className="text-xs font-medium">Problemformulering</Label>

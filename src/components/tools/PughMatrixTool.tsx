@@ -7,6 +7,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
@@ -57,6 +58,28 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
     setScores(prev => ({ ...prev, [criterionId]: { ...prev[criterionId], [alt]: score } }));
   };
 
+  const loadExample = () => {
+    const crits = [
+      { name: "Kostnad", weight: 3 },
+      { name: "Genomförbarhet", weight: 2 },
+      { name: "Effekt på cykeltid", weight: 3 },
+      { name: "Kvalitet", weight: 2 },
+      { name: "Tid till implementation", weight: 1 },
+    ].map(c => ({ id: crypto.randomUUID(), ...c }));
+    const alts = ["Automatisera kreditkontroll", "Anställ extra plockare", "Outsource transport"];
+    const sc: Record<string, Record<string, number>> = {};
+    sc[crits[0].id] = { [alts[0]]: 1, [alts[1]]: -1, [alts[2]]: 0 };
+    sc[crits[1].id] = { [alts[0]]: 1, [alts[1]]: 1, [alts[2]]: 0 };
+    sc[crits[2].id] = { [alts[0]]: 1, [alts[1]]: 0, [alts[2]]: 1 };
+    sc[crits[3].id] = { [alts[0]]: 0, [alts[1]]: -1, [alts[2]]: 0 };
+    sc[crits[4].id] = { [alts[0]]: 0, [alts[1]]: 1, [alts[2]]: -1 };
+    setCriteria(crits);
+    setAlternatives(alts);
+    setScores(sc);
+  };
+
+
+
 
   const getTotal = (alt: string) => criteria.reduce((sum, c) => sum + (scores[c.id]?.[alt] || 0) * c.weight, 0);
   const hasResult = criteria.length > 0 && alternatives.length > 0;
@@ -65,6 +88,7 @@ export function PughMatrixTool({ toolId = "pugh-matrix", toolName = "Pugh-matris
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">

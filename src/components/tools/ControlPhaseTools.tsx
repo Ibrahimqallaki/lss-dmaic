@@ -8,6 +8,7 @@ import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 
 interface Props { toolId?: string; toolName?: string; phase?: number; }
 
@@ -33,11 +34,28 @@ export function SOPTool({ toolId = "sop", toolName = "SOP", phase = 5 }: Props) 
     setForm({ step: "", detail: "", caution: "" });
   };
 
+  const loadExample = () => {
+    setMeta({
+      title: "Monteringsinstruktion enhet X",
+      purpose: "Säkerställa felfri och säker montering av enhet X enligt kvalitetskrav.",
+      scope: "Gäller monteringslina 2, operatörer skift A och B.",
+      responsible: "Processägare montering",
+    });
+    setSteps([
+      { id: crypto.randomUUID(), step: "Förbered arbetsstation", detail: "Plocka fram verktygskit och kontrollera kalibrering", caution: "Använd skyddsglasögon" },
+      { id: crypto.randomUUID(), step: "Montera grundplatta", detail: "Använd moment 12 Nm på samtliga 4 skruvar", caution: "Korsdragning krävs" },
+      { id: crypto.randomUUID(), step: "Anslut kablage", detail: "Färgkodade kontakter, ska klicka", caution: "Dra inte i sladden" },
+      { id: crypto.randomUUID(), step: "Funktionstest", detail: "Kör testsekvens TS-01 (ca 30 sek)", caution: "Stoppa direkt vid larm" },
+      { id: crypto.randomUUID(), step: "Märk och paketera", detail: "Sätt serienummeretikett, packa i SKU-låda", caution: "" },
+    ]);
+  };
+
   const hasResult = !!(meta.title.trim() || steps.length > 0);
 
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">SOP-titel</Label><Input value={meta.title} onChange={e => setMeta({ ...meta, title: e.target.value })} placeholder="T.ex. Monteringsinstruktion" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Ansvarig</Label><Input value={meta.responsible} onChange={e => setMeta({ ...meta, responsible: e.target.value })} className="text-sm" placeholder="Processägare" /></div>
@@ -92,12 +110,24 @@ export function TrainingPlanTool({ toolId = "training-plan", toolName = "Utbildn
     setForm({ topic: "", audience: "", method: "", date: "" });
   };
 
+  const loadExample = () => {
+    const today = new Date();
+    const future = (d: number) => new Date(today.getTime() + d * 86400000).toISOString().slice(0, 10);
+    setItems([
+      { id: crypto.randomUUID(), topic: "Ny SOP för montering enhet X", audience: "Operatörer skift A", method: "Workshop + video", date: future(7), completed: true },
+      { id: crypto.randomUUID(), topic: "Ny SOP för montering enhet X", audience: "Operatörer skift B", method: "Workshop + video", date: future(8), completed: false },
+      { id: crypto.randomUUID(), topic: "Användning av nya styrdiagram", audience: "Teamledare", method: "E-learning", date: future(14), completed: false },
+      { id: crypto.randomUUID(), topic: "Reaktionsplan vid OOC-signal", audience: "Alla operatörer", method: "Klassrum", date: future(21), completed: false },
+    ]);
+  };
+
   const toggleComplete = (id: string) => setItems(items.map(i => i.id === id ? { ...i, completed: !i.completed } : i));
   const hasResult = items.length > 0;
 
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Utbildningsämne</Label><Input value={form.topic} onChange={e => setForm({ ...form, topic: e.target.value })} placeholder="Ny SOP för montering" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Målgrupp</Label><Input value={form.audience} onChange={e => setForm({ ...form, audience: e.target.value })} placeholder="Operatörer skift A" className="text-sm" /></div>
@@ -149,9 +179,20 @@ export function ResponsePlanTool({ toolId = "response-plan", toolName = "Reaktio
     setForm({ trigger: "", action: "", responsible: "", escalation: "" });
   };
 
+  const loadExample = () => {
+    setItems([
+      { id: crypto.randomUUID(), trigger: "Punkt utanför kontrollgräns (UCL/LCL)", action: "Stoppa produktionen och kalibrera mätutrustning", responsible: "Operatör + teamledare", escalation: "Produktionschef inom 30 min" },
+      { id: crypto.randomUUID(), trigger: "7 punkter i rad ovanför centrumlinjen", action: "Granska processinställning, kontrollera råmaterial", responsible: "Teamledare", escalation: "Processingenjör om ej löst inom 2 h" },
+      { id: crypto.randomUUID(), trigger: "Cpk faller under 1.33", action: "Initiera reaktionsanalys, dokumentera avvikelse", responsible: "Kvalitetstekniker", escalation: "Kvalitetschef + BB" },
+      { id: crypto.randomUUID(), trigger: "Defekt upptäckt vid slutkontroll", action: "Karantäna batch, spårning bakåt till orsak", responsible: "Slutkontroll", escalation: "Produktionschef + kvalitet" },
+    ]);
+  };
+
+
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">Trigger (när?)</Label><Input value={form.trigger} onChange={e => setForm({ ...form, trigger: e.target.value })} placeholder="Punkt utanför kontrollgräns" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Åtgärd</Label><Input value={form.action} onChange={e => setForm({ ...form, action: e.target.value })} placeholder="Stoppa produktion, kalibrera" className="text-sm" /></div>
@@ -202,9 +243,15 @@ export function HandoverChecklistTool({ toolId = "handover-checklist", toolName 
   const toggle = (id: string) => setItems(items.map(i => i.id === id ? { ...i, checked: !i.checked } : i));
   const completed = items.filter(i => i.checked).length;
 
+  const loadExample = () => {
+    setItems(items.map((item, i) => ({ ...item, checked: i < 7 })));
+  };
+
+
   return (
     <div className="space-y-2">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       {items.map(item => (
         <div key={item.id} className="flex items-start gap-2 text-xs p-2 border rounded">
           <button onClick={() => toggle(item.id)} className="mt-0.5 shrink-0">{item.checked ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Circle className="h-4 w-4 text-muted-foreground" />}</button>
@@ -239,9 +286,21 @@ export function LessonsLearnedTool({ toolId = "lessons-learned", toolName = "Les
     setForm({ ...form, lesson: "", recommendation: "" });
   };
 
+  const loadExample = () => {
+    setItems([
+      { id: crypto.randomUUID(), category: "process", lesson: "Dataspårning var inkomplett vid projektstart – mycket tid gick till retro-rensning", recommendation: "Etablera datakvalitetskrav i Measure-fasen innan Analyze påbörjas" },
+      { id: crypto.randomUUID(), category: "team", lesson: "Operatörerna involverades sent och kände sig överkörda", recommendation: "Bjud in driftpersonal redan i Define, inte först i Improve" },
+      { id: crypto.randomUUID(), category: "data", lesson: "MSA visade att mätsystemet stod för 35% av variationen", recommendation: "Alltid genomföra Gage R&R innan baseline mäts" },
+      { id: crypto.randomUUID(), category: "tools", lesson: "Pilot körd för länge innan beslut", recommendation: "Definiera Go/No-Go-kriterier och tidsgräns innan pilot startar" },
+      { id: crypto.randomUUID(), category: "management", lesson: "Sponsor saknades vid två tollgates", recommendation: "Säkerställ Champion-närvaro – boka tollgates i kalender vid kickoff" },
+    ]);
+  };
+
+
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       <div className="space-y-1">
         <Label className="text-xs">Kategori</Label>
         <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
@@ -282,11 +341,22 @@ export function BenefitValidationTool({ toolId = "benefit-validation", toolName 
     setForm({ metric: "", baseline: "", target: "", actual: "", unit: "" });
   };
 
+  const loadExample = () => {
+    setItems([
+      { id: crypto.randomUUID(), metric: "Andel sena leveranser", baseline: "14", target: "5", actual: "4.2", unit: "%" },
+      { id: crypto.randomUUID(), metric: "Cykeltid order→leverans", baseline: "72", target: "48", actual: "44", unit: "h" },
+      { id: crypto.randomUUID(), metric: "Plockfel", baseline: "3.1", target: "1.0", actual: "0.8", unit: "%" },
+      { id: crypto.randomUUID(), metric: "NPS", baseline: "32", target: "45", actual: "48", unit: "" },
+      { id: crypto.randomUUID(), metric: "Kostnad kreditnotor", baseline: "180000", target: "60000", actual: "52000", unit: "kr/kvartal" },
+    ]);
+  };
+
   const hasResult = items.length > 0;
 
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1"><Label className="text-xs">KPI/Mätetal</Label><Input value={form.metric} onChange={e => setForm({ ...form, metric: e.target.value })} placeholder="Cykeltid" className="text-sm" /></div>
         <div className="space-y-1"><Label className="text-xs">Enhet</Label><Input value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })} placeholder="minuter" className="text-sm" /></div>

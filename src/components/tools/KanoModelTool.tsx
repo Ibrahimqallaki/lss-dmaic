@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCalculatorSave } from "@/hooks/useCalculatorSave";
 import { CalculatorSaveButton } from "@/components/calculators/CalculatorSaveButton";
 import { CalculatorLoadButton } from "@/components/calculators/CalculatorLoadButton";
+import { ExampleDataButton } from "@/components/calculators/ExampleDataButton";
 import { toast } from "sonner";
 
 type KanoCategory = "must-be" | "performance" | "delighter" | "indifferent" | "reverse";
@@ -52,12 +53,30 @@ export function KanoModelTool({ toolId = "kano-model", toolName = "Kano-modell",
     setFeature("");
   };
 
+  const loadExample = () => {
+    const features: { feature: string; f: string; d: string }[] = [
+      { feature: "Leverans i tid", f: "4", d: "5" },
+      { feature: "SMS-avisering", f: "5", d: "2" },
+      { feature: "Felfri produkt", f: "4", d: "5" },
+      { feature: "Realtidsspårning", f: "5", d: "3" },
+      { feature: "Personlig hälsning", f: "4", d: "1" },
+      { feature: "Återanvändbar förpackning", f: "3", d: "3" },
+    ];
+    setItems(features.map(x => ({
+      id: crypto.randomUUID(),
+      feature: x.feature,
+      functional: x.f,
+      dysfunctional: x.d,
+      category: classifyKano(x.f, x.d),
+    })));
+  };
 
   const hasResult = items.length > 0;
 
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
 
       <div className="space-y-1"><Label className="text-xs">Funktion/Egenskap</Label><Input value={feature} onChange={e => setFeature(e.target.value)} placeholder="T.ex. Leveransavisering via SMS" className="text-sm" /></div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
