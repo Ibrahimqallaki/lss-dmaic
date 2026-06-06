@@ -97,6 +97,19 @@ export function KaizenEventTool({ toolId = "kaizen", toolName = "Kaizen Event", 
   const { canSave, isSaving, notes, setNotes, saveCalculation, savedCalculation, isLoadingSaved } = useCalculatorSave(toolId, handleLoad);
   const update = (f: string, v: string) => setData(prev => ({ ...prev, [f]: v }));
   const hasResult = Object.values(data).some(v => v.trim());
+
+  const loadExample = () => {
+    setData({
+      theme: "Reducera omställningstid på monteringslina 2",
+      scope: "Från sista godkända produkt A till första godkända produkt B",
+      team: "Anna (BB), Erik (operatör), Sara (underhåll), Magnus (teknik), Lisa (kvalitet)",
+      currentState: "Omställningstid 45 min. Slöserier: leta verktyg (8 min), vänta på justering (12 min), provkörning (10 min).",
+      targetState: "Omställningstid < 15 min via SMED. Alla verktyg vid linan, externa förberedelser, snabbfästen.",
+      actions: "Skuggtavla för verktyg, checklista för förberedelse, snabbfästen på fixturer, parallellisera externa moment.",
+      results: "Omställningstid 12 min (-73%). Frigjord kapacitet motsvarar 2 extra batcher/dag.",
+      standardization: "Ny SOP, video för upplärning, daglig kontroll av skuggtavla, uppföljning i veckomöte.",
+    });
+  };
   const fields = [
     { key: "theme", label: "Tema/Fokusområde", placeholder: "Vad ska förbättras?" },
     { key: "scope", label: "Avgränsning", placeholder: "Start- och slutpunkt i processen" },
@@ -111,6 +124,7 @@ export function KaizenEventTool({ toolId = "kaizen", toolName = "Kaizen Event", 
   return (
     <div className="space-y-2">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       {fields.map(f => (
         <div key={f.key} className="space-y-1">
           <Label className="text-xs font-medium">{f.label}</Label>
@@ -144,9 +158,19 @@ export function PokaYokeTool({ toolId = "mistake-proofing", toolName = "Poka-Yok
 
   const hasResult = items.length > 0;
 
+  const loadExample = () => {
+    setItems([
+      { id: crypto.randomUUID(), error: "Felmontering av komponent åt fel håll", cause: "Symmetrisk design", type: "kontakt", solution: "Asymmetrisk fixtur som bara passar i rätt läge", level: "prevention" },
+      { id: crypto.randomUUID(), error: "Saknad skruv vid montering", cause: "Slarv/distraktion", type: "fastAntal", solution: "Förpackat kit med exakt antal skruvar per enhet", level: "prevention" },
+      { id: crypto.randomUUID(), error: "Hoppat steg i checklista", cause: "Sekvenskänsligt arbete", type: "sekvens", solution: "Digital checklista som låser nästa steg tills nuvarande bekräftats", level: "detection" },
+      { id: crypto.randomUUID(), error: "Fel temperaturinställning", cause: "Manuell inställning", type: "kontakt", solution: "Receptstyrd automation med tröskel + larm", level: "prevention" },
+    ]);
+  };
+
   return (
     <div className="space-y-3">
       <CalculatorLoadButton savedCalculation={savedCalculation} isLoading={isLoadingSaved} onLoad={handleLoad} />
+      <ExampleDataButton onLoad={loadExample} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Label className="text-xs">Potentiellt fel</Label>
