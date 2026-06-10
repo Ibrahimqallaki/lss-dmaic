@@ -74,6 +74,14 @@ export const phases: Phase[] = [
         example: "Vad: 15% defekter. Var: Monteringsavdelning. När: Sedan Q2. Omfattning: 500 enheter/månad."
       },
       {
+        id: "5w2h-is-isnot",
+        name: "5W2H Is / Is-Not-analys",
+        description: "Problemisolering och avgränsning genom 7 dimensioner (VAD, VAR, NÄR, VEM, VARFÖR, HUR, HUR MYCKET) med Är- och Är inte-perspektiv.",
+        category: "Problemisolering",
+        usage: "Fyll i matrisen för att snäva in problemet. Generera automatiskt problemformulering och scope, valfritt skärpta med AI.",
+        example: "VAD ÄR: Skrapmärken på dörrpaneler. VAD ÄR INTE: Sprickor eller bucklor. VAR ÄR: Linje 2. VAR ÄR INTE: Linje 1 och 3."
+      },
+      {
         id: "kano-model",
         name: "Kano-modell",
         description: "Kategoriserar kundkrav i Basic, Performance och Delighters.",
