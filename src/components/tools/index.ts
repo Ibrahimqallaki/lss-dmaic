@@ -19,3 +19,4 @@ export { ResponseSurfaceTool } from "./ResponseSurfaceTool";
 export { CUSUMChart } from "./CUSUMChart";
 export { EWMAChart } from "./EWMAChart";
 export { SOPTool, TrainingPlanTool, ResponsePlanTool, HandoverChecklistTool, LessonsLearnedTool, BenefitValidationTool } from "./ControlPhaseTools";
+export { FiveW2HTool } from "./FiveW2HTool";
