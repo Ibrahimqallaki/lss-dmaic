@@ -96,6 +96,7 @@ const calculatorMap: Record<string, React.ComponentType<{ toolId?: string; toolN
   "stakeholder-analysis": StakeholderAnalysisTool,
   "kano-model": KanoModelTool,
   "problem-statement": ProblemStatementTool,
+  "5w2h-is-isnot": FiveW2HTool,
   // Measure phase
   "process-mapping": ProcessMappingTool,
   "data-collection-plan": DataCollectionPlanTool,
