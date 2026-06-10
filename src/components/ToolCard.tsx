@@ -47,6 +47,7 @@ import {
   HandoverChecklistTool,
   LessonsLearnedTool,
   BenefitValidationTool,
+  FiveW2HTool,
 } from "@/components/tools";
 
 interface ToolCardProps {
