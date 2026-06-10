@@ -89,6 +89,17 @@ export default function Auth() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + "/projects",
+    });
+    if (result.error) {
+      setIsLoading(false);
+      toast({ title: "Google-inloggning misslyckades", description: result.error.message, variant: "destructive" });
+    }
+  };
+
   return (
     <Layout>
       <section className="py-12">
