@@ -24,6 +24,7 @@ import { ControlPlanEditor } from "@/components/project/ControlPlanEditor";
 import { RACIMatrix } from "@/components/project/RACIMatrix";
 import { SigmaTracker } from "@/components/project/SigmaTracker";
 import { AIRootCauseAnalysis } from "@/components/tools/AIRootCauseAnalysis";
+import { AIDMAICCoach } from "@/components/AIDMAICCoach";
 import { cn } from "@/lib/utils";
 
 interface Project {
@@ -579,6 +580,8 @@ export default function ProjectDetail() {
           </div>
         </div>
       </section>
+
+      <AIDMAICCoach projectId={project.id} projectName={project.name} />
     </Layout>
   );
 }
