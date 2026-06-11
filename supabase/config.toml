@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.ai-5w2h-synth]
 verify_jwt = false
+
+[functions.ai-dmaic-coach]
+verify_jwt = false
