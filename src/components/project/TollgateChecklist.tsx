@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { phases } from "@/data/dmaic-tools";
+import { AITollgateReview } from "./AITollgateReview";
 
 interface TollgateItem {
   id: string;
@@ -197,9 +198,19 @@ export function TollgateChecklist({ projectId, phase, isEditor = true }: Tollgat
             )}
             Tollgate: {phaseData?.name}
           </CardTitle>
-          <Badge variant={progress === 100 ? "default" : "secondary"}>
-            {completed}/{total} ({progress}%)
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={progress === 100 ? "default" : "secondary"}>
+              {completed}/{total} ({progress}%)
+            </Badge>
+            {isEditor && (
+              <AITollgateReview
+                projectId={projectId}
+                phase={phase}
+                phaseName={phaseData?.name || ""}
+                onItemsAutoChecked={fetchItems}
+              />
+            )}
+          </div>
         </div>
         {/* Progress bar */}
         <div className="w-full bg-muted rounded-full h-2 mt-2">
