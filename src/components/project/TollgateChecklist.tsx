@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { phases } from "@/data/dmaic-tools";
+import { AITollgateReview } from "./AITollgateReview";
 
 interface TollgateItem {
   id: string;
