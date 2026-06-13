@@ -23,9 +23,10 @@ export default function Calculators() {
             </div>
 
             <Tabs defaultValue="dpmo" className="space-y-6">
-              <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full">
+              <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full">
                 <TabsTrigger value="dpmo">DPMO & Sigma</TabsTrigger>
                 <TabsTrigger value="capability">Kapabilitet</TabsTrigger>
+                <TabsTrigger value="sixpack">Sixpack</TabsTrigger>
                 <TabsTrigger value="sample">Stickprov</TabsTrigger>
                 <TabsTrigger value="control">Styrdiagram</TabsTrigger>
               </TabsList>
@@ -38,6 +39,20 @@ export default function Calculators() {
                 <CapabilityCalculator />
               </TabsContent>
 
+              <TabsContent value="sixpack">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Capability Sixpack</CardTitle>
+                    <CardDescription>
+                      Komplett processduglighetsanalys på en sida: histogram, normal probability plot, I/MR-chart, senaste 25 observationer och capability plot — exporteras till PDF.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <CapabilitySixpack />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
               <TabsContent value="sample">
                 <SampleSizeCalculator />
               </TabsContent>
@@ -45,6 +60,7 @@ export default function Calculators() {
               <TabsContent value="control">
                 <ControlChartCalculator />
               </TabsContent>
+
             </Tabs>
           </div>
         </div>
