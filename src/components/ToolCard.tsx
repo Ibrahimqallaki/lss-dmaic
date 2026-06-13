@@ -63,6 +63,8 @@ const calculatorMap: Record<string, React.ComponentType<{ toolId?: string; toolN
   // Calculators
   "capability-cp": CpCpkCalculator,
   "capability-cpk": CpCpkCalculator,
+  "capability-sixpack": CapabilitySixpack,
+
   "dpmo": DPMOCalculator,
   "sigma-level": DPMOCalculator,
   "fmea": FMEACalculator,
