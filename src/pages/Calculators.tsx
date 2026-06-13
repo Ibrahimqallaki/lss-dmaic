@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { controlChartConstants, sigmaTable } from "@/data/dmaic-tools";
+import { CapabilitySixpack } from "@/components/calculators";
+
 
 export default function Calculators() {
   return (
