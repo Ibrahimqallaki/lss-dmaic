@@ -12,3 +12,5 @@ export { TwoSampleTTestCalculator } from "./TwoSampleTTestCalculator";
 export { ANOVACalculator } from "./ANOVACalculator";
 export { ChiSquareCalculator } from "./ChiSquareCalculator";
 export { NormalityTestCalculator } from "./NormalityTestCalculator";
+export { CapabilitySixpack } from "./CapabilitySixpack";
+

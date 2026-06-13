@@ -185,12 +185,21 @@ export const phases: Phase[] = [
     icon: "🔍",
     tools: [
       {
+        id: "capability-sixpack",
+        name: "Capability Sixpack",
+        description: "Komplett processduglighetsanalys: histogram, Q-Q, I/MR-chart, senaste 25, Cp/Cpk/Pp/Ppk — Minitab-stil.",
+        category: "Kapabilitet",
+        formula: "Cp/Cpk (inom-grupp via MR/d2), Pp/Ppk (overall σ), Z.bench, AD-test för normalitet.",
+        usage: "Klistra in mätvärden + USL/LSL. Generera 6 diagnostikdiagram + sammanfattning på en sida. Exportera till PDF."
+      },
+      {
         id: "fishbone",
         name: "Fiskbensdiagram (Ishikawa)",
         description: "Strukturerad brainstorming för att identifiera potentiella orsaker.",
         category: "Rotorsaksanalys",
         usage: "Kategorisera orsaker i 6M: Människa, Maskin, Material, Metod, Miljö, Mätning."
       },
+
       {
         id: "5-whys",
         name: "5 Varför",
