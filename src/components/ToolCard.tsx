@@ -17,7 +17,9 @@ import {
   ANOVACalculator,
   ChiSquareCalculator,
   NormalityTestCalculator,
+  CapabilitySixpack,
 } from "@/components/calculators";
+
 import {
   FiveWhysAnalysis,
   SIPOCDiagram,
