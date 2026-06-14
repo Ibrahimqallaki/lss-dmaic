@@ -625,7 +625,12 @@ export default function ControlCharts() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Antal fel per enhet (separerade med komma eller radbrytning)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Antal fel per enhet (separerade med komma eller radbrytning)</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setCChartData("3, 5, 2, 4, 6, 3, 2, 5, 4, 3, 7, 2, 4, 5, 3, 6, 2, 4, 3, 5, 4, 6, 3, 2, 5")}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="3, 5, 2, 4, 6, 3, 2, 5, 4, 3, 7, 2"
