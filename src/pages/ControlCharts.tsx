@@ -588,7 +588,12 @@ export default function ControlCharts() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Antal defekta per stickprov (separerade med komma eller radbrytning)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Antal defekta per stickprov (separerade med komma eller radbrytning)</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => { setNpChartSampleSize(100); setNpChartData("4, 6, 3, 5, 7, 4, 3, 6, 5, 4, 8, 5, 3, 6, 4, 7, 5, 4, 6, 3, 5, 4, 7, 6, 5"); }}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="3, 5, 2, 4, 6, 3, 2, 5, 4, 3"
