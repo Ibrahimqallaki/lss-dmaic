@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from "recharts";
 import { controlChartConstants } from "@/data/dmaic-tools";
-import { BarChart3, TrendingUp, Target, AlertTriangle, Download, Info } from "lucide-react";
+import { BarChart3, TrendingUp, Target, AlertTriangle, Download, Info, Sparkles } from "lucide-react";
 import { toPng } from "html-to-image";
 import { checkWesternElectricRules, WEViolation, ChartDataPoint } from "@/lib/western-electric-rules";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -453,7 +453,12 @@ export default function ControlCharts() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Data (en delgrupp per rad, värden separerade med komma eller mellanslag)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Data (en delgrupp per rad, värden separerade med komma eller mellanslag)</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => { setXbarSubgroupSize(5); setXbarData("10.2, 10.5, 10.3, 10.4, 10.1\n10.3, 10.6, 10.2, 10.5, 10.4\n10.1, 10.4, 10.5, 10.3, 10.2\n10.4, 10.3, 10.6, 10.2, 10.5\n10.2, 10.5, 10.4, 10.3, 10.1\n10.5, 10.3, 10.2, 10.4, 10.6\n10.3, 10.4, 10.5, 10.2, 10.3\n10.6, 10.5, 10.4, 10.3, 10.2\n10.2, 10.3, 10.4, 10.5, 10.1\n10.4, 10.5, 10.3, 10.2, 10.6\n10.3, 10.2, 10.5, 10.4, 10.3\n10.5, 10.4, 10.6, 10.3, 10.2\n10.4, 10.2, 10.3, 10.5, 10.4\n10.2, 10.6, 10.4, 10.3, 10.5\n10.3, 10.5, 10.2, 10.4, 10.3\n10.4, 10.3, 10.5, 10.6, 10.2\n10.5, 10.4, 10.3, 10.2, 10.4\n10.3, 10.2, 10.4, 10.5, 10.3\n10.4, 10.5, 10.6, 10.3, 10.2\n10.2, 10.4, 10.3, 10.5, 10.4"); }}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="10.2, 10.5, 10.3, 10.4, 10.1&#10;10.3, 10.6, 10.2, 10.5, 10.4&#10;10.1, 10.4, 10.5, 10.3, 10.2"
@@ -486,7 +491,12 @@ export default function ControlCharts() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Data (värden separerade med komma, mellanslag eller radbrytning)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Data (värden separerade med komma, mellanslag eller radbrytning)</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setImrData("10.2, 10.5, 10.3, 10.4, 10.1, 10.3, 10.6, 10.2, 10.5, 10.4, 10.3, 10.5, 10.2, 10.6, 10.4, 10.3, 10.5, 10.2, 10.4, 10.3, 10.6, 10.2, 10.4, 10.5, 10.3, 10.4, 10.6, 10.2, 10.3, 10.5")}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="10.2, 10.5, 10.3, 10.4, 10.1, 10.3, 10.6, 10.2"
@@ -530,7 +540,12 @@ export default function ControlCharts() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Antal defekta per stickprov (separerade med komma eller radbrytning)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Antal defekta per stickprov (separerade med komma eller radbrytning)</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => { setPChartSampleSize(100); setPChartData("3, 5, 2, 4, 6, 3, 2, 5, 4, 3, 7, 4, 2, 5, 3, 6, 4, 3, 5, 2, 4, 3, 6, 5, 4"); }}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="3, 5, 2, 4, 6, 3, 2, 5, 4, 3"
@@ -573,7 +588,12 @@ export default function ControlCharts() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Antal defekta per stickprov (separerade med komma eller radbrytning)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Antal defekta per stickprov (separerade med komma eller radbrytning)</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => { setNpChartSampleSize(100); setNpChartData("4, 6, 3, 5, 7, 4, 3, 6, 5, 4, 8, 5, 3, 6, 4, 7, 5, 4, 6, 3, 5, 4, 7, 6, 5"); }}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="3, 5, 2, 4, 6, 3, 2, 5, 4, 3"
@@ -605,7 +625,12 @@ export default function ControlCharts() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Antal fel per enhet (separerade med komma eller radbrytning)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Antal fel per enhet (separerade med komma eller radbrytning)</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setCChartData("3, 5, 2, 4, 6, 3, 2, 5, 4, 3, 7, 2, 4, 5, 3, 6, 2, 4, 3, 5, 4, 6, 3, 2, 5")}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="3, 5, 2, 4, 6, 3, 2, 5, 4, 3, 7, 2"
@@ -637,7 +662,12 @@ export default function ControlCharts() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Data (en rad per stickprov: "antal fel, antal enheter")</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Data (en rad per stickprov: "antal fel, antal enheter")</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setUChartData("12, 10\n8, 8\n15, 12\n10, 10\n6, 5\n14, 11\n9, 9\n11, 10\n7, 6\n13, 11\n10, 9\n8, 7\n12, 10\n15, 13\n9, 8")}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="12, 10&#10;8, 8&#10;15, 12&#10;10, 10&#10;6, 5"
