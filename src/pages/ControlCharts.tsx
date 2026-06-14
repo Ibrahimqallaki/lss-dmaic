@@ -491,7 +491,12 @@ export default function ControlCharts() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Data (värden separerade med komma, mellanslag eller radbrytning)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Data (värden separerade med komma, mellanslag eller radbrytning)</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setImrData("10.2, 10.5, 10.3, 10.4, 10.1, 10.3, 10.6, 10.2, 10.5, 10.4, 10.3, 10.5, 10.2, 10.6, 10.4, 10.3, 10.5, 10.2, 10.4, 10.3, 10.6, 10.2, 10.4, 10.5, 10.3, 10.4, 10.6, 10.2, 10.3, 10.5")}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="10.2, 10.5, 10.3, 10.4, 10.1, 10.3, 10.6, 10.2"
