@@ -662,7 +662,12 @@ export default function ControlCharts() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Data (en rad per stickprov: "antal fel, antal enheter")</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Data (en rad per stickprov: "antal fel, antal enheter")</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setUChartData("12, 10\n8, 8\n15, 12\n10, 10\n6, 5\n14, 11\n9, 9\n11, 10\n7, 6\n13, 11\n10, 9\n8, 7\n12, 10\n15, 13\n9, 8")}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="12, 10&#10;8, 8&#10;15, 12&#10;10, 10&#10;6, 5"
