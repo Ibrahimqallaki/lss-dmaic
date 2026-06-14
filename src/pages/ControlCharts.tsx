@@ -453,7 +453,12 @@ export default function ControlCharts() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Data (en delgrupp per rad, värden separerade med komma eller mellanslag)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Data (en delgrupp per rad, värden separerade med komma eller mellanslag)</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => { setXbarSubgroupSize(5); setXbarData("10.2, 10.5, 10.3, 10.4, 10.1\n10.3, 10.6, 10.2, 10.5, 10.4\n10.1, 10.4, 10.5, 10.3, 10.2\n10.4, 10.3, 10.6, 10.2, 10.5\n10.2, 10.5, 10.4, 10.3, 10.1\n10.5, 10.3, 10.2, 10.4, 10.6\n10.3, 10.4, 10.5, 10.2, 10.3\n10.6, 10.5, 10.4, 10.3, 10.2\n10.2, 10.3, 10.4, 10.5, 10.1\n10.4, 10.5, 10.3, 10.2, 10.6\n10.3, 10.2, 10.5, 10.4, 10.3\n10.5, 10.4, 10.6, 10.3, 10.2\n10.4, 10.2, 10.3, 10.5, 10.4\n10.2, 10.6, 10.4, 10.3, 10.5\n10.3, 10.5, 10.2, 10.4, 10.3\n10.4, 10.3, 10.5, 10.6, 10.2\n10.5, 10.4, 10.3, 10.2, 10.4\n10.3, 10.2, 10.4, 10.5, 10.3\n10.4, 10.5, 10.6, 10.3, 10.2\n10.2, 10.4, 10.3, 10.5, 10.4"); }}>
+                      <Sparkles className="h-3 w-3" /> Exempeldata
+                    </Button>
+                  </div>
                   <textarea
                     className="w-full h-32 p-3 border rounded-lg bg-background font-mono text-sm"
                     placeholder="10.2, 10.5, 10.3, 10.4, 10.1&#10;10.3, 10.6, 10.2, 10.5, 10.4&#10;10.1, 10.4, 10.5, 10.3, 10.2"
