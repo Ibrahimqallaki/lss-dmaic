@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from "recharts";
 import { controlChartConstants } from "@/data/dmaic-tools";
-import { BarChart3, TrendingUp, Target, AlertTriangle, Download, Info } from "lucide-react";
+import { BarChart3, TrendingUp, Target, AlertTriangle, Download, Info, Sparkles } from "lucide-react";
 import { toPng } from "html-to-image";
 import { checkWesternElectricRules, WEViolation, ChartDataPoint } from "@/lib/western-electric-rules";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
