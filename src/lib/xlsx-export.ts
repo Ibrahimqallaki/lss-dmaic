@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
 import { phases } from "@/data/dmaic-tools";
+import { buildExecutiveSummary } from "./executive-summary";
 
 interface Project {
   id: string;
@@ -77,6 +78,62 @@ export function exportProjectToXLSX(
   sigmaEntries: SigmaEntry[] = []
 ) {
   const wb = XLSX.utils.book_new();
+
+  // --- Dashboard (Executive Summary) ---
+  const summary = buildExecutiveSummary(project, notes, calculations, tollgateItems, sigmaEntries);
+  const dash: (string | number)[][] = [
+    ["PROJEKT DASHBOARD"],
+    [project.name],
+    [project.description || ""],
+    [],
+    ["Hälsa", summary.healthLabel],
+    ["Status", project.status === "active" ? "Aktiv" : project.status === "completed" ? "Klar" : "Arkiverad"],
+    ["Nuvarande fas", phases.find(p => p.id === project.current_phase)?.name || `Fas ${project.current_phase}`],
+    ["Exporterad", new Date().toLocaleDateString("sv-SE")],
+    [],
+    ["NYCKELTAL"],
+    ["Sigma (start)", summary.sigmaFirst != null ? Number(summary.sigmaFirst.toFixed(2)) : "—"],
+    ["Sigma (senast)", summary.sigmaLast != null ? Number(summary.sigmaLast.toFixed(2)) : "—"],
+    ["Δ Sigma", summary.sigmaDelta != null ? Number(summary.sigmaDelta.toFixed(2)) : "—"],
+    ["DPMO (senast)", summary.dpmoLast ?? "—"],
+    ["Tollgate klara", `${summary.tollgateCompleted}/${summary.tollgateTotal} (${summary.tollgatePct}%)`],
+    ["Antal verktygsresultat", summary.calcCount],
+    ["Antal anteckningar", summary.notesCount],
+    ["Uppskattad besparing (SEK)", summary.estimatedSavings ?? "—"],
+    ["Faktisk besparing (SEK)", summary.actualSavings ?? "—"],
+    [],
+    ["NYCKELPUNKTER"],
+    ...summary.keyPoints.map(k => [`• ${k}`]),
+    [],
+    ["SIGMA-UTVECKLING PER FAS"],
+    ["Fas", "Sigma", "DPMO", "Mätdatum"],
+    ...sigmaEntries.map(s => [
+      phases.find(p => p.id === s.phase)?.name || `Fas ${s.phase}`,
+      Number(Number(s.sigma_level).toFixed(2)),
+      s.dpmo ?? "",
+      new Date(s.measurement_date).toLocaleDateString("sv-SE"),
+    ]),
+  ];
+
+  if (summary.highRisks.length > 0) {
+    dash.push([], ["TOPP-RISKER (RPN ≥ 200)"], ["Fas", "Verktyg", "Fellläge", "RPN"]);
+    summary.highRisks.forEach(r => {
+      dash.push([
+        phases.find(p => p.id === r.phase)?.name || `Fas ${r.phase}`,
+        r.toolName, r.failureMode, r.rpn,
+      ]);
+    });
+  }
+
+  const wsDash = XLSX.utils.aoa_to_sheet(dash);
+  wsDash["!cols"] = [{ wch: 32 }, { wch: 28 }, { wch: 40 }, { wch: 14 }];
+  // Merge title row across 4 cols
+  wsDash["!merges"] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } },
+  ];
+  XLSX.utils.book_append_sheet(wb, wsDash, "Dashboard");
 
   // --- Projektöversikt ---
   const overviewData = [
