@@ -1,5 +1,6 @@
 import pptxgen from "pptxgenjs";
 import { phases } from "@/data/dmaic-tools";
+import { buildExecutiveSummary } from "./executive-summary";
 
 interface Project {
   id: string;
