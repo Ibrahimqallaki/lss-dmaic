@@ -123,7 +123,69 @@ export function exportProjectToPPTX(
     fontSize: 12, fontFace: "Arial", color: "64748B",
   });
 
-  // --- Overview Slide ---
+  // --- Executive Summary Slide ---
+  const summary = buildExecutiveSummary(project, notes, calculations, tollgateItems, sigmaEntries);
+  const execSlide = pptx.addSlide();
+  execSlide.addShape(pptx.ShapeType.rect, {
+    x: 0, y: 0, w: 13.33, h: 0.9, fill: { color: summary.healthColor },
+  });
+  execSlide.addText("Sammanfattning för ledningsgruppen", {
+    x: 0.5, y: 0.15, w: 9, h: 0.6, fontSize: 24, bold: true, color: "FFFFFF", fontFace: "Arial",
+  });
+  execSlide.addText(`Hälsa: ${summary.healthLabel}`, {
+    x: 9.8, y: 0.2, w: 3.2, h: 0.5, fontSize: 16, bold: true, color: "FFFFFF", fontFace: "Arial", align: "right",
+  });
+
+  // KPI cards
+  const cards: { label: string; value: string; color: string }[] = [];
+  if (summary.sigmaLast != null) cards.push({ label: "Sigma nu", value: `${summary.sigmaLast.toFixed(2)}σ`, color: "047857" });
+  if (summary.sigmaDelta != null) cards.push({ label: "Δ Sigma", value: `${summary.sigmaDelta >= 0 ? "+" : ""}${summary.sigmaDelta.toFixed(2)}`, color: summary.sigmaDelta >= 0 ? "059669" : "DC2626" });
+  if (summary.dpmoLast != null) cards.push({ label: "DPMO", value: summary.dpmoLast.toLocaleString("sv-SE"), color: "B45309" });
+  cards.push({ label: "Tollgate", value: `${summary.tollgatePct}%`, color: "7C3AED" });
+  if (summary.actualSavings != null) cards.push({ label: "Faktisk besparing", value: `${(summary.actualSavings/1000).toFixed(0)} TSEK`, color: "059669" });
+  else if (summary.estimatedSavings != null) cards.push({ label: "Est. besparing", value: `${(summary.estimatedSavings/1000).toFixed(0)} TSEK`, color: "1E40AF" });
+
+  cards.slice(0, 5).forEach((c, i) => {
+    const cx = 0.5 + i * 2.55;
+    execSlide.addShape(pptx.ShapeType.roundRect, {
+      x: cx, y: 1.2, w: 2.35, h: 1.3, fill: { color: "F8FAFC" }, line: { color: "E2E8F0", width: 1 }, rectRadius: 0.1,
+    });
+    execSlide.addText(c.value, { x: cx, y: 1.3, w: 2.35, h: 0.7, fontSize: 24, bold: true, color: c.color, align: "center", fontFace: "Arial" });
+    execSlide.addText(c.label, { x: cx, y: 2.0, w: 2.35, h: 0.4, fontSize: 11, color: "64748B", align: "center", fontFace: "Arial" });
+  });
+
+  // Key points
+  execSlide.addText("Nyckelpunkter", { x: 0.5, y: 2.7, w: 6, h: 0.35, fontSize: 14, bold: true, color: "1E293B", fontFace: "Arial" });
+  execSlide.addText(summary.keyPoints.map(t => ({ text: t, options: { bullet: true } })), {
+    x: 0.5, y: 3.1, w: 6.3, h: 3.5, fontSize: 12, color: "334155", fontFace: "Arial", valign: "top",
+  });
+
+  // Sigma trend chart (native pptx chart)
+  if (sigmaEntries.length >= 2) {
+    const data = [{
+      name: "Sigma",
+      labels: sigmaEntries.map(e => phases.find(p => p.id === e.phase)?.name || `Fas ${e.phase}`),
+      values: sigmaEntries.map(e => Number(e.sigma_level)),
+    }];
+    execSlide.addChart(pptx.ChartType.line, data, {
+      x: 7.0, y: 2.7, w: 5.8, h: 3.9,
+      showLegend: false, showTitle: true, title: "Sigma-utveckling", titleFontSize: 12,
+      lineDataSymbol: "circle", lineSize: 3, chartColors: [summary.healthColor],
+      valAxisMinVal: 0, valAxisMaxVal: 6,
+    });
+  } else {
+    // Top risks table when no sigma trend
+    execSlide.addText("Topp-risker (RPN ≥ 200)", { x: 7.0, y: 2.7, w: 5.8, h: 0.35, fontSize: 14, bold: true, color: "DC2626", fontFace: "Arial" });
+    if (summary.highRisks.length === 0) {
+      execSlide.addText("Inga registrerade högrisk-poster.", { x: 7.0, y: 3.1, w: 5.8, h: 0.5, fontSize: 11, italic: true, color: "94A3B8", fontFace: "Arial" });
+    } else {
+      execSlide.addText(summary.highRisks.map(r => ({ text: `[RPN ${r.rpn}] ${r.failureMode} — ${r.toolName}`, options: { bullet: true } })), {
+        x: 7.0, y: 3.1, w: 5.8, h: 3.5, fontSize: 11, color: "334155", fontFace: "Arial", valign: "top",
+      });
+    }
+  }
+
+  // --- Overview Slide (KPIs continued) ---
   const overviewSlide = pptx.addSlide();
   overviewSlide.addText("Projektöversikt", {
     x: 0.5, y: 0.3, w: 12, h: 0.7,
@@ -142,7 +204,6 @@ export function exportProjectToPPTX(
   if (project.actual_savings != null) {
     kpis.push({ label: "Faktisk besparing", value: `${(project.actual_savings / 1000).toFixed(0)} TSEK`, color: "059669" });
   }
-
   const totalTollgate = tollgateItems.length;
   const completedTollgate = tollgateItems.filter(t => t.is_completed).length;
   if (totalTollgate > 0) {
