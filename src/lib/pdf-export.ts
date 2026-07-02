@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import { phases } from "@/data/dmaic-tools";
+import { buildExecutiveSummary } from "./executive-summary";
 
 interface ProjectNote {
   id: string;
