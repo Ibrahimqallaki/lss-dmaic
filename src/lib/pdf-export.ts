@@ -582,7 +582,30 @@ export function exportA3Report(
     doc.text(doc.splitTextToSize(project.description, pageWidth - margin * 2), margin, 33);
   }
 
-  const topY = 42;
+  // Executive Summary strip
+  const summary = buildExecutiveSummary(project, notes, calculations, tollgateItems, sigmaEntries);
+  const stripY = 40;
+  const stripH = 14;
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.rect(margin, stripY, pageWidth - margin * 2, stripH, "FD");
+  // health tag
+  const [hr2, hg2, hb2] = summary.healthColor.match(/.{2}/g)!.map(h => parseInt(h, 16));
+  doc.setFillColor(hr2, hg2, hb2);
+  doc.roundedRect(margin + 2, stripY + 2, 42, stripH - 4, 1, 1, "F");
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255);
+  doc.text(`Hälsa: ${summary.healthLabel}`, margin + 4, stripY + stripH / 2 + 1.5);
+  // KPI text
+  doc.setFontSize(8.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(50);
+  const kpText = summary.keyPoints.slice(0, 4).join("   |   ")
+    .replace(/[↑↓→Δ]/g, (m) => ({ "↑": "^", "↓": "v", "→": "->", "Δ": "d" }[m] || m));
+  doc.text(kpText, margin + 48, stripY + stripH / 2 + 1.5);
+
+  const topY = stripY + stripH + 6;
   const colors: [number, number, number][] = [
     [59, 130, 246], [34, 197, 94], [234, 179, 8], [168, 85, 247], [239, 68, 68],
   ];
