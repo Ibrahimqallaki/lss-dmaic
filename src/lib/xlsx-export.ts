@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
 import { phases } from "@/data/dmaic-tools";
+import { buildExecutiveSummary } from "./executive-summary";
 
 interface Project {
   id: string;
