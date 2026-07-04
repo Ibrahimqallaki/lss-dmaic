@@ -302,8 +302,10 @@ export function exportProjectToPDF(
   notes: ProjectNote[],
   calculations: ProjectCalculation[],
   tollgateItems: TollgateItem[] = [],
-  sigmaEntries: SigmaEntry[] = []
+  sigmaEntries: SigmaEntry[] = [],
+  options: ExportOptions = DEFAULT_EXPORT_OPTIONS
 ) {
+
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const marginLeft = 20;
