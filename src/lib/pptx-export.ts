@@ -129,222 +129,226 @@ export function exportProjectToPPTX(
 
   // --- Executive Summary Slide ---
   const summary = buildExecutiveSummary(project, notes, calculations, tollgateItems, sigmaEntries);
-  const execSlide = pptx.addSlide();
-  execSlide.addShape(pptx.ShapeType.rect, {
-    x: 0, y: 0, w: 13.33, h: 0.9, fill: { color: summary.healthColor },
-  });
-  execSlide.addText("Sammanfattning för ledningsgruppen", {
-    x: 0.5, y: 0.15, w: 9, h: 0.6, fontSize: 24, bold: true, color: "FFFFFF", fontFace: "Arial",
-  });
-  execSlide.addText(`Hälsa: ${summary.healthLabel}`, {
-    x: 9.8, y: 0.2, w: 3.2, h: 0.5, fontSize: 16, bold: true, color: "FFFFFF", fontFace: "Arial", align: "right",
-  });
-
-  // KPI cards
-  const cards: { label: string; value: string; color: string }[] = [];
-  if (summary.sigmaLast != null) cards.push({ label: "Sigma nu", value: `${summary.sigmaLast.toFixed(2)}σ`, color: "047857" });
-  if (summary.sigmaDelta != null) cards.push({ label: "Δ Sigma", value: `${summary.sigmaDelta >= 0 ? "+" : ""}${summary.sigmaDelta.toFixed(2)}`, color: summary.sigmaDelta >= 0 ? "059669" : "DC2626" });
-  if (summary.dpmoLast != null) cards.push({ label: "DPMO", value: summary.dpmoLast.toLocaleString("sv-SE"), color: "B45309" });
-  cards.push({ label: "Tollgate", value: `${summary.tollgatePct}%`, color: "7C3AED" });
-  if (summary.actualSavings != null) cards.push({ label: "Faktisk besparing", value: `${(summary.actualSavings/1000).toFixed(0)} TSEK`, color: "059669" });
-  else if (summary.estimatedSavings != null) cards.push({ label: "Est. besparing", value: `${(summary.estimatedSavings/1000).toFixed(0)} TSEK`, color: "1E40AF" });
-
-  cards.slice(0, 5).forEach((c, i) => {
-    const cx = 0.5 + i * 2.55;
-    execSlide.addShape(pptx.ShapeType.roundRect, {
-      x: cx, y: 1.2, w: 2.35, h: 1.3, fill: { color: "F8FAFC" }, line: { color: "E2E8F0", width: 1 }, rectRadius: 0.1,
+  if (options.executiveSummary) {
+    const execSlide = pptx.addSlide();
+    execSlide.addShape(pptx.ShapeType.rect, {
+      x: 0, y: 0, w: 13.33, h: 0.9, fill: { color: summary.healthColor },
     });
-    execSlide.addText(c.value, { x: cx, y: 1.3, w: 2.35, h: 0.7, fontSize: 24, bold: true, color: c.color, align: "center", fontFace: "Arial" });
-    execSlide.addText(c.label, { x: cx, y: 2.0, w: 2.35, h: 0.4, fontSize: 11, color: "64748B", align: "center", fontFace: "Arial" });
-  });
-
-  // Key points
-  execSlide.addText("Nyckelpunkter", { x: 0.5, y: 2.7, w: 6, h: 0.35, fontSize: 14, bold: true, color: "1E293B", fontFace: "Arial" });
-  execSlide.addText(summary.keyPoints.map(t => ({ text: t, options: { bullet: true } })), {
-    x: 0.5, y: 3.1, w: 6.3, h: 3.5, fontSize: 12, color: "334155", fontFace: "Arial", valign: "top",
-  });
-
-  // Sigma trend chart (native pptx chart)
-  if (sigmaEntries.length >= 2) {
-    const data = [{
-      name: "Sigma",
-      labels: sigmaEntries.map(e => phases.find(p => p.id === e.phase)?.name || `Fas ${e.phase}`),
-      values: sigmaEntries.map(e => Number(e.sigma_level)),
-    }];
-    execSlide.addChart(pptx.ChartType.line, data, {
-      x: 7.0, y: 2.7, w: 5.8, h: 3.9,
-      showLegend: false, showTitle: true, title: "Sigma-utveckling", titleFontSize: 12,
-      lineDataSymbol: "circle", lineSize: 3, chartColors: [summary.healthColor],
-      valAxisMinVal: 0, valAxisMaxVal: 6,
+    execSlide.addText("Sammanfattning för ledningsgruppen", {
+      x: 0.5, y: 0.15, w: 9, h: 0.6, fontSize: 24, bold: true, color: "FFFFFF", fontFace: "Arial",
     });
-  } else {
-    // Top risks table when no sigma trend
-    execSlide.addText("Topp-risker (RPN ≥ 200)", { x: 7.0, y: 2.7, w: 5.8, h: 0.35, fontSize: 14, bold: true, color: "DC2626", fontFace: "Arial" });
-    if (summary.highRisks.length === 0) {
-      execSlide.addText("Inga registrerade högrisk-poster.", { x: 7.0, y: 3.1, w: 5.8, h: 0.5, fontSize: 11, italic: true, color: "94A3B8", fontFace: "Arial" });
-    } else {
-      execSlide.addText(summary.highRisks.map(r => ({ text: `[RPN ${r.rpn}] ${r.failureMode} — ${r.toolName}`, options: { bullet: true } })), {
-        x: 7.0, y: 3.1, w: 5.8, h: 3.5, fontSize: 11, color: "334155", fontFace: "Arial", valign: "top",
+    execSlide.addText(`Hälsa: ${summary.healthLabel}`, {
+      x: 9.8, y: 0.2, w: 3.2, h: 0.5, fontSize: 16, bold: true, color: "FFFFFF", fontFace: "Arial", align: "right",
+    });
+
+    // KPI cards
+    if (options.execKpiCards) {
+      const cards: { label: string; value: string; color: string }[] = [];
+      if (summary.sigmaLast != null) cards.push({ label: "Sigma nu", value: `${summary.sigmaLast.toFixed(2)}σ`, color: "047857" });
+      if (summary.sigmaDelta != null) cards.push({ label: "Δ Sigma", value: `${summary.sigmaDelta >= 0 ? "+" : ""}${summary.sigmaDelta.toFixed(2)}`, color: summary.sigmaDelta >= 0 ? "059669" : "DC2626" });
+      if (summary.dpmoLast != null) cards.push({ label: "DPMO", value: summary.dpmoLast.toLocaleString("sv-SE"), color: "B45309" });
+      cards.push({ label: "Tollgate", value: `${summary.tollgatePct}%`, color: "7C3AED" });
+      if (summary.actualSavings != null) cards.push({ label: "Faktisk besparing", value: `${(summary.actualSavings/1000).toFixed(0)} TSEK`, color: "059669" });
+      else if (summary.estimatedSavings != null) cards.push({ label: "Est. besparing", value: `${(summary.estimatedSavings/1000).toFixed(0)} TSEK`, color: "1E40AF" });
+
+      cards.slice(0, 5).forEach((c, i) => {
+        const cx = 0.5 + i * 2.55;
+        execSlide.addShape(pptx.ShapeType.roundRect, {
+          x: cx, y: 1.2, w: 2.35, h: 1.3, fill: { color: "F8FAFC" }, line: { color: "E2E8F0", width: 1 }, rectRadius: 0.1,
+        });
+        execSlide.addText(c.value, { x: cx, y: 1.3, w: 2.35, h: 0.7, fontSize: 24, bold: true, color: c.color, align: "center", fontFace: "Arial" });
+        execSlide.addText(c.label, { x: cx, y: 2.0, w: 2.35, h: 0.4, fontSize: 11, color: "64748B", align: "center", fontFace: "Arial" });
       });
+    }
+
+    // Key points
+    if (options.execKeyPoints) {
+      execSlide.addText("Nyckelpunkter", { x: 0.5, y: 2.7, w: 6, h: 0.35, fontSize: 14, bold: true, color: "1E293B", fontFace: "Arial" });
+      execSlide.addText(summary.keyPoints.map(t => ({ text: t, options: { bullet: true } })), {
+        x: 0.5, y: 3.1, w: 6.3, h: 3.5, fontSize: 12, color: "334155", fontFace: "Arial", valign: "top",
+      });
+    }
+
+    // Sigma trend chart or top risks
+    if (options.execSigmaChart && sigmaEntries.length >= 2) {
+      const data = [{
+        name: "Sigma",
+        labels: sigmaEntries.map(e => phases.find(p => p.id === e.phase)?.name || `Fas ${e.phase}`),
+        values: sigmaEntries.map(e => Number(e.sigma_level)),
+      }];
+      execSlide.addChart(pptx.ChartType.line, data, {
+        x: 7.0, y: 2.7, w: 5.8, h: 3.9,
+        showLegend: false, showTitle: true, title: "Sigma-utveckling", titleFontSize: 12,
+        lineDataSymbol: "circle", lineSize: 3, chartColors: [summary.healthColor],
+        valAxisMinVal: 0, valAxisMaxVal: 6,
+      });
+    } else if (options.execTopRisks) {
+      execSlide.addText("Topp-risker (RPN ≥ 200)", { x: 7.0, y: 2.7, w: 5.8, h: 0.35, fontSize: 14, bold: true, color: "DC2626", fontFace: "Arial" });
+      if (summary.highRisks.length === 0) {
+        execSlide.addText("Inga registrerade högrisk-poster.", { x: 7.0, y: 3.1, w: 5.8, h: 0.5, fontSize: 11, italic: true, color: "94A3B8", fontFace: "Arial" });
+      } else {
+        execSlide.addText(summary.highRisks.map(r => ({ text: `[RPN ${r.rpn}] ${r.failureMode} — ${r.toolName}`, options: { bullet: true } })), {
+          x: 7.0, y: 3.1, w: 5.8, h: 3.5, fontSize: 11, color: "334155", fontFace: "Arial", valign: "top",
+        });
+      }
     }
   }
 
   // --- Overview Slide (KPIs continued) ---
-  const overviewSlide = pptx.addSlide();
-  overviewSlide.addText("Projektöversikt", {
-    x: 0.5, y: 0.3, w: 12, h: 0.7,
-    fontSize: 28, fontFace: "Arial", bold: true, color: "1E293B",
-  });
+  if (options.pptxOverviewSlide) {
+    const overviewSlide = pptx.addSlide();
+    overviewSlide.addText("Projektöversikt", {
+      x: 0.5, y: 0.3, w: 12, h: 0.7,
+      fontSize: 28, fontFace: "Arial", bold: true, color: "1E293B",
+    });
 
-  const kpis: { label: string; value: string; color: string }[] = [];
-  if (sigmaEntries.length > 0) {
-    const latest = sigmaEntries[sigmaEntries.length - 1];
-    kpis.push({ label: "Sigma-nivå", value: `${Number(latest.sigma_level).toFixed(2)}σ`, color: "047857" });
-    if (latest.dpmo != null) kpis.push({ label: "DPMO", value: String(latest.dpmo), color: "B45309" });
-  }
-  if (project.estimated_savings != null) {
-    kpis.push({ label: "Uppskattad besparing", value: `${(project.estimated_savings / 1000).toFixed(0)} TSEK`, color: "1E40AF" });
-  }
-  if (project.actual_savings != null) {
-    kpis.push({ label: "Faktisk besparing", value: `${(project.actual_savings / 1000).toFixed(0)} TSEK`, color: "059669" });
-  }
-  const totalTollgate = tollgateItems.length;
-  const completedTollgate = tollgateItems.filter(t => t.is_completed).length;
-  if (totalTollgate > 0) {
-    kpis.push({ label: "Tollgate", value: `${completedTollgate}/${totalTollgate}`, color: "7C3AED" });
-  }
+    const kpis: { label: string; value: string; color: string }[] = [];
+    if (sigmaEntries.length > 0) {
+      const latest = sigmaEntries[sigmaEntries.length - 1];
+      kpis.push({ label: "Sigma-nivå", value: `${Number(latest.sigma_level).toFixed(2)}σ`, color: "047857" });
+      if (latest.dpmo != null) kpis.push({ label: "DPMO", value: String(latest.dpmo), color: "B45309" });
+    }
+    if (project.estimated_savings != null) {
+      kpis.push({ label: "Uppskattad besparing", value: `${(project.estimated_savings / 1000).toFixed(0)} TSEK`, color: "1E40AF" });
+    }
+    if (project.actual_savings != null) {
+      kpis.push({ label: "Faktisk besparing", value: `${(project.actual_savings / 1000).toFixed(0)} TSEK`, color: "059669" });
+    }
+    const totalTollgate = tollgateItems.length;
+    const completedTollgate = tollgateItems.filter(t => t.is_completed).length;
+    if (totalTollgate > 0) {
+      kpis.push({ label: "Tollgate", value: `${completedTollgate}/${totalTollgate}`, color: "7C3AED" });
+    }
 
-  kpis.forEach((kpi, i) => {
-    const colX = 0.5 + i * 2.6;
-    overviewSlide.addShape(pptx.ShapeType.roundRect, {
-      x: colX, y: 1.3, w: 2.4, h: 1.4, fill: { color: "F8FAFC" },
-      line: { color: "E2E8F0", width: 1 }, rectRadius: 0.1,
+    kpis.forEach((kpi, i) => {
+      const colX = 0.5 + i * 2.6;
+      overviewSlide.addShape(pptx.ShapeType.roundRect, {
+        x: colX, y: 1.3, w: 2.4, h: 1.4, fill: { color: "F8FAFC" },
+        line: { color: "E2E8F0", width: 1 }, rectRadius: 0.1,
+      });
+      overviewSlide.addText(kpi.value, {
+        x: colX, y: 1.4, w: 2.4, h: 0.8,
+        fontSize: 28, fontFace: "Arial", bold: true, color: kpi.color, align: "center",
+      });
+      overviewSlide.addText(kpi.label, {
+        x: colX, y: 2.1, w: 2.4, h: 0.5,
+        fontSize: 11, fontFace: "Arial", color: "64748B", align: "center",
+      });
     });
-    overviewSlide.addText(kpi.value, {
-      x: colX, y: 1.4, w: 2.4, h: 0.8,
-      fontSize: 28, fontFace: "Arial", bold: true, color: kpi.color, align: "center",
-    });
-    overviewSlide.addText(kpi.label, {
-      x: colX, y: 2.1, w: 2.4, h: 0.5,
-      fontSize: 11, fontFace: "Arial", color: "64748B", align: "center",
-    });
-  });
 
-  // Sigma trend
-  if (sigmaEntries.length > 1) {
-    const trendText = sigmaEntries
-      .map(e => `${phases.find(p => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)}σ`)
-      .join("  →  ");
-    overviewSlide.addText(`Sigma-utveckling: ${trendText}`, {
-      x: 0.5, y: 3.0, w: 12, h: 0.5,
-      fontSize: 13, fontFace: "Arial", color: "334155",
-    });
+    if (sigmaEntries.length > 1) {
+      const trendText = sigmaEntries
+        .map(e => `${phases.find(p => p.id === e.phase)?.name || `Fas ${e.phase}`}: ${Number(e.sigma_level).toFixed(2)}σ`)
+        .join("  →  ");
+      overviewSlide.addText(`Sigma-utveckling: ${trendText}`, {
+        x: 0.5, y: 3.0, w: 12, h: 0.5,
+        fontSize: 13, fontFace: "Arial", color: "334155",
+      });
+    }
   }
 
   // --- Phase Slides ---
-  phases.forEach((phase) => {
-    const phaseNotes = notes.filter(n => n.phase === phase.id);
-    const phaseCalcs = calculations.filter(c => c.phase === phase.id);
-    const phaseTollgate = tollgateItems.filter(t => t.phase === phase.id);
+  if (options.pptxPhaseSlides) {
+    phases.forEach((phase) => {
+      const phaseNotes = options.pptxPhaseNotes ? notes.filter(n => n.phase === phase.id) : [];
+      const phaseCalcs = options.pptxPhaseTools ? calculations.filter(c => c.phase === phase.id) : [];
+      const phaseTollgate = options.pptxPhaseTollgate ? tollgateItems.filter(t => t.phase === phase.id) : [];
 
-    const isEmpty = phaseNotes.length === 0 && phaseCalcs.length === 0 && phaseTollgate.length === 0;
+      const isEmpty = phaseNotes.length === 0 && phaseCalcs.length === 0 && phaseTollgate.length === 0;
 
-    const color = PHASE_COLORS[phase.id] || "334155";
-    const slide = pptx.addSlide();
+      const color = PHASE_COLORS[phase.id] || "334155";
+      const slide = pptx.addSlide();
 
-    // Phase header bar
-    slide.addShape(pptx.ShapeType.rect, {
-      x: 0, y: 0, w: 13.33, h: 1.0, fill: { color },
-    });
-    slide.addText(`${phase.name}: ${phase.title}`, {
-      x: 0.5, y: 0.15, w: 12, h: 0.7,
-      fontSize: 26, fontFace: "Arial", bold: true, color: "FFFFFF",
-    });
-
-    let yPos = 1.3;
-
-    if (isEmpty) {
-      slide.addText("Inget innehåll registrerat för denna fas ännu.", {
-        x: 0.5, y: 3.2, w: 12.3, h: 0.6,
-        fontSize: 16, fontFace: "Arial", italic: true, color: "94A3B8", align: "center",
+      slide.addShape(pptx.ShapeType.rect, {
+        x: 0, y: 0, w: 13.33, h: 1.0, fill: { color },
       });
-      slide.addText(phase.description || "", {
-        x: 0.5, y: 3.9, w: 12.3, h: 0.5,
-        fontSize: 12, fontFace: "Arial", color: "64748B", align: "center",
+      slide.addText(`${phase.name}: ${phase.title}`, {
+        x: 0.5, y: 0.15, w: 12, h: 0.7,
+        fontSize: 26, fontFace: "Arial", bold: true, color: "FFFFFF",
       });
-      return;
-    }
 
-    // Tollgate status
-    if (phaseTollgate.length > 0) {
-      const completed = phaseTollgate.filter(t => t.is_completed).length;
-      slide.addText(`Tollgate: ${completed}/${phaseTollgate.length} klara`, {
-        x: 0.5, y: yPos, w: 5, h: 0.4,
-        fontSize: 12, fontFace: "Arial", bold: true, color: "334155",
-      });
-      yPos += 0.5;
-      const tollgateText = phaseTollgate.map(t => `${t.is_completed ? "✓" : "○"} ${t.title}`).join("\n");
-      slide.addText(tollgateText, {
-        x: 0.7, y: yPos, w: 5, h: Math.min(phaseTollgate.length * 0.25 + 0.2, 2),
-        fontSize: 10, fontFace: "Arial", color: "475569", lineSpacingMultiple: 1.3,
-      });
-      yPos += Math.min(phaseTollgate.length * 0.25 + 0.3, 2.1);
-    }
+      let yPos = 1.3;
 
-    // Tools/calculations
-    if (phaseCalcs.length > 0) {
-      slide.addText("Verktygsresultat", {
-        x: 0.5, y: yPos, w: 5, h: 0.4,
-        fontSize: 14, fontFace: "Arial", bold: true, color: "1E293B",
-      });
-      yPos += 0.5;
-
-      phaseCalcs.forEach((calc) => {
-        if (yPos > 6.5) return; // avoid overflow
-
-        slide.addText(calc.tool_name, {
-          x: 0.7, y: yPos, w: 11.5, h: 0.35,
-          fontSize: 12, fontFace: "Arial", bold: true, color: color,
+      if (isEmpty) {
+        slide.addText("Inget innehåll registrerat för denna fas ännu.", {
+          x: 0.5, y: 3.2, w: 12.3, h: 0.6,
+          fontSize: 16, fontFace: "Arial", italic: true, color: "94A3B8", align: "center",
         });
-        yPos += 0.35;
+        slide.addText(phase.description || "", {
+          x: 0.5, y: 3.9, w: 12.3, h: 0.5,
+          fontSize: 12, fontFace: "Arial", color: "64748B", align: "center",
+        });
+        return;
+      }
 
-        // Show key results
-        const results = calc.results as Record<string, unknown> | null;
-        if (results && typeof results === "object") {
-          const entries = Object.entries(results)
-            .filter(([k, v]) => isMeaningful(k, v))
-            .slice(0, 6);
-          if (entries.length > 0) {
-            const resultText = entries.map(([k, v]) => `${k}: ${formatVal(v, 40)}`).join("  |  ");
-            slide.addText(resultText, {
-              x: 0.9, y: yPos, w: 11.3, h: 0.3,
-              fontSize: 10, fontFace: "Arial", color: "475569",
-            });
-            yPos += 0.35;
+      if (phaseTollgate.length > 0) {
+        const completed = phaseTollgate.filter(t => t.is_completed).length;
+        slide.addText(`Tollgate: ${completed}/${phaseTollgate.length} klara`, {
+          x: 0.5, y: yPos, w: 5, h: 0.4,
+          fontSize: 12, fontFace: "Arial", bold: true, color: "334155",
+        });
+        yPos += 0.5;
+        const tollgateText = phaseTollgate.map(t => `${t.is_completed ? "✓" : "○"} ${t.title}`).join("\n");
+        slide.addText(tollgateText, {
+          x: 0.7, y: yPos, w: 5, h: Math.min(phaseTollgate.length * 0.25 + 0.2, 2),
+          fontSize: 10, fontFace: "Arial", color: "475569", lineSpacingMultiple: 1.3,
+        });
+        yPos += Math.min(phaseTollgate.length * 0.25 + 0.3, 2.1);
+      }
+
+      if (phaseCalcs.length > 0) {
+        slide.addText("Verktygsresultat", {
+          x: 0.5, y: yPos, w: 5, h: 0.4,
+          fontSize: 14, fontFace: "Arial", bold: true, color: "1E293B",
+        });
+        yPos += 0.5;
+
+        phaseCalcs.forEach((calc) => {
+          if (yPos > 6.5) return;
+
+          slide.addText(calc.tool_name, {
+            x: 0.7, y: yPos, w: 11.5, h: 0.35,
+            fontSize: 12, fontFace: "Arial", bold: true, color: color,
+          });
+          yPos += 0.35;
+
+          const results = calc.results as Record<string, unknown> | null;
+          if (results && typeof results === "object") {
+            const entries = Object.entries(results)
+              .filter(([k, v]) => isMeaningful(k, v))
+              .slice(0, 6);
+            if (entries.length > 0) {
+              const resultText = entries.map(([k, v]) => `${k}: ${formatVal(v, 40)}`).join("  |  ");
+              slide.addText(resultText, {
+                x: 0.9, y: yPos, w: 11.3, h: 0.3,
+                fontSize: 10, fontFace: "Arial", color: "475569",
+              });
+              yPos += 0.35;
+            }
           }
-        }
-        yPos += 0.1;
-      });
-    }
-
-    // Notes summary
-    if (phaseNotes.length > 0 && yPos < 6.0) {
-      slide.addText("Anteckningar", {
-        x: 0.5, y: yPos, w: 5, h: 0.4,
-        fontSize: 14, fontFace: "Arial", bold: true, color: "1E293B",
-      });
-      yPos += 0.5;
-      phaseNotes.slice(0, 4).forEach((note) => {
-        if (yPos > 6.8) return;
-        const noteText = note.content ? `${note.title}: ${note.content.slice(0, 120)}` : note.title;
-        slide.addText(`• ${noteText}`, {
-          x: 0.7, y: yPos, w: 11.5, h: 0.3,
-          fontSize: 10, fontFace: "Arial", color: "475569",
+          yPos += 0.1;
         });
-        yPos += 0.35;
-      });
-    }
-  });
+      }
+
+      if (phaseNotes.length > 0 && yPos < 6.0) {
+        slide.addText("Anteckningar", {
+          x: 0.5, y: yPos, w: 5, h: 0.4,
+          fontSize: 14, fontFace: "Arial", bold: true, color: "1E293B",
+        });
+        yPos += 0.5;
+        phaseNotes.slice(0, 4).forEach((note) => {
+          if (yPos > 6.8) return;
+          const noteText = note.content ? `${note.title}: ${note.content.slice(0, 120)}` : note.title;
+          slide.addText(`• ${noteText}`, {
+            x: 0.7, y: yPos, w: 11.5, h: 0.3,
+            fontSize: 10, fontFace: "Arial", color: "475569",
+          });
+          yPos += 0.35;
+        });
+      }
+    });
+  }
+
 
   // --- Closing Slide ---
   const closingSlide = pptx.addSlide();
