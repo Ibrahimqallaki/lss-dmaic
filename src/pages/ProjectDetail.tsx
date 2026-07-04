@@ -73,7 +73,9 @@ export default function ProjectDetail() {
   const [noteTitle, setNoteTitle] = useState("");
   const [noteContent, setNoteContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [exportOptions, setExportOptions] = useState<ExportOptions>(() => loadExportOptions());
   const { user, loading } = useAuth();
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
