@@ -340,7 +340,7 @@ export function exportProjectToPDF(
   doc.text(`Status: ${statusText} | Exporterad: ${new Date().toLocaleDateString("sv-SE")}`, marginLeft, yPos);
   yPos += 8;
 
-  if (sigmaEntries.length > 0) {
+  if (options.pdfSigmaHeader && sigmaEntries.length > 0) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(40);
@@ -350,6 +350,7 @@ export function exportProjectToPDF(
     doc.text(`Sigma-utveckling: ${sigmaText}`, marginLeft, yPos);
     yPos += 7;
   }
+
 
   yPos += 3;
   doc.setDrawColor(200);
