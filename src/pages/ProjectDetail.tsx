@@ -275,11 +275,12 @@ export default function ProjectDetail() {
                 isOwner={project.user_id === user?.id}
                 currentUserId={user?.id || ""}
               />
+              <ExportSettingsDialog onChange={setExportOptions} />
               <Button
                 variant="outline"
                 size="sm"
                 className="bg-white/20 border-white/40 text-white hover:bg-white/30"
-                onClick={() => exportProjectToPDF(project, notes, calculations, tollgateItems, sigmaEntries)}
+                onClick={() => exportProjectToPDF(project, notes, calculations, tollgateItems, sigmaEntries, exportOptions)}
               >
                 <Download className="h-4 w-4 mr-2" />
                 PDF
@@ -297,11 +298,12 @@ export default function ProjectDetail() {
                 variant="outline"
                 size="sm"
                 className="bg-white/20 border-white/40 text-white hover:bg-white/30"
-                onClick={() => exportProjectToPPTX(project, notes, calculations, tollgateItems, sigmaEntries)}
+                onClick={() => exportProjectToPPTX(project, notes, calculations, tollgateItems, sigmaEntries, exportOptions)}
               >
                 <Presentation className="h-4 w-4 mr-2" />
                 PPTX
               </Button>
+
               <Button
                 variant="outline"
                 size="sm"
