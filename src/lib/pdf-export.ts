@@ -358,45 +358,50 @@ export function exportProjectToPDF(
   yPos += 8;
 
   // --- Executive Summary block ---
-  const summary = buildExecutiveSummary(project, notes, calculations, tollgateItems, sigmaEntries);
-  const boxTop = yPos;
-  doc.setFillColor(248, 250, 252);
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(marginLeft, boxTop, contentWidth, 6, 1, 1, "FD");
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  const [hr, hg, hb] = summary.healthColor.match(/.{2}/g)!.map(h => parseInt(h, 16));
-  doc.setTextColor(hr, hg, hb);
-  doc.text(`Sammanfattning • Hälsa: ${summary.healthLabel}`, marginLeft + 3, boxTop + 4.2);
-  yPos = boxTop + 10;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(50);
-  summary.keyPoints.forEach((kp) => {
-    checkPageBreak(6);
-    const cleaned = kp.replace(/[↑↓→Δ]/g, (m) => ({ "↑": "^", "↓": "v", "→": "->", "Δ": "delta" }[m] || m));
-    doc.text(`• ${cleaned}`, marginLeft + 3, yPos);
-    yPos += 5;
-  });
-  if (summary.highRisks.length > 0) {
-    yPos += 1;
+  if (options.executiveSummary) {
+    const summary = buildExecutiveSummary(project, notes, calculations, tollgateItems, sigmaEntries);
+    const boxTop = yPos;
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(marginLeft, boxTop, contentWidth, 6, 1, 1, "FD");
+    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(180, 40, 40);
-    doc.text("Topp-risker (RPN ≥ 200):", marginLeft + 3, yPos);
-    yPos += 5;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(60);
-    summary.highRisks.slice(0, 5).forEach((r) => {
-      checkPageBreak(5);
-      doc.text(`• [RPN ${r.rpn}] ${r.failureMode} (${r.toolName})`, marginLeft + 6, yPos);
-      yPos += 4.5;
-    });
+    const [hr, hg, hb] = summary.healthColor.match(/.{2}/g)!.map(h => parseInt(h, 16));
+    doc.setTextColor(hr, hg, hb);
+    doc.text(`Sammanfattning • Hälsa: ${summary.healthLabel}`, marginLeft + 3, boxTop + 4.2);
+    yPos = boxTop + 10;
+
+    if (options.execKeyPoints) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(50);
+      summary.keyPoints.forEach((kp) => {
+        checkPageBreak(6);
+        const cleaned = kp.replace(/[↑↓→Δ]/g, (m) => ({ "↑": "^", "↓": "v", "→": "->", "Δ": "delta" }[m] || m));
+        doc.text(`• ${cleaned}`, marginLeft + 3, yPos);
+        yPos += 5;
+      });
+    }
+    if (options.execTopRisks && summary.highRisks.length > 0) {
+      yPos += 1;
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(180, 40, 40);
+      doc.text("Topp-risker (RPN ≥ 200):", marginLeft + 3, yPos);
+      yPos += 5;
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(60);
+      summary.highRisks.slice(0, 5).forEach((r) => {
+        checkPageBreak(5);
+        doc.text(`• [RPN ${r.rpn}] ${r.failureMode} (${r.toolName})`, marginLeft + 6, yPos);
+        yPos += 4.5;
+      });
+    }
+    yPos += 4;
+    doc.setDrawColor(200);
+    doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
+    yPos += 8;
   }
-  yPos += 4;
-  doc.setDrawColor(200);
-  doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
-  yPos += 8;
+
 
   phases.forEach((phase) => {
     const phaseNotes = notes.filter((n) => n.phase === phase.id);
