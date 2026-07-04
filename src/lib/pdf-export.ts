@@ -404,9 +404,9 @@ export function exportProjectToPDF(
 
 
   phases.forEach((phase) => {
-    const phaseNotes = notes.filter((n) => n.phase === phase.id);
-    const phaseCalcs = calculations.filter((c) => c.phase === phase.id);
-    const phaseTollgate = tollgateItems.filter((t) => t.phase === phase.id);
+    const phaseNotes = options.pdfNotes ? notes.filter((n) => n.phase === phase.id) : [];
+    const phaseCalcs = options.pdfToolResults ? calculations.filter((c) => c.phase === phase.id) : [];
+    const phaseTollgate = options.pdfTollgate ? tollgateItems.filter((t) => t.phase === phase.id) : [];
 
     if (phaseNotes.length === 0 && phaseCalcs.length === 0 && phaseTollgate.length === 0) return;
 
@@ -513,6 +513,7 @@ export function exportProjectToPDF(
         yPos += 5;
       });
     }
+
 
     yPos += 8;
   });
