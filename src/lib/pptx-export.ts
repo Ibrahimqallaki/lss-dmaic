@@ -351,16 +351,19 @@ export function exportProjectToPPTX(
 
 
   // --- Closing Slide ---
-  const closingSlide = pptx.addSlide();
-  closingSlide.background = { color: "1E293B" };
-  closingSlide.addText("Tack!", {
-    x: 0.5, y: 2.5, w: 12, h: 1.2,
-    fontSize: 48, fontFace: "Arial", bold: true, color: "FFFFFF", align: "center",
-  });
-  closingSlide.addText(`${project.name} – ${new Date().toLocaleDateString("sv-SE")}`, {
-    x: 0.5, y: 4.0, w: 12, h: 0.5,
-    fontSize: 16, fontFace: "Arial", color: "94A3B8", align: "center",
-  });
+  if (options.pptxClosingSlide) {
+    const closingSlide = pptx.addSlide();
+    closingSlide.background = { color: "1E293B" };
+    closingSlide.addText("Tack!", {
+      x: 0.5, y: 2.5, w: 12, h: 1.2,
+      fontSize: 48, fontFace: "Arial", bold: true, color: "FFFFFF", align: "center",
+    });
+    closingSlide.addText(`${project.name} – ${new Date().toLocaleDateString("sv-SE")}`, {
+      x: 0.5, y: 4.0, w: 12, h: 0.5,
+      fontSize: 16, fontFace: "Arial", color: "94A3B8", align: "center",
+    });
+  }
+
 
   const fileName = `${project.name.replace(/[^a-zA-Z0-9åäöÅÄÖ\s]/g, "").replace(/\s+/g, "_")}_presentation.pptx`;
   pptx.writeFile({ fileName });
