@@ -94,9 +94,11 @@ export function exportProjectToPPTX(
   notes: ProjectNote[],
   calculations: ProjectCalculation[],
   tollgateItems: TollgateItem[] = [],
-  sigmaEntries: SigmaEntry[] = []
+  sigmaEntries: SigmaEntry[] = [],
+  options: ExportOptions = DEFAULT_EXPORT_OPTIONS
 ) {
   const pptx = new pptxgen();
+
   pptx.layout = "LAYOUT_WIDE";
   pptx.author = "Six Sigma Platform";
   pptx.title = `${project.name} – Styrgruppspresentation`;
