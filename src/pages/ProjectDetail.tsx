@@ -16,7 +16,10 @@ import { ArrowLeft, Plus, Trash2, Loader2, FileText, Calculator, BarChart3, Save
 import { exportProjectToPDF, exportA3Report } from "@/lib/pdf-export";
 import { exportProjectToPPTX } from "@/lib/pptx-export";
 import { exportProjectToXLSX } from "@/lib/xlsx-export";
+import { loadExportOptions, ExportOptions } from "@/lib/export-settings";
+import { ExportSettingsDialog } from "@/components/project/ExportSettingsDialog";
 import { phases } from "@/data/dmaic-tools";
+
 import { ToolCard } from "@/components/ToolCard";
 import { ProjectCollaborators } from "@/components/ProjectCollaborators";
 import { TollgateChecklist } from "@/components/project/TollgateChecklist";
