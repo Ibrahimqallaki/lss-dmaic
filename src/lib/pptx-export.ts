@@ -1,6 +1,8 @@
 import pptxgen from "pptxgenjs";
 import { phases } from "@/data/dmaic-tools";
 import { buildExecutiveSummary } from "./executive-summary";
+import { ExportOptions, DEFAULT_EXPORT_OPTIONS } from "./export-settings";
+
 
 interface Project {
   id: string;
