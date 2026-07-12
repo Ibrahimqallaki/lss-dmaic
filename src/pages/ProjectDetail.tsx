@@ -26,6 +26,7 @@ import { TollgateChecklist } from "@/components/project/TollgateChecklist";
 import { ControlPlanEditor } from "@/components/project/ControlPlanEditor";
 import { RACIMatrix } from "@/components/project/RACIMatrix";
 import { SigmaTracker } from "@/components/project/SigmaTracker";
+import { BenefitTracker } from "@/components/project/BenefitTracker";
 import { AIRootCauseAnalysis } from "@/components/tools/AIRootCauseAnalysis";
 import { AIDMAICCoach } from "@/components/AIDMAICCoach";
 import { cn } from "@/lib/utils";
@@ -391,6 +392,12 @@ export default function ProjectDetail() {
                   <TrendingUp className="h-4 w-4" />
                   Sigma
                 </TabsTrigger>
+                {activePhase === 5 && (
+                  <TabsTrigger value="benefits" className="gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Benefit tracking
+                  </TabsTrigger>
+                )}
                 {activePhase === 3 && (
                   <TabsTrigger value="ai-analysis" className="gap-2">
                     <Brain className="h-4 w-4" />
@@ -576,6 +583,13 @@ export default function ProjectDetail() {
               <TabsContent value="sigma" className="space-y-4">
                 <SigmaTracker projectId={project.id} />
               </TabsContent>
+
+              {/* Benefit Realization */}
+              {activePhase === 5 && (
+                <TabsContent value="benefits" className="space-y-4">
+                  <BenefitTracker projectId={project.id} estimatedTotal={project.estimated_savings} />
+                </TabsContent>
+              )}
 
               {/* AI Analysis */}
               {activePhase === 3 && (

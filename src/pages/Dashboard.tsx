@@ -12,6 +12,7 @@ import {
   TrendingUp, Target, AlertTriangle, DollarSign, Activity, CalendarDays
 } from "lucide-react";
 import { phases } from "@/data/dmaic-tools";
+import { ProjectHeatmap } from "@/components/dashboard/ProjectHeatmap";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar, Cell
@@ -202,6 +203,10 @@ export default function Dashboard() {
                 <Link to="/projects">Alla projekt <ArrowRight className="h-4 w-4 ml-2" /></Link>
               </Button>
             </div>
+
+            <ProjectHeatmap projects={projects} />
+
+
 
             {/* Top KPI Row */}
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
