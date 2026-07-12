@@ -195,8 +195,8 @@ export function Layout({ children }: LayoutProps) {
       </header>
 
       {/* Mobile Phase Navigation */}
-      <div className="md:hidden sticky top-16 z-40 glass border-b overflow-x-auto">
-        <div className="flex items-center gap-1 px-4 py-2">
+      <div className="md:hidden sticky top-16 z-40 glass border-b">
+        <div className="flex items-center gap-2 px-4 py-2">
           <Link
             to="/projects"
             className={cn(
@@ -208,20 +208,56 @@ export function Layout({ children }: LayoutProps) {
           >
             📁 Projekt
           </Link>
-          {phases.map((phase) => (
-            <Link
-              key={phase.id}
-              to={`/phase/${phase.id}`}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
-                location.pathname === `/phase/${phase.id}`
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
-              {phase.icon} {phase.name}
-            </Link>
-          ))}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors inline-flex items-center gap-1",
+                  location.pathname.startsWith("/phase/")
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                )}
+              >
+                {(() => {
+                  const active = phases.find(p => location.pathname === `/phase/${p.id}`);
+                  return active ? `${active.icon} ${active.name}` : "DMAIC-faser";
+                })()}
+                <ChevronDown className="h-3 w-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {phases.map((phase) => (
+                <DropdownMenuItem key={phase.id} asChild>
+                  <Link to={`/phase/${phase.id}`} className="cursor-pointer">
+                    <span className="mr-2">{phase.icon}</span>
+                    {phase.name}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Link
+            to="/calculators"
+            className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+              location.pathname === "/calculators"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground"
+            )}
+          >
+            🧮 Kalkyl
+          </Link>
+          <Link
+            to="/control-charts"
+            className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+              location.pathname === "/control-charts"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground"
+            )}
+          >
+            📊 SPC
+          </Link>
         </div>
       </div>
 
