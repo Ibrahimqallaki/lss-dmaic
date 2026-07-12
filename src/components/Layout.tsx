@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { phases } from "@/data/dmaic-tools";
 import { cn } from "@/lib/utils";
-import { Activity, Calculator, Home, BarChart3, FolderOpen, LogIn, LogOut, User, LayoutDashboard } from "lucide-react";
+import { Activity, Calculator, Home, BarChart3, FolderOpen, LogIn, LogOut, User, LayoutDashboard, ChevronDown } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -52,20 +52,31 @@ export function Layout({ children }: LayoutProps) {
                 <Home className="h-4 w-4 inline-block mr-2" />
                 Hem
               </Link>
-              {phases.map((phase) => (
-                <Link
-                  key={phase.id}
-                  to={`/phase/${phase.id}`}
-                  className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                    location.pathname === `/phase/${phase.id}`
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                >
-                  {phase.name}
-                </Link>
-              ))}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-1",
+                      location.pathname.startsWith("/phase/")
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
+                    DMAIC-faser
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  {phases.map((phase) => (
+                    <DropdownMenuItem key={phase.id} asChild>
+                      <Link to={`/phase/${phase.id}`} className="cursor-pointer">
+                        <span className="mr-2">{phase.icon}</span>
+                        {phase.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Link
                 to="/calculators"
                 className={cn(
