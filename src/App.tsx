@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import PhasePage from "./pages/PhasePage";
 import Calculators from "./pages/Calculators";
 import ControlCharts from "./pages/ControlCharts";
+import Lean from "./pages/Lean";
 import Auth from "./pages/Auth";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/phase/:phaseId" element={<PhasePage />} />
           <Route path="/calculators" element={<Calculators />} />
           <Route path="/control-charts" element={<ControlCharts />} />
+          <Route path="/lean" element={<Lean />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/projects" element={<Projects />} />
