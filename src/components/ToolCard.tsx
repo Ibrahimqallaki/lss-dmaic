@@ -18,6 +18,7 @@ import {
   ChiSquareCalculator,
   NormalityTestCalculator,
   CapabilitySixpack,
+  RegressionCalculator,
 } from "@/components/calculators";
 
 import {
@@ -74,7 +75,7 @@ const calculatorMap: Record<string, React.ComponentType<{ toolId?: string; toolN
   "chi-square": ChiSquareCalculator,
   "normality-test": NormalityTestCalculator,
   "correlation": CorrelationCalculator,
-  "regression": CorrelationCalculator,
+  "regression": RegressionCalculator,
   "doe-basics": DOECalculator,
   "full-factorial": DOECalculator,
   "fractional-factorial": DOECalculator,

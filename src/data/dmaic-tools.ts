@@ -262,7 +262,7 @@ export const phases: Phase[] = [
         description: "Modellerar sambandet mellan X och Y.",
         category: "Regressionsanalys",
         formula: "Y = β₀ + β₁X + ε",
-        usage: "Förutsäg Y baserat på X och kvantifiera sambandets styrka (R²)."
+        usage: "Enkel eller multipel regression: koefficienter med p-värden, justerad R², VIF, konfidens-/prediktionsintervall, residualdiagnostik och prognos."
       },
       {
         id: "multi-vari",
